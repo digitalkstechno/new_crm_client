@@ -83,15 +83,6 @@ export default function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>(initialLeads);
   const [open, setOpen] = useState(false);
 
-  const [form, setForm] = useState({
-    name: "",
-    company: "",
-    status: "New" as LeadStatus,
-    owner: "",
-    nextFollowUp: "",
-    value: "",
-  });
-
   const sensors = useSensors(useSensor(PointerSensor));
 
   /* ---------- Group By Status ---------- */
@@ -112,6 +103,8 @@ export default function LeadsPage() {
 
     return map;
   }, [leads]);
+
+  /* ---------- Find Lead ---------- */
 
   const findLead = (id: string) => leads.find((l) => l.id === id);
 
@@ -167,35 +160,6 @@ export default function LeadsPage() {
     }
   };
 
-  /* ---------- FORM SUBMIT ---------- */
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const newLead: Lead = {
-      id: Date.now().toString(),
-      name: form.name,
-      company: form.company,
-      status: form.status,
-      owner: form.owner,
-      nextFollowUp: form.nextFollowUp,
-      value: form.value,
-    };
-
-    setLeads((prev) => [newLead, ...prev]);
-
-    setForm({
-      name: "",
-      company: "",
-      status: "New",
-      owner: "",
-      nextFollowUp: "",
-      value: "",
-    });
-
-    setOpen(false);
-  };
-
   /* ---------- TABLE COLUMNS ---------- */
 
   const columns: Column<Lead>[] = [
@@ -215,7 +179,9 @@ export default function LeadsPage() {
           <button
             onClick={() => setView("table")}
             className={`rounded-lg px-4 py-2 text-sm ${
-              view === "table" ? "bg-black text-white" : "border"
+              view === "table"
+                ? "bg-black text-white"
+                : "border"
             }`}
           >
             Table View
@@ -224,20 +190,16 @@ export default function LeadsPage() {
           <button
             onClick={() => setView("kanban")}
             className={`rounded-lg px-4 py-2 text-sm ${
-              view === "kanban" ? "bg-black text-white" : "border"
+              view === "kanban"
+                ? "bg-black text-white"
+                : "border"
             }`}
           >
             Kanban View
           </button>
         </div>
 
-        <button
-          onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm text-white"
-        >
-          <Plus size={16} />
-          Add Lead
-        </button>
+     
       </div>
 
       {/* TABLE */}
@@ -270,132 +232,7 @@ export default function LeadsPage() {
           </div>
         </DndContext>
       )}
-
-      {/* ADD LEAD DIALOG */}
-      <Dialog
-        open={open}
-        onClose={() => setOpen(false)}
-        title="Add New Lead"
-        description="Create a new lead entry."
-        footer={
-          <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="rounded-xl border px-4 py-2 text-sm"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              form="lead-form"
-              className="rounded-xl bg-black px-4 py-2 text-sm text-white"
-            >
-              Save Lead
-            </button>
-          </div>
-        }
-      >
-        <form
-          id="lead-form"
-          onSubmit={handleSubmit}
-          className="space-y-5"
-        >
-          <div className="grid gap-4 md:grid-cols-2">
-            <Input
-              label="Lead Name"
-              value={form.name}
-              onChange={(v) => setForm({ ...form, name: v })}
-            />
-            <Input
-              label="Company"
-              value={form.company}
-              onChange={(v) => setForm({ ...form, company: v })}
-            />
-            <Select
-              label="Status"
-              value={form.status}
-              options={STATUSES}
-              onChange={(v) =>
-                setForm({ ...form, status: v as LeadStatus })
-              }
-            />
-            <Input
-              label="Owner"
-              value={form.owner}
-              onChange={(v) => setForm({ ...form, owner: v })}
-            />
-            <Input
-              label="Next Follow-up"
-              type="date"
-              value={form.nextFollowUp}
-              onChange={(v) =>
-                setForm({ ...form, nextFollowUp: v })
-              }
-            />
-            <Input
-              label="Deal Value"
-              value={form.value}
-              onChange={(v) => setForm({ ...form, value: v })}
-            />
-          </div>
-        </form>
-      </Dialog>
     </>
-  );
-}
-
-/* ================= REUSABLE INPUT ================= */
-
-function Input({
-  label,
-  value,
-  onChange,
-  type = "text",
-}: {
-  label: string;
-  value: string;
-  onChange: (val: string) => void;
-  type?: string;
-}) {
-  return (
-    <div className="space-y-1">
-      <label className="text-sm font-medium">{label}</label>
-      <input
-        required
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-black outline-none"
-      />
-    </div>
-  );
-}
-
-function Select({
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  options: string[];
-  onChange: (val: string) => void;
-}) {
-  return (
-    <div className="space-y-1">
-      <label className="text-sm font-medium">{label}</label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-black outline-none"
-      >
-        {options.map((opt) => (
-          <option key={opt}>{opt}</option>
-        ))}
-      </select>
-    </div>
   );
 }
 
@@ -409,7 +246,10 @@ function KanbanColumn({
   leads: Lead[];
 }) {
   return (
-    <div className="rounded-2xl bg-gray-100 p-3 min-h-[400px]">
+    <div
+      id={id}
+      className="rounded-2xl bg-gray-100 p-3 min-h-[400px]"
+    >
       <h3 className="mb-3 text-sm font-semibold">
         {id} ({leads.length})
       </h3>

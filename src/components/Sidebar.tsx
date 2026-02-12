@@ -70,8 +70,8 @@ export default function Sidebar({ collapsed }: SidebarProps) {
               <Link
                 href="/"
                 className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${isActive("/")
-                    ? "bg-white/10 text-white"
-                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                  ? "bg-white/10 text-white"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`}
               >
                 <Home className="h-5 w-5" />
@@ -81,8 +81,8 @@ export default function Sidebar({ collapsed }: SidebarProps) {
               <Link
                 href="/account-master"
                 className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${isActive("/account-master")
-                    ? "bg-white/10 text-white"
-                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                  ? "bg-white/10 text-white"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`}
               >
                 <CalendarClock className="h-5 w-5" />
@@ -92,8 +92,8 @@ export default function Sidebar({ collapsed }: SidebarProps) {
               <Link
                 href="/leads"
                 className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${isActive("/leads")
-                    ? "bg-white/10 text-white"
-                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                  ? "bg-white/10 text-white"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`}
               >
                 <User2 className="h-5 w-5" />
@@ -104,8 +104,8 @@ export default function Sidebar({ collapsed }: SidebarProps) {
               <button
                 onClick={() => setView("settings")}
                 className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 transition ${pathname.startsWith("/settings")
-                    ? "bg-white/10 text-white"
-                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                  ? "bg-white/10 text-white"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`}
               >
                 <Settings className="h-5 w-5" />
@@ -128,8 +128,8 @@ export default function Sidebar({ collapsed }: SidebarProps) {
               <Link
                 href="/settings/staff"
                 className={`block rounded-xl px-3 py-2 transition ${isActive("/settings/staff")
-                    ? "bg-white/10 text-white"
-                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                  ? "bg-white/10 text-white"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`}
               >
                 Staff
@@ -138,8 +138,8 @@ export default function Sidebar({ collapsed }: SidebarProps) {
               <Link
                 href="/settings/inquiry-category"
                 className={`block rounded-xl px-3 py-2 transition ${isActive("/settings/inquiry-category")
-                    ? "bg-white/10 text-white"
-                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                  ? "bg-white/10 text-white"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`}
               >
                 Inquiry Category
@@ -147,22 +147,13 @@ export default function Sidebar({ collapsed }: SidebarProps) {
               <Link
                 href="/settings/module-suggestion"
                 className={`block rounded-xl px-3 py-2 transition ${isActive("/settings/module-suggestion")
-                    ? "bg-white/10 text-white"
-                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                  ? "bg-white/10 text-white"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`}
               >
                 Module Suggestion
               </Link>
 
-              <Link
-                href="/settings/lead-status"
-                className={`block rounded-xl px-3 py-2 transition ${isActive("/settings/lead-status")
-                    ? "bg-white/10 text-white"
-                    : "text-slate-400 hover:text-white hover:bg-white/5"
-                  }`}
-              >
-                Lead Status
-              </Link>
 
 
             </div>
