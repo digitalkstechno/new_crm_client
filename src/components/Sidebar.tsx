@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { usePathname } from "next/navigation";
 import {
   Home,
   User2,
@@ -9,24 +9,34 @@ import {
   Settings,
   ArrowLeft,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type SidebarProps = {
   collapsed: boolean;
 };
 
 export default function Sidebar({ collapsed }: SidebarProps) {
-  const router = useRouter();
+  const pathname = usePathname();
   const [view, setView] = useState<"main" | "settings">("main");
+
+  // 🔥 Auto switch view based on route
+  useEffect(() => {
+    if (pathname.startsWith("/settings")) {
+      setView("settings");
+    } else {
+      setView("main");
+    }
+  }, [pathname]);
+
+  const isActive = (path: string) => pathname === path;
 
   return (
     <aside
-      className={`flex h-screen shrink-0 ${
-        collapsed ? "w-16" : "w-64"
-      } transition-all duration-300`}
+      className={`flex h-screen shrink-0 ${collapsed ? "w-16" : "w-64"
+        } transition-all duration-300`}
     >
       <div className="relative flex h-full w-full flex-col overflow-hidden rounded-r-2xl bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 shadow-xl ring-1 ring-white/10">
-        
+
         {/* ===== Logo ===== */}
         <div className="flex h-16 items-center border-b border-white/10 px-4">
           <div className="flex items-center gap-3">
@@ -50,19 +60,19 @@ export default function Sidebar({ collapsed }: SidebarProps) {
         {/* ===== SLIDER CONTAINER ===== */}
         <div className="relative flex-1 overflow-hidden">
           <div
-            className={`flex h-full transition-transform duration-300 ${
-              view === "settings" ? "-translate-x-full" : "translate-x-0"
-            }`}
+            className={`flex h-full transition-transform duration-300 ${view === "settings" ? "-translate-x-full" : "translate-x-0"
+              }`}
           >
+
             {/* ================= MAIN MENU ================= */}
             <div className="w-full shrink-0 px-2 py-4 space-y-1">
+
               <Link
                 href="/"
-                className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${
-                  router.pathname === "/"
+                className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${isActive("/")
                     ? "bg-white/10 text-white"
                     : "text-slate-400 hover:text-white hover:bg-white/5"
-                }`}
+                  }`}
               >
                 <Home className="h-5 w-5" />
                 {!collapsed && "Dashboard"}
@@ -70,11 +80,10 @@ export default function Sidebar({ collapsed }: SidebarProps) {
 
               <Link
                 href="/account-master"
-                className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${
-                  router.pathname === "/account-master"
+                className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${isActive("/account-master")
                     ? "bg-white/10 text-white"
                     : "text-slate-400 hover:text-white hover:bg-white/5"
-                }`}
+                  }`}
               >
                 <CalendarClock className="h-5 w-5" />
                 {!collapsed && "Account Master"}
@@ -82,11 +91,10 @@ export default function Sidebar({ collapsed }: SidebarProps) {
 
               <Link
                 href="/leads"
-                className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${
-                  router.pathname === "/leads"
+                className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${isActive("/leads")
                     ? "bg-white/10 text-white"
                     : "text-slate-400 hover:text-white hover:bg-white/5"
-                }`}
+                  }`}
               >
                 <User2 className="h-5 w-5" />
                 {!collapsed && "Leads"}
@@ -95,7 +103,10 @@ export default function Sidebar({ collapsed }: SidebarProps) {
               {/* Settings Button */}
               <button
                 onClick={() => setView("settings")}
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-slate-400 hover:text-white hover:bg-white/5 transition"
+                className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 transition ${pathname.startsWith("/settings")
+                    ? "bg-white/10 text-white"
+                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                  }`}
               >
                 <Settings className="h-5 w-5" />
                 {!collapsed && "Settings"}
@@ -104,11 +115,11 @@ export default function Sidebar({ collapsed }: SidebarProps) {
 
             {/* ================= SETTINGS VIEW ================= */}
             <div className="w-full shrink-0 px-2 py-4 space-y-1">
-              
+
               {/* Back Button */}
               <button
                 onClick={() => setView("main")}
-                className="flex items-center gap-2 text-white px-3 py-2 mb-3"
+                className="flex items-center gap-2 text-white px-3 py-2 mb-3 hover:bg-white/5 rounded-lg transition"
               >
                 <ArrowLeft className="h-4 w-4" />
                 {!collapsed && "Back"}
@@ -116,36 +127,50 @@ export default function Sidebar({ collapsed }: SidebarProps) {
 
               <Link
                 href="/settings/staff"
-                className="block rounded-xl px-3 py-2 text-slate-400 hover:text-white hover:bg-white/5 transition"
+                className={`block rounded-xl px-3 py-2 transition ${isActive("/settings/staff")
+                    ? "bg-white/10 text-white"
+                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                  }`}
               >
                 Staff
               </Link>
 
               <Link
                 href="/settings/inquiry-category"
-                className="block rounded-xl px-3 py-2 text-slate-400 hover:text-white hover:bg-white/5 transition"
+                className={`block rounded-xl px-3 py-2 transition ${isActive("/settings/inquiry-category")
+                    ? "bg-white/10 text-white"
+                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                  }`}
               >
                 Inquiry Category
+              </Link>
+              <Link
+                href="/settings/module-suggestion"
+                className={`block rounded-xl px-3 py-2 transition ${isActive("/settings/module-suggestion")
+                    ? "bg-white/10 text-white"
+                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                  }`}
+              >
+                Module Suggestion
               </Link>
 
               <Link
                 href="/settings/lead-status"
-                className="block rounded-xl px-3 py-2 text-slate-400 hover:text-white hover:bg-white/5 transition"
+                className={`block rounded-xl px-3 py-2 transition ${isActive("/settings/lead-status")
+                    ? "bg-white/10 text-white"
+                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                  }`}
               >
                 Lead Status
               </Link>
 
-              <Link
-                href="/settings/module-suggestion"
-                className="block rounded-xl px-3 py-2 text-slate-400 hover:text-white hover:bg-white/5 transition"
-              >
-                Module Suggestion
-              </Link>
+
             </div>
+
           </div>
         </div>
 
-        {/* ===== Profile ===== */}
+        {/* ===== Profile Section ===== */}
         <div className="mt-auto border-t border-white/10 px-3 py-3">
           <div className="flex items-center gap-3 rounded-xl bg-white/5 p-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white">
@@ -164,6 +189,7 @@ export default function Sidebar({ collapsed }: SidebarProps) {
             )}
           </div>
         </div>
+
       </div>
     </aside>
   );
