@@ -2,10 +2,11 @@
 
 import DataTable, { Column } from "@/components/DataTable";
 import Dialog from "@/components/Dialog";
-import { Plus } from "lucide-react";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import { Plus, Edit, Trash2 } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { api } from "@/utils/axiosInstance"; // axios instance with token
+import { api } from "@/utils/axiosInstance";
 import { baseUrl } from "../../../config";
 
 type InquiryCategoryRow = {
@@ -18,18 +19,87 @@ export default function InquiryCategoryPage() {
   const [open, setOpen] = useState(false);
   const [categories, setCategories] = useState<InquiryCategoryRow[]>([]);
   const [form, setForm] = useState({ name: "" });
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
+  const [editMode, setEditMode] = useState<{ isEdit: boolean; id: string | null }>({ isEdit: false, id: null });
+  const [confirmDialog, setConfirmDialog] = useState(false);
 
   const columns: Column<InquiryCategoryRow>[] = useMemo(
     () => [
       { key: "name", label: "Category Name" },
-      { key: "createdAt", label: "Created Date" },
+      { 
+        key: "createdAt", 
+        label: "Created Date",
+        render: (value) => {
+          if (!value) return "-";
+          const date = new Date(value as string);
+          const day = String(date.getDate()).padStart(2, '0');
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const year = date.getFullYear();
+          return `${day}-${month}-${year}`;
+        }
+      },
+      {
+        key: "_id",
+        label: "Actions",
+        render: (_, row) => (
+          <div className="flex gap-2">
+            <button
+              onClick={() => setDeleteDialog({ open: true, id: row._id! })}
+              className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-3 py-3 text-sm font-medium text-red-600 transition hover:bg-red-100"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => handleEdit(row)}
+              className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-3 py-3 text-sm font-medium text-blue-600 transition hover:bg-blue-100"
+            >
+              <Edit className="h-4 w-4" />
+            </button>
+          </div>
+        ),
+      },
     ],
     []
   );
 
-  const resetForm = () => setForm({ name: "" });
+  const resetForm = () => {
+    setForm({ name: "" });
+    setEditMode({ isEdit: false, id: null });
+  };
 
-  // 🔹 Fetch existing categories on mount
+  const handleEdit = (row: InquiryCategoryRow) => {
+    setForm({ name: row.name });
+    setEditMode({ isEdit: true, id: row._id! });
+    setOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteDialog.id) return;
+
+    try {
+      await api.delete(`${baseUrl.INQUIRYCATEGORY}/${deleteDialog.id}`);
+      setCategories((prev) => prev.filter((c) => c._id !== deleteDialog.id));
+      toast.success("Category deleted successfully!");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to delete category");
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!editMode.id) return;
+
+    try {
+      const payload = { name: form.name };
+      const res = await api.put(`${baseUrl.INQUIRYCATEGORY}/${editMode.id}`, payload);
+      setCategories((prev) => prev.map((c) => (c._id === editMode.id ? res.data.data : c)));
+      toast.success("Category updated successfully!");
+      setOpen(false);
+      resetForm();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to update category");
+    }
+  };
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -43,21 +113,25 @@ export default function InquiryCategoryPage() {
     fetchCategories();
   }, []);
 
-  // 🔹 Submit form to API
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setConfirmDialog(true);
+  };
 
-    try {
-      const payload = { name: form.name };
-
-      const res = await api.post(baseUrl.INQUIRYCATEGORY, payload);
-      setCategories((prev) => [res.data.data, ...prev]);
-
-      toast.success("Category created successfully!");
-      setOpen(false);
-      resetForm();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to create category");
+  const confirmSubmit = async () => {
+    if (editMode.isEdit) {
+      await handleUpdate();
+    } else {
+      try {
+        const payload = { name: form.name };
+        const res = await api.post(baseUrl.INQUIRYCATEGORY, payload);
+        setCategories((prev) => [res.data.data, ...prev]);
+        toast.success("Category created successfully!");
+        setOpen(false);
+        resetForm();
+      } catch (err: any) {
+        toast.error(err.response?.data?.message || "Failed to create category");
+      }
     }
   };
 
@@ -65,7 +139,10 @@ export default function InquiryCategoryPage() {
     <>
       <div className="mb-4 flex items-center justify-end">
         <button
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            resetForm();
+            setOpen(true);
+          }}
           className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-gray-200 transition-all duration-300 hover:ring-gray-300 hover:shadow"
         >
           <Plus className="h-4 w-4" />
@@ -87,8 +164,8 @@ export default function InquiryCategoryPage() {
           setOpen(false);
           resetForm();
         }}
-        title="Add Inquiry Category"
-        description="Create a new inquiry category."
+        title={editMode.isEdit ? "Edit Inquiry Category" : "Add Inquiry Category"}
+        description={editMode.isEdit ? "Update inquiry category." : "Create a new inquiry category."}
         footer={
           <div className="flex flex-wrap items-center justify-end gap-3">
             <button
@@ -106,7 +183,7 @@ export default function InquiryCategoryPage() {
               type="submit"
               form="category-form"
             >
-              Save Category
+              {editMode.isEdit ? "Update Category" : "Save Category"}
             </button>
           </div>
         }
@@ -130,6 +207,24 @@ export default function InquiryCategoryPage() {
           </label>
         </form>
       </Dialog>
+
+      <ConfirmDialog
+        open={deleteDialog.open}
+        onClose={() => setDeleteDialog({ open: false, id: null })}
+        onConfirm={handleDelete}
+        title="Delete Category"
+        message="Are you sure you want to delete this category? This action cannot be undone."
+        confirmText="Delete"
+      />
+
+      <ConfirmDialog
+        open={confirmDialog}
+        onClose={() => setConfirmDialog(false)}
+        onConfirm={confirmSubmit}
+        title={editMode.isEdit ? "Update Category" : "Add Category"}
+        message={editMode.isEdit ? "Are you sure you want to update this category?" : "Are you sure you want to add this category?"}
+        confirmText={editMode.isEdit ? "Update" : "Add"}
+      />
     </>
   );
 }

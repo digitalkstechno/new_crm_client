@@ -41,12 +41,12 @@ export default function ModelSuggestionPage() {
       {
         key: "category",
         label: "Category",
-        render: (value) => (value as Category).name,
+        render: (value) => (value as Category)?.name,
       },
       {
         key: "rate",
         label: "Rate",
-        className: "text-right font-semibold",
+        className: "font-semibold",
       },
     ],
     []
@@ -63,7 +63,7 @@ export default function ModelSuggestionPage() {
   // 🔥 Fetch all categories
   const fetchCategories = async () => {
     try {
-      const res = await api.get(baseUrl.INQUIRYCATEGORY); 
+      const res = await api.get(baseUrl.INQUIRYCATEGORY);
       setCategories(res.data.data);
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to fetch categories");
