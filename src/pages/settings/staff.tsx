@@ -4,7 +4,7 @@ import DataTable, { Column } from "@/components/DataTable";
 import Dialog from "@/components/Dialog";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { api } from "@/utils/axiosInstance";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Edit } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { baseUrl } from "../../../config";
@@ -22,6 +22,8 @@ export default function StaffPage() {
   const [staff, setStaff] = useState<StaffRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
+  const [editMode, setEditMode] = useState<{ isEdit: boolean; id: string | null }>({ isEdit: false, id: null });
+  const [confirmDialog, setConfirmDialog] = useState(false);
 
   const [form, setForm] = useState({
     fullName: "",
@@ -32,13 +34,42 @@ export default function StaffPage() {
 
   const handleDelete = async () => {
     if (!deleteDialog.id) return;
-    
+
     try {
-      await api.delete(`${baseUrl.DELETE}/${deleteDialog.id}`);
+      await api.delete(`${baseUrl.FETCHALLSTAFF}/${deleteDialog.id}`);
       setStaff((prev) => prev.filter((s) => s._id !== deleteDialog.id));
       toast.success("Staff deleted successfully!");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to delete staff");
+    }
+  };
+
+  const handleEdit = (row: StaffRow) => {
+    setForm({
+      fullName: row.fullName,
+      email: row.email,
+      phone: row.phone,
+      password: "",
+    });
+    setEditMode({ isEdit: true, id: row._id! });
+    setOpen(true);
+  };
+
+  const handleUpdate = async () => {
+    if (!editMode.id) return;
+
+    try {
+      const payload = { ...form };
+      if (!payload.password) delete payload.password;
+
+      const response = await api.put(`${baseUrl.FETCHALLSTAFF}/${editMode.id}`, payload);
+      setStaff((prev) => prev.map((s) => (s._id === editMode.id ? response.data.data : s)));
+      toast.success("Staff updated successfully!");
+      setOpen(false);
+      resetForm();
+      setEditMode({ isEdit: false, id: null });
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to update staff");
     }
   };
 
@@ -51,25 +82,35 @@ export default function StaffPage() {
         key: "_id",
         label: "Actions",
         render: (_, row) => (
-          <button
-            onClick={() => setDeleteDialog({ open: true, id: row._id! })}
-            className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-100"
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setDeleteDialog({ open: true, id: row._id! })}
+              className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-3 py-3 text-sm font-medium text-red-600 transition hover:bg-red-100"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => handleEdit(row)}
+              className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-600 transition hover:bg-blue-100"
+            >
+              <Edit className="h-4 w-4" />
+            </button>
+          </div>
         ),
       },
     ],
     []
   );
 
-  const resetForm = () =>
+  const resetForm = () => {
     setForm({
       fullName: "",
       email: "",
       phone: "",
       password: "",
     });
+    setEditMode({ isEdit: false, id: null });
+  };
 
   // 🔥 Fetch all staff from API
   const fetchAllStaff = async () => {
@@ -90,17 +131,23 @@ export default function StaffPage() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setConfirmDialog(true);
+  };
 
-    try {
-      const payload = { ...form };
-      const response = await api.post(baseUrl.STAFF, payload);
-      setStaff((prev) => [response.data.data, ...prev]);
-
-      toast.success("Staff added successfully!");
-      setOpen(false);
-      resetForm();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to add staff");
+  const confirmSubmit = async () => {
+    if (editMode.isEdit) {
+      await handleUpdate();
+    } else {
+      try {
+        const payload = { ...form };
+        const response = await api.post(baseUrl.STAFF, payload);
+        setStaff((prev) => [response.data.data, ...prev]);
+        toast.success("Staff added successfully!");
+        setOpen(false);
+        resetForm();
+      } catch (err: any) {
+        toast.error(err.response?.data?.message || "Failed to add staff");
+      }
     }
   };
 
@@ -108,7 +155,10 @@ export default function StaffPage() {
     <>
       <div className="mb-4 flex items-center justify-end">
         <button
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            resetForm();
+            setOpen(true);
+          }}
           className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-gray-200 transition-all duration-300 hover:ring-gray-300 hover:shadow"
         >
           <Plus className="h-4 w-4" />
@@ -126,9 +176,12 @@ export default function StaffPage() {
 
       <Dialog
         open={open}
-        onClose={() => setOpen(false)}
-        title="Add New Staff"
-        description="Fill staff details to create new staff account."
+        onClose={() => {
+          setOpen(false);
+          resetForm();
+        }}
+        title={editMode.isEdit ? "Edit Staff" : "Add New Staff"}
+        description={editMode.isEdit ? "Update staff member details." : "Fill staff details to create new staff account."}
         footer={
           <div className="flex flex-wrap items-center justify-end gap-3">
             <button
@@ -146,7 +199,7 @@ export default function StaffPage() {
               type="submit"
               form="staff-form"
             >
-              Save Staff
+              {editMode.isEdit ? "Update Staff" : "Save Staff"}
             </button>
           </div>
         }
@@ -197,13 +250,13 @@ export default function StaffPage() {
               Password
               <input
                 type="password"
-                required
+                required={!editMode.isEdit}
                 value={form.password}
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, password: e.target.value }))
                 }
                 className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-gray-300 focus:bg-white"
-                placeholder="Enter password"
+                placeholder={editMode.isEdit ? "Leave blank to keep current" : "Enter password"}
               />
             </label>
           </div>
@@ -217,6 +270,15 @@ export default function StaffPage() {
         title="Delete Staff"
         message="Are you sure you want to delete this staff member? This action cannot be undone."
         confirmText="Delete"
+      />
+
+      <ConfirmDialog
+        open={confirmDialog}
+        onClose={() => setConfirmDialog(false)}
+        onConfirm={confirmSubmit}
+        title={editMode.isEdit ? "Update Staff" : "Add Staff"}
+        message={editMode.isEdit ? "Are you sure you want to update this staff member?" : "Are you sure you want to add this staff member?"}
+        confirmText={editMode.isEdit ? "Update" : "Add"}
       />
     </>
   );
