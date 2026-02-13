@@ -1,33 +1,25 @@
+"use client";
+
 import DataTable, { Column } from "@/components/DataTable";
 import Dialog from "@/components/Dialog";
-import { Plus } from "lucide-react";
-import { useMemo, useState } from "react";
+import { api } from "@/utils/axiosInstance";
+import { Plus,Eye, Edit, Trash2 } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import toast from "react-hot-toast";
+import { baseUrl } from "../../../config";
 
 type StaffRow = {
+  _id?: string;
   fullName: string;
   email: string;
   phone: string;
-  password: string;
+  password?: string;
 };
-
-const initialStaffData: StaffRow[] = [
-  {
-    fullName: "Rahul Sharma",
-    email: "rahul@example.com",
-    phone: "9876543210",
-    password: "******",
-  },
-  {
-    fullName: "Priya Patel",
-    email: "priya@example.com",
-    phone: "9123456780",
-    password: "******",
-  },
-];
 
 export default function StaffPage() {
   const [open, setOpen] = useState(false);
-  const [staff, setStaff] = useState<StaffRow[]>(initialStaffData);
+  const [staff, setStaff] = useState<StaffRow[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
     fullName: "",
@@ -41,6 +33,7 @@ export default function StaffPage() {
       { key: "fullName", label: "Full Name" },
       { key: "email", label: "Email" },
       { key: "phone", label: "Phone Number" },
+      
     ],
     []
   );
@@ -53,16 +46,38 @@ export default function StaffPage() {
       password: "",
     });
 
-  const handleSubmit = (event: React.FormEvent) => {
+  // 🔥 Fetch all staff from API
+  const fetchAllStaff = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get(baseUrl.FETCHALLSTAFF);
+      setStaff(response.data.data);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to fetch staff");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllStaff();
+  }, []);
+
+  // 🔥 Submit new staff to API
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    setStaff((prev) => [
-      { ...form },
-      ...prev,
-    ]);
+    try {
+      const payload = { ...form };
+      const response = await api.post(baseUrl.STAFF, payload);
+      setStaff((prev) => [response.data.data, ...prev]);
 
-    setOpen(false);
-    resetForm();
+      toast.success("Staff added successfully!");
+      setOpen(false);
+      resetForm();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to add staff");
+    }
   };
 
   return (

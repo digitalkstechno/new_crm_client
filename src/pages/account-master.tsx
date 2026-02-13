@@ -1,7 +1,11 @@
 import DataTable, { Column } from "@/components/DataTable";
 import Dialog from "@/components/Dialog";
+import axios from "axios";
 import { Plus } from "lucide-react";
 import { useMemo, useState } from "react";
+import { baseUrl } from "../../config";
+import toast from "react-hot-toast";
+import { api } from "@/utils/axiosInstance";
 
 type Staff = {
   _id: string;
@@ -44,6 +48,7 @@ const sourceOptions = [
 ];
 
 export default function AccountMasterPage() {
+  const Token =localStorage.getItem("token")
   const [open, setOpen] = useState(false);
   const [accounts, setAccounts] =
     useState<AccountRow[]>(initialData);
@@ -62,6 +67,7 @@ export default function AccountMasterPage() {
     sourcebyTypeOfClient: "",
     assignById: "",
   });
+  console.log("🚀 ~ AccountMasterPage ~ form:", form)
 
   const columns: Column<AccountRow>[] = useMemo(
     () => [
@@ -99,29 +105,48 @@ export default function AccountMasterPage() {
       assignById: "",
     });
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
+const handleSubmit = async (event: React.FormEvent) => {
+  event.preventDefault();
 
+  try {
     const selectedStaff = staffList.find(
       (s) => s._id === form.assignById
     );
 
-    setAccounts((prev) => [
-      {
-        companyName: form.companyName,
-        clientName: form.clientName,
-        mobile: form.mobile,
-        email: form.email,
-        website: form.website,
-        sourcebyTypeOfClient: form.sourcebyTypeOfClient,
-        assignBy: selectedStaff,
+    const payload = {
+      companyName: form.companyName,
+      clientName: form.clientName,
+      address: {
+        line1: form.line1,
+        line2: form.line2,
+        cityName: form.cityName,
+        stateName: form.stateName,
+        countryName: form.countryName,
       },
-      ...prev,
-    ]);
+      mobile: form.mobile,
+      email: form.email,
+      website: form.website,
+      sourcebyTypeOfClient: form.sourcebyTypeOfClient,
+      assignBy: selectedStaff?._id || null,
+    };
 
+    const response = await api.post(
+      baseUrl.ACCOUNTMASTER, // change to your API route
+      payload);
+
+    const newAccount = response.data.data;
+    setAccounts((prev) => [newAccount, ...prev]);
+    toast.success("Account created successfully!");
     setOpen(false);
     resetForm();
-  };
+
+  } catch (err: any) {
+    toast.error(
+      err.response?.data?.message || "Failed to create account"
+    );
+  }
+};
+
 
   return (
     <>
@@ -173,7 +198,7 @@ export default function AccountMasterPage() {
         <form
           id="account-form"
           onSubmit={handleSubmit}
-          className="space-y-6"
+          className="space-y-6 text-black"
         >
           {/* Basic Information */}
           <div className="rounded-2xl border border-gray-200 p-5 space-y-4">

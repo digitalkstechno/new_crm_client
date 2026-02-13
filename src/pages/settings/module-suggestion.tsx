@@ -1,7 +1,12 @@
+"use client";
+
 import DataTable, { Column } from "@/components/DataTable";
 import Dialog from "@/components/Dialog";
 import { Plus } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import toast from "react-hot-toast";
+import { api } from "@/utils/axiosInstance"; // your axios instance
+import { baseUrl } from "../../../config"; // add MODEL_SUGGESTION endpoint here
 
 type Category = {
   _id: string;
@@ -9,37 +14,18 @@ type Category = {
 };
 
 type ModelSuggestionRow = {
+  _id?: string;
   name: string;
   modelNo: string;
   rate: string;
   category: Category;
 };
 
-const initialCategories: Category[] = [
-  { _id: "1", name: "General Inquiry" },
-  { _id: "2", name: "Product Support" },
-  { _id: "3", name: "Billing Related" },
-];
-
-const initialData: ModelSuggestionRow[] = [
-  {
-    name: "Smart AC 1.5 Ton",
-    modelNo: "AC1500X",
-    rate: "₹45,000",
-    category: initialCategories[0],
-  },
-  {
-    name: "Inverter Fridge 300L",
-    modelNo: "FR300Z",
-    rate: "₹32,000",
-    category: initialCategories[1],
-  },
-];
-
 export default function ModelSuggestionPage() {
   const [open, setOpen] = useState(false);
-  const [models, setModels] =
-    useState<ModelSuggestionRow[]>(initialData);
+  const [models, setModels] = useState<ModelSuggestionRow[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   const [form, setForm] = useState({
     name: "",
@@ -74,27 +60,54 @@ export default function ModelSuggestionPage() {
       categoryId: "",
     });
 
-  const handleSubmit = (event: React.FormEvent) => {
+  // 🔥 Fetch all categories
+  const fetchCategories = async () => {
+    try {
+      const res = await api.get(baseUrl.INQUIRYCATEGORY); 
+      setCategories(res.data.data);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to fetch categories");
+    }
+  };
+
+  // 🔥 Fetch all model suggestions
+  const fetchModels = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get(baseUrl.MODEL_SUGGESTION)
+      setModels(res.data.data);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to fetch models");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+    fetchModels();
+  }, []);
+
+  // 🔥 Submit new model suggestion
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    const selectedCategory = initialCategories.find(
-      (c) => c._id === form.categoryId
-    );
-
-    if (!selectedCategory) return;
-
-    setModels((prev) => [
-      {
+    try {
+      const payload = {
         name: form.name,
         modelNo: form.modelNo,
         rate: form.rate,
-        category: selectedCategory,
-      },
-      ...prev,
-    ]);
+        category: form.categoryId,
+      };
+      const res = await api.post(baseUrl.MODEL_SUGGESTION, payload);
+      setModels((prev) => [res.data.data, ...prev]);
 
-    setOpen(false);
-    resetForm();
+      toast.success("Model suggestion added successfully!");
+      setOpen(false);
+      resetForm();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to add model");
+    }
   };
 
   return (
@@ -203,7 +216,7 @@ export default function ModelSuggestionPage() {
                 className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-gray-300 focus:bg-white"
               >
                 <option value="">Select Category</option>
-                {initialCategories.map((cat) => (
+                {categories.map((cat) => (
                   <option key={cat._id} value={cat._id}>
                     {cat.name}
                   </option>

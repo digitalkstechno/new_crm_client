@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { Eye, EyeOff, Lock, Mail, Sparkles } from "lucide-react";
 import { Geist } from "next/font/google";
+import { baseUrl } from "../../config";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -28,36 +31,55 @@ export default function LoginPage() {
     }
   }, []);
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    setError("");
-    setSuccess("");
+const handleSubmit = async (event: React.FormEvent) => {
+  event.preventDefault();
 
-    if (!emailRegex.test(email)) {
-      setError("Enter a valid email address.");
-      return;
-    }
+  if (!emailRegex.test(email)) {
+    toast.error("Enter a valid email address.");
+    return;
+  }
 
-    if (password.trim().length < 6) {
-      setError("Password must be at least 6 characters.");
-      return;
-    }
+  if (password.trim().length < 6) {
+    toast.error("Password must be at least 6 characters.");
+    return;
+  }
 
+  try {
     setLoading(true);
 
+    const response = await axios.post(baseUrl.userLogin, {
+      email,
+      password,
+    });
+
+    const data = response.data;
+
+    // ✅ Save token
+    localStorage.setItem("token", data.token);
+
+    // ✅ Remember email
+    if (remember) {
+      localStorage.setItem("rememberEmail", email);
+    } else {
+      localStorage.removeItem("rememberEmail");
+    }
+
+    toast.success("Login successful!");
+
     setTimeout(() => {
-      setLoading(false);
-
-      if (remember) {
-        localStorage.setItem("crm:rememberEmail", email);
-      } else {
-        localStorage.removeItem("crm:rememberEmail");
-      }
-
-      setSuccess("Login successful. Redirecting...");
       router.push("/");
-    }, 1000);
-  };
+    }, 800);
+
+  } catch (err: any) {
+    toast.error(
+      err.response?.data?.message || "Login failed. Try again."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   return (
     <div className={`${geistSans.className} flex min-h-screen items-center justify-center bg-white px-4`}>

@@ -1,57 +1,64 @@
+"use client";
+
 import DataTable, { Column } from "@/components/DataTable";
 import Dialog from "@/components/Dialog";
 import { Plus } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import toast from "react-hot-toast";
+import { api } from "@/utils/axiosInstance"; // axios instance with token
+import { baseUrl } from "../../../config";
 
 type InquiryCategoryRow = {
+  _id?: string;
   name: string;
   createdAt?: string;
 };
 
-const initialData: InquiryCategoryRow[] = [
-  { name: "General Inquiry", createdAt: "2026-02-01" },
-  { name: "Product Support", createdAt: "2026-02-02" },
-  { name: "Billing Related", createdAt: "2026-02-03" },
-];
-
 export default function InquiryCategoryPage() {
   const [open, setOpen] = useState(false);
-  const [categories, setCategories] =
-    useState<InquiryCategoryRow[]>(initialData);
-
-  const [form, setForm] = useState({
-    name: "",
-  });
+  const [categories, setCategories] = useState<InquiryCategoryRow[]>([]);
+  const [form, setForm] = useState({ name: "" });
 
   const columns: Column<InquiryCategoryRow>[] = useMemo(
     () => [
       { key: "name", label: "Category Name" },
-      {
-        key: "createdAt",
-        label: "Created Date",
-      },
+      { key: "createdAt", label: "Created Date" },
     ],
     []
   );
 
-  const resetForm = () =>
-    setForm({
-      name: "",
-    });
+  const resetForm = () => setForm({ name: "" });
 
-  const handleSubmit = (event: React.FormEvent) => {
+  // 🔹 Fetch existing categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await api.get(baseUrl.INQUIRYCATEGORY);
+        setCategories(res.data.data);
+      } catch (err: any) {
+        toast.error(err.response?.data?.message || "Failed to fetch categories");
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  // 🔹 Submit form to API
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    setCategories((prev) => [
-      {
-        name: form.name,
-        createdAt: new Date().toISOString().split("T")[0],
-      },
-      ...prev,
-    ]);
+    try {
+      const payload = { name: form.name };
 
-    setOpen(false);
-    resetForm();
+      const res = await api.post(baseUrl.INQUIRYCATEGORY, payload);
+      setCategories((prev) => [res.data.data, ...prev]);
+
+      toast.success("Category created successfully!");
+      setOpen(false);
+      resetForm();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to create category");
+    }
   };
 
   return (
@@ -76,7 +83,10 @@ export default function InquiryCategoryPage() {
 
       <Dialog
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={() => {
+          setOpen(false);
+          resetForm();
+        }}
         title="Add Inquiry Category"
         description="Create a new inquiry category."
         footer={

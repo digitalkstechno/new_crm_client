@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search , Eye, Edit, Trash2 } from "lucide-react";
 
 export type Column<T, K extends keyof T = keyof T> = {
   key: K;
