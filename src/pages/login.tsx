@@ -47,7 +47,7 @@ const handleSubmit = async (event: React.FormEvent) => {
   try {
     setLoading(true);
 
-    const response = await axios.post(baseUrl.userLogin, {
+    const response = await axios.post(baseUrl.LOGIN, {
       email,
       password,
     });

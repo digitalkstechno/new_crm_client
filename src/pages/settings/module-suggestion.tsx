@@ -120,7 +120,15 @@ export default function ModelSuggestionPage() {
         category: form.categoryId,
       };
       const res = await api.put(`${baseUrl.MODEL_SUGGESTION}/${editMode.id}`, payload);
-      setModels((prev) => prev.map((m) => (m._id === editMode.id ? res.data.data : m)));
+      
+      // Populate category object from local state
+      const selectedCategory = categories.find(c => c._id === form.categoryId);
+      const updatedModel = {
+        ...res.data.data,
+        category: selectedCategory || res.data.data.category
+      };
+      
+      setModels((prev) => prev.map((m) => (m._id === editMode.id ? updatedModel : m)));
       toast.success("Model updated successfully!");
       setOpen(false);
       resetForm();
@@ -174,7 +182,15 @@ export default function ModelSuggestionPage() {
           category: form.categoryId,
         };
         const res = await api.post(baseUrl.MODEL_SUGGESTION, payload);
-        setModels((prev) => [res.data.data, ...prev]);
+        
+        // Populate category object from local state
+        const selectedCategory = categories.find(c => c._id === form.categoryId);
+        const newModel = {
+          ...res.data.data,
+          category: selectedCategory || res.data.data.category
+        };
+        
+        setModels((prev) => [newModel, ...prev]);
         toast.success("Model suggestion added successfully!");
         setOpen(false);
         resetForm();

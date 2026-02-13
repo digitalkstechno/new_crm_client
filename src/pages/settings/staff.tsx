@@ -36,7 +36,7 @@ export default function StaffPage() {
     if (!deleteDialog.id) return;
 
     try {
-      await api.delete(`${baseUrl.FETCHALLSTAFF}/${deleteDialog.id}`);
+      await api.delete(`${baseUrl.STAFF}/${deleteDialog.id}`);
       setStaff((prev) => prev.filter((s) => s._id !== deleteDialog.id));
       toast.success("Staff deleted successfully!");
     } catch (err: any) {
@@ -62,7 +62,7 @@ export default function StaffPage() {
       const payload = { ...form };
       if (!payload.password) delete payload.password;
 
-      const response = await api.put(`${baseUrl.FETCHALLSTAFF}/${editMode.id}`, payload);
+      const response = await api.put(`${baseUrl.STAFF}/${editMode.id}`, payload);
       setStaff((prev) => prev.map((s) => (s._id === editMode.id ? response.data.data : s)));
       toast.success("Staff updated successfully!");
       setOpen(false);
@@ -116,7 +116,7 @@ export default function StaffPage() {
   const fetchAllStaff = async () => {
     setLoading(true);
     try {
-      const response = await api.get(baseUrl.FETCHALLSTAFF);
+      const response = await api.get(baseUrl.STAFF);
       setStaff(response.data.data);
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to fetch staff");
