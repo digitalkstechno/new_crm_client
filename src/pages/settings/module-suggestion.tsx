@@ -2,11 +2,12 @@
 
 import DataTable, { Column } from "@/components/DataTable";
 import Dialog from "@/components/Dialog";
-import { Plus } from "lucide-react";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import { Plus, Edit, Trash2 } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { api } from "@/utils/axiosInstance"; // your axios instance
-import { baseUrl } from "../../../config"; // add MODEL_SUGGESTION endpoint here
+import { api } from "@/utils/axiosInstance";
+import { baseUrl } from "../../../config";
 
 type Category = {
   _id: string;
@@ -26,6 +27,9 @@ export default function ModelSuggestionPage() {
   const [models, setModels] = useState<ModelSuggestionRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
+  const [editMode, setEditMode] = useState<{ isEdit: boolean; id: string | null }>({ isEdit: false, id: null });
+  const [confirmDialog, setConfirmDialog] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
@@ -48,17 +52,82 @@ export default function ModelSuggestionPage() {
         label: "Rate",
         className: "font-semibold",
       },
+      {
+        key: "_id",
+        label: "Actions",
+        render: (_, row) => (
+          <div className="flex gap-2">
+            <button
+              onClick={() => setDeleteDialog({ open: true, id: row._id! })}
+              className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-3 py-3 text-sm font-medium text-red-600 transition hover:bg-red-100"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => handleEdit(row)}
+              className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-3 py-3 text-sm font-medium text-blue-600 transition hover:bg-blue-100"
+            >
+              <Edit className="h-4 w-4" />
+            </button>
+          </div>
+        ),
+      },
     ],
     []
   );
 
-  const resetForm = () =>
+  const resetForm = () => {
     setForm({
       name: "",
       modelNo: "",
       rate: "",
       categoryId: "",
     });
+    setEditMode({ isEdit: false, id: null });
+  };
+
+  const handleEdit = (row: ModelSuggestionRow) => {
+    setForm({
+      name: row.name,
+      modelNo: row.modelNo,
+      rate: row.rate,
+      categoryId: row.category._id,
+    });
+    setEditMode({ isEdit: true, id: row._id! });
+    setOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteDialog.id) return;
+
+    try {
+      await api.delete(`${baseUrl.MODEL_SUGGESTION}/${deleteDialog.id}`);
+      setModels((prev) => prev.filter((m) => m._id !== deleteDialog.id));
+      toast.success("Model deleted successfully!");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to delete model");
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!editMode.id) return;
+
+    try {
+      const payload = {
+        name: form.name,
+        modelNo: form.modelNo,
+        rate: form.rate,
+        category: form.categoryId,
+      };
+      const res = await api.put(`${baseUrl.MODEL_SUGGESTION}/${editMode.id}`, payload);
+      setModels((prev) => prev.map((m) => (m._id === editMode.id ? res.data.data : m)));
+      toast.success("Model updated successfully!");
+      setOpen(false);
+      resetForm();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to update model");
+    }
+  };
 
   // 🔥 Fetch all categories
   const fetchCategories = async () => {
@@ -88,25 +157,30 @@ export default function ModelSuggestionPage() {
     fetchModels();
   }, []);
 
-  // 🔥 Submit new model suggestion
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setConfirmDialog(true);
+  };
 
-    try {
-      const payload = {
-        name: form.name,
-        modelNo: form.modelNo,
-        rate: form.rate,
-        category: form.categoryId,
-      };
-      const res = await api.post(baseUrl.MODEL_SUGGESTION, payload);
-      setModels((prev) => [res.data.data, ...prev]);
-
-      toast.success("Model suggestion added successfully!");
-      setOpen(false);
-      resetForm();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to add model");
+  const confirmSubmit = async () => {
+    if (editMode.isEdit) {
+      await handleUpdate();
+    } else {
+      try {
+        const payload = {
+          name: form.name,
+          modelNo: form.modelNo,
+          rate: form.rate,
+          category: form.categoryId,
+        };
+        const res = await api.post(baseUrl.MODEL_SUGGESTION, payload);
+        setModels((prev) => [res.data.data, ...prev]);
+        toast.success("Model suggestion added successfully!");
+        setOpen(false);
+        resetForm();
+      } catch (err: any) {
+        toast.error(err.response?.data?.message || "Failed to add model");
+      }
     }
   };
 
@@ -114,7 +188,10 @@ export default function ModelSuggestionPage() {
     <>
       <div className="mb-4 flex items-center justify-end">
         <button
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            resetForm();
+            setOpen(true);
+          }}
           className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-gray-200 transition-all duration-300 hover:ring-gray-300 hover:shadow"
         >
           <Plus className="h-4 w-4" />
@@ -132,9 +209,12 @@ export default function ModelSuggestionPage() {
 
       <Dialog
         open={open}
-        onClose={() => setOpen(false)}
-        title="Add Model Suggestion"
-        description="Create a new model suggestion."
+        onClose={() => {
+          setOpen(false);
+          resetForm();
+        }}
+        title={editMode.isEdit ? "Edit Model Suggestion" : "Add Model Suggestion"}
+        description={editMode.isEdit ? "Update model suggestion." : "Create a new model suggestion."}
         footer={
           <div className="flex flex-wrap items-center justify-end gap-3">
             <button
@@ -152,7 +232,7 @@ export default function ModelSuggestionPage() {
               type="submit"
               form="model-form"
             >
-              Save Model
+              {editMode.isEdit ? "Update Model" : "Save Model"}
             </button>
           </div>
         }
@@ -226,6 +306,24 @@ export default function ModelSuggestionPage() {
           </div>
         </form>
       </Dialog>
+
+      <ConfirmDialog
+        open={deleteDialog.open}
+        onClose={() => setDeleteDialog({ open: false, id: null })}
+        onConfirm={handleDelete}
+        title="Delete Model"
+        message="Are you sure you want to delete this model? This action cannot be undone."
+        confirmText="Delete"
+      />
+
+      <ConfirmDialog
+        open={confirmDialog}
+        onClose={() => setConfirmDialog(false)}
+        onConfirm={confirmSubmit}
+        title={editMode.isEdit ? "Update Model" : "Add Model"}
+        message={editMode.isEdit ? "Are you sure you want to update this model?" : "Are you sure you want to add this model?"}
+        confirmText={editMode.isEdit ? "Update" : "Add"}
+      />
     </>
   );
 }
