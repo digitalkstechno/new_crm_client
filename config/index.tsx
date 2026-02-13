@@ -2,7 +2,6 @@ let API = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export const baseUrl = {
     userLogin: `${API}staff/login`,
-    // CREATE-ACCOUNTMASTER:`${API}`
     ACCOUNTMASTER: `${API}accountmaster`,
 
     // STAFF
@@ -14,4 +13,8 @@ export const baseUrl = {
 
     // model
     MODEL_SUGGESTION: `${API}model`,
+    MODEL_BY_CATEGORY: (categoryId: string) => `${API}model/category/${categoryId}`,
+    
+    // lead
+    LEAD: `${API}lead`,
 }

@@ -1,11 +1,12 @@
 import DataTable, { Column } from "@/components/DataTable";
 import Dialog from "@/components/Dialog";
 import axios from "axios";
-import { Plus } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Plus, ArrowRight } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
 import { baseUrl } from "../../config";
 import toast from "react-hot-toast";
 import { api } from "@/utils/axiosInstance";
+import { useRouter } from "next/router";
 
 type Staff = {
   _id: string;
@@ -13,6 +14,7 @@ type Staff = {
 };
 
 type AccountRow = {
+  _id?: string;
   companyName: string;
   clientName: string;
   mobile: string;
@@ -48,10 +50,22 @@ const sourceOptions = [
 ];
 
 export default function AccountMasterPage() {
-  const Token =localStorage.getItem("token")
+  const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [accounts, setAccounts] =
-    useState<AccountRow[]>(initialData);
+  const [accounts, setAccounts] = useState<AccountRow[]>([]);
+
+  useEffect(() => {
+    fetchAccounts();
+  }, []);
+
+  const fetchAccounts = async () => {
+    try {
+      const response = await api.get(`${baseUrl.ACCOUNTMASTER}?page=1&limit=100`);
+      setAccounts(response.data.data || []);
+    } catch (error) {
+      toast.error("Failed to fetch accounts");
+    }
+  };
 
   const [form, setForm] = useState({
     companyName: "",
@@ -85,8 +99,21 @@ export default function AccountMasterPage() {
         render: (value) =>
           value ? (value as Staff).fullName : "-",
       },
+      {
+        key: "companyName" as keyof AccountRow,
+        label: "Action",
+        render: (value: any, row: AccountRow) => (
+          <button
+            onClick={() => router.push(`/convert-to-lead?accountId=${row._id}`)}
+            className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800"
+          >
+            Convert to Lead
+            <ArrowRight className="h-3 w-3" />
+          </button>
+        ),
+      },
     ],
-    []
+    [router]
   );
 
   const resetForm = () =>
@@ -131,11 +158,11 @@ const handleSubmit = async (event: React.FormEvent) => {
     };
 
     const response = await api.post(
-      baseUrl.ACCOUNTMASTER, // change to your API route
+      baseUrl.ACCOUNTMASTER,
       payload);
 
     const newAccount = response.data.data;
-    setAccounts((prev) => [newAccount, ...prev]);
+    fetchAccounts();
     toast.success("Account created successfully!");
     setOpen(false);
     resetForm();
