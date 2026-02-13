@@ -8,6 +8,7 @@ export const baseUrl = {
     // STAFF
     STAFF:`${API}staff/create`,
     FETCHALLSTAFF:`${API}staff`,
+    DELETE:`${API}staff`,
 
     INQUIRYCATEGORY :`${API}inquirycategory`,
 

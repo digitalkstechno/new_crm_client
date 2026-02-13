@@ -2,8 +2,9 @@
 
 import DataTable, { Column } from "@/components/DataTable";
 import Dialog from "@/components/Dialog";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import { api } from "@/utils/axiosInstance";
-import { Plus,Eye, Edit, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { baseUrl } from "../../../config";
@@ -20,6 +21,7 @@ export default function StaffPage() {
   const [open, setOpen] = useState(false);
   const [staff, setStaff] = useState<StaffRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
 
   const [form, setForm] = useState({
     fullName: "",
@@ -28,12 +30,35 @@ export default function StaffPage() {
     password: "",
   });
 
+  const handleDelete = async () => {
+    if (!deleteDialog.id) return;
+    
+    try {
+      await api.delete(`${baseUrl.DELETE}/${deleteDialog.id}`);
+      setStaff((prev) => prev.filter((s) => s._id !== deleteDialog.id));
+      toast.success("Staff deleted successfully!");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to delete staff");
+    }
+  };
+
   const columns: Column<StaffRow>[] = useMemo(
     () => [
       { key: "fullName", label: "Full Name" },
       { key: "email", label: "Email" },
       { key: "phone", label: "Phone Number" },
-      
+      {
+        key: "_id",
+        label: "Actions",
+        render: (_, row) => (
+          <button
+            onClick={() => setDeleteDialog({ open: true, id: row._id! })}
+            className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-100"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        ),
+      },
     ],
     []
   );
@@ -63,7 +88,6 @@ export default function StaffPage() {
     fetchAllStaff();
   }, []);
 
-  // 🔥 Submit new staff to API
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -185,6 +209,15 @@ export default function StaffPage() {
           </div>
         </form>
       </Dialog>
+
+      <ConfirmDialog
+        open={deleteDialog.open}
+        onClose={() => setDeleteDialog({ open: false, id: null })}
+        onConfirm={handleDelete}
+        title="Delete Staff"
+        message="Are you sure you want to delete this staff member? This action cannot be undone."
+        confirmText="Delete"
+      />
     </>
   );
 }
