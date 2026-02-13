@@ -74,10 +74,11 @@ export default function LeadDetailsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (id) fetchLead();
+    if (id && typeof id === 'string') fetchLead();
   }, [id]);
 
   const fetchLead = async () => {
+    if (!id || typeof id !== 'string') return;
     try {
       const response = await api.get(`${baseUrl.LEAD}/${id}`);
       setLead(response.data.data);
@@ -88,7 +89,7 @@ export default function LeadDetailsPage() {
     }
   };
 
-  if (loading) {
+  if (router.isFallback || loading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-gray-500">Loading...</div>
@@ -342,4 +343,17 @@ export default function LeadDetailsPage() {
       )}
     </div>
   );
+}
+
+export async function getStaticPaths() {
+  return {
+    paths: [],
+    fallback: 'blocking',
+  };
+}
+
+export async function getStaticProps() {
+  return {
+    props: {},
+  };
 }
