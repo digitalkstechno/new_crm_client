@@ -24,6 +24,10 @@ export default function StaffPage() {
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
   const [editMode, setEditMode] = useState<{ isEdit: boolean; id: string | null }>({ isEdit: false, id: null });
   const [confirmDialog, setConfirmDialog] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [search, setSearch] = useState("");
 
   const [form, setForm] = useState({
     fullName: "",
@@ -116,8 +120,10 @@ export default function StaffPage() {
   const fetchAllStaff = async () => {
     setLoading(true);
     try {
-      const response = await api.get(baseUrl.STAFF);
+      const response = await api.get(`${baseUrl.STAFF}?page=${page}&limit=10&search=${search}`);
       setStaff(response.data.data);
+      setTotalPages(response.data.pagination?.totalPages || 1);
+      setTotalRecords(response.data.pagination?.totalRecords || 0);
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to fetch staff");
     } finally {
@@ -127,7 +133,7 @@ export default function StaffPage() {
 
   useEffect(() => {
     fetchAllStaff();
-  }, []);
+  }, [page, search]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -172,6 +178,11 @@ export default function StaffPage() {
         pageSize={10}
         searchPlaceholder="Search staff name, email, phone..."
         columns={columns}
+        currentPage={page}
+        totalPages={totalPages}
+        totalRecords={totalRecords}
+        onPageChange={setPage}
+        onSearch={setSearch}
       />
 
       <Dialog

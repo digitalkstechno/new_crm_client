@@ -10,6 +10,9 @@ export const baseUrl = {
     // Inquiry
     INQUIRYCATEGORY: `${API}inquirycategory`,
 
+    // Customization Type
+    CUSTOMIZATIONTYPE: `${API}customizationtype`,
+
     // Model
     MODEL_SUGGESTION: `${API}model`,
     MODEL_BY_CATEGORY: (categoryId: string) => `${API}model/category/${categoryId}`,

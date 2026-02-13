@@ -19,6 +19,7 @@ type ModelSuggestionRow = {
   name: string;
   modelNo: string;
   rate: string;
+  gst: number;
   category: Category;
 };
 
@@ -30,11 +31,16 @@ export default function ModelSuggestionPage() {
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
   const [editMode, setEditMode] = useState<{ isEdit: boolean; id: string | null }>({ isEdit: false, id: null });
   const [confirmDialog, setConfirmDialog] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [search, setSearch] = useState("");
 
   const [form, setForm] = useState({
     name: "",
     modelNo: "",
     rate: "",
+    gst: "18",
     categoryId: "",
   });
 
@@ -51,6 +57,11 @@ export default function ModelSuggestionPage() {
         key: "rate",
         label: "Rate",
         className: "font-semibold",
+      },
+      {
+        key: "gst",
+        label: "GST %",
+        render: (value) => `${value}%`,
       },
       {
         key: "_id",
@@ -81,6 +92,7 @@ export default function ModelSuggestionPage() {
       name: "",
       modelNo: "",
       rate: "",
+      gst: "18",
       categoryId: "",
     });
     setEditMode({ isEdit: false, id: null });
@@ -91,6 +103,7 @@ export default function ModelSuggestionPage() {
       name: row.name,
       modelNo: row.modelNo,
       rate: row.rate,
+      gst: String(row.gst || 18),
       categoryId: row.category._id,
     });
     setEditMode({ isEdit: true, id: row._id! });
@@ -117,6 +130,7 @@ export default function ModelSuggestionPage() {
         name: form.name,
         modelNo: form.modelNo,
         rate: form.rate,
+        gst: Number(form.gst),
         category: form.categoryId,
       };
       const res = await api.put(`${baseUrl.MODEL_SUGGESTION}/${editMode.id}`, payload);
@@ -151,8 +165,10 @@ export default function ModelSuggestionPage() {
   const fetchModels = async () => {
     setLoading(true);
     try {
-      const res = await api.get(baseUrl.MODEL_SUGGESTION)
+      const res = await api.get(`${baseUrl.MODEL_SUGGESTION}?page=${page}&limit=10&search=${search}`);
       setModels(res.data.data);
+      setTotalPages(res.data.pagination?.totalPages || 1);
+      setTotalRecords(res.data.pagination?.totalRecords || 0);
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to fetch models");
     } finally {
@@ -163,7 +179,7 @@ export default function ModelSuggestionPage() {
   useEffect(() => {
     fetchCategories();
     fetchModels();
-  }, []);
+  }, [page, search]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -179,6 +195,7 @@ export default function ModelSuggestionPage() {
           name: form.name,
           modelNo: form.modelNo,
           rate: form.rate,
+          gst: Number(form.gst),
           category: form.categoryId,
         };
         const res = await api.post(baseUrl.MODEL_SUGGESTION, payload);
@@ -221,6 +238,11 @@ export default function ModelSuggestionPage() {
         pageSize={10}
         searchPlaceholder="Search model name or model number..."
         columns={columns}
+        currentPage={page}
+        totalPages={totalPages}
+        totalRecords={totalRecords}
+        onPageChange={setPage}
+        onSearch={setSearch}
       />
 
       <Dialog
@@ -295,6 +317,22 @@ export default function ModelSuggestionPage() {
                 }
                 className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-gray-300 focus:bg-white"
                 placeholder="₹25,000"
+              />
+            </label>
+
+            <label className="block text-sm text-gray-600">
+              GST %
+              <input
+                required
+                type="number"
+                min="0"
+                max="100"
+                value={form.gst}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, gst: e.target.value }))
+                }
+                className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-gray-300 focus:bg-white"
+                placeholder="18"
               />
             </label>
 

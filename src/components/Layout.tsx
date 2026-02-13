@@ -10,14 +10,18 @@ type Props = {
 export default function Layout({ children }: Props) {
   const [collapsed, setCollapsed] = useState(false);
   return (
-    <div className="flex min-h-screen bg-white">
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
-      <main className="flex-1 p-4">
-        <div className="mx-auto space-y-4">
+    <div className="flex h-screen overflow-hidden bg-white">
+      <div className="flex-shrink-0">
+        <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
+      </div>
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <div className="flex-shrink-0 p-4 pb-0">
           <Navbar />
-          {children}
         </div>
-      </main>
+        <main className="flex-1 overflow-y-auto p-4">
+          {children}
+        </main>
+      </div>
        <Toaster
         position="top-right"
         toastOptions={{

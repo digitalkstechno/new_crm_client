@@ -14,13 +14,14 @@ type ModelSuggestion = {
   _id: string;
   name: string;
   rate: string;
+  gst: number;
 };
 
 type ProductRow = {
   id: string;
   inquiryCategoryId: string;
   modelSuggestionId: string;
-  customizationType: string;
+  customizationTypeId: string;
   personalization: "Yes" | "No";
   location?: string;
   name?: string;
@@ -28,7 +29,6 @@ type ProductRow = {
   qty: number;
   rate: number;
   gst: number;
-  shippingCharge: number;
   total: number;
 };
 
@@ -56,7 +56,11 @@ export default function ConvertToLeadPage() {
   const [leadDate, setLeadDate] = useState(getTodayDate());
   const [clientType, setClientType] = useState("");
   const [deliveryDate, setDeliveryDate] = useState("");
+  const [shippingCharges, setShippingCharges] = useState("");
+  const [budgetFrom, setBudgetFrom] = useState("");
+  const [budgetTo, setBudgetTo] = useState("");
   const [inquiryCategories, setInquiryCategories] = useState<InquiryCategory[]>([]);
+  const [customizationTypes, setCustomizationTypes] = useState<InquiryCategory[]>([]);
   const [allModelSuggestions, setAllModelSuggestions] = useState<{ [key: string]: ModelSuggestion[] }>({});
   const [errors, setErrors] = useState<string[]>([]);
   const [products, setProducts] = useState<ProductRow[]>([
@@ -64,20 +68,20 @@ export default function ConvertToLeadPage() {
       id: Date.now().toString(),
       inquiryCategoryId: "",
       modelSuggestionId: "",
-      customizationType: "",
+      customizationTypeId: "",
       personalization: "No",
       name: "",
       description: "",
       qty: 1,
       rate: 0,
       gst: 0,
-      shippingCharge: 0,
       total: 0,
     },
   ]);
 
   useEffect(() => {
     fetchInquiryCategories();
+    fetchCustomizationTypes();
     if (accountId && accountId !== 'undefined') {
       fetchAccountData();
     }
@@ -102,6 +106,15 @@ export default function ConvertToLeadPage() {
     }
   };
 
+  const fetchCustomizationTypes = async () => {
+    try {
+      const response = await api.get(baseUrl.CUSTOMIZATIONTYPE);
+      setCustomizationTypes(response.data.data || []);
+    } catch (error) {
+      toast.error("Failed to fetch customization types");
+    }
+  };
+
   const fetchModelsByCategory = async (categoryId: string, productId: string) => {
     try {
       if (allModelSuggestions[categoryId]) {
@@ -117,7 +130,13 @@ export default function ConvertToLeadPage() {
   const calculateTotal = (row: ProductRow) => {
     const subtotal = row.qty * row.rate;
     const gstAmount = (subtotal * row.gst) / 100;
-    return subtotal + gstAmount + row.shippingCharge;
+    return subtotal + gstAmount;
+  };
+
+  const calculateGrandTotal = () => {
+    const productsTotal = products.reduce((sum, p) => sum + p.total, 0);
+    const shipping = parseFloat(shippingCharges) || 0;
+    return productsTotal + shipping;
   };
 
   const updateProduct = (id: string, field: keyof ProductRow, value: any) => {
@@ -129,6 +148,7 @@ export default function ConvertToLeadPage() {
         if (field === "inquiryCategoryId" && value) {
           updated.modelSuggestionId = "";
           updated.rate = 0;
+          updated.gst = 0;
           fetchModelsByCategory(value, id);
         }
         
@@ -137,16 +157,27 @@ export default function ConvertToLeadPage() {
           const selectedModel = models.find(m => m._id === value);
           if (selectedModel) {
             updated.rate = Number(selectedModel.rate);
+            updated.gst = Number(selectedModel.gst || 0);
+            updated.total = calculateTotal(updated);
           }
         }
         
-        if (["qty", "rate", "gst", "shippingCharge"].includes(field)) {
+        if (["qty", "rate", "gst"].includes(field)) {
           updated.total = calculateTotal(updated);
         }
         return updated;
       })
     );
   };
+
+  useEffect(() => {
+    setProducts((prev) =>
+      prev.map((p) => ({
+        ...p,
+        total: calculateTotal(p),
+      }))
+    );
+  }, []);
 
   const addProduct = () => {
     setProducts((prev) => [
@@ -155,14 +186,13 @@ export default function ConvertToLeadPage() {
         id: Date.now().toString(),
         inquiryCategoryId: "",
         modelSuggestionId: "",
-        customizationType: "",
+        customizationTypeId: "",
         personalization: "No",
         name: "",
         description: "",
         qty: 1,
         rate: 0,
         gst: 0,
-        shippingCharge: 0,
         total: 0,
       },
     ]);
@@ -185,7 +215,7 @@ export default function ConvertToLeadPage() {
     products.forEach((p, index) => {
       if (!p.inquiryCategoryId) validationErrors.push(`Product ${index + 1}: Inquiry Category is required`);
       if (!p.modelSuggestionId) validationErrors.push(`Product ${index + 1}: Model Suggestion is required`);
-      if (!p.customizationType) validationErrors.push(`Product ${index + 1}: Customization Type is required`);
+      if (!p.customizationTypeId) validationErrors.push(`Product ${index + 1}: Customization Type is required`);
       if (!p.description) validationErrors.push(`Product ${index + 1}: Description is required`);
       if (p.qty <= 0) validationErrors.push(`Product ${index + 1}: Quantity must be greater than 0`);
     });
@@ -205,9 +235,8 @@ export default function ConvertToLeadPage() {
         qty: p.qty.toString(),
         rate: p.rate.toString(),
         gst: p.gst.toString(),
-        shippingCharges: p.shippingCharge.toString(),
         total: p.total.toString(),
-        customizationType: p.customizationType,
+        customizationType: p.customizationTypeId,
         personalization: {
           isPersonalized: p.personalization === "Yes",
           location: p.personalization === "Yes" ? p.location : undefined,
@@ -216,12 +245,17 @@ export default function ConvertToLeadPage() {
         },
       }));
       
-      const totalAmount = products.reduce((sum, p) => sum + p.total, 0);
+      const totalAmount = calculateGrandTotal();
       
       const payload = {
         leadDate,
         clientType,
         deliveryDate,
+        shippingCharges,
+        budget: {
+          from: budgetFrom,
+          to: budgetTo,
+        },
         accountMaster: accountId,
         items,
         totalAmount: totalAmount.toString(),
@@ -240,19 +274,6 @@ export default function ConvertToLeadPage() {
       <div className="rounded-2xl bg-white p-6 shadow-sm">
         <h1 className="mb-6 text-xl font-semibold text-gray-900">Convert to Lead</h1>
 
-        {/* Account Info */}
-        {/* {accountData && (
-          <div className="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-4">
-            <h3 className="mb-2 text-sm font-semibold text-gray-700">Account Information</h3>
-            <div className="grid gap-2 text-sm">
-              <p><span className="font-medium">Company:</span> {accountData.companyName}</p>
-              <p><span className="font-medium">Client:</span> {accountData.clientName}</p>
-              <p><span className="font-medium">Email:</span> {accountData.email}</p>
-              <p><span className="font-medium">Mobile:</span> {accountData.mobile}</p>
-            </div>
-          </div>
-        )} */}
-
         {/* Validation Errors */}
         {errors.length > 0 && (
           <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4">
@@ -265,8 +286,8 @@ export default function ConvertToLeadPage() {
           </div>
         )}
 
-        {/* Lead Date & Client Type */}
-        <div className="mb-6 grid gap-4 sm:grid-cols-2">
+        {/* Lead Date, Client Type, Delivery Date, Shipping, Budget */}
+        <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <label className="mb-1 block text-xs font-medium text-gray-700">Lead Date</label>
             <input
@@ -277,16 +298,55 @@ export default function ConvertToLeadPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-700">Client Type</label>
+            <label className="mb-1 block text-xs font-medium text-gray-700">Lead Type</label>
             <select
               value={clientType}
               onChange={(e) => setClientType(e.target.value)}
               className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none focus:border-gray-300 focus:bg-white"
             >
-              <option value="">Select Client Type</option>
+              <option value="">Select Lead Type</option>
               <option value="New">New</option>
               <option value="Existing">Existing</option>
             </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-gray-700">Delivery Date</label>
+            <input
+              type="date"
+              value={deliveryDate}
+              onChange={(e) => setDeliveryDate(e.target.value)}
+              className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none focus:border-gray-300 focus:bg-white"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-gray-700">Shipping Charges (₹)</label>
+            <input
+              type="number"
+              value={shippingCharges}
+              onChange={(e) => setShippingCharges(e.target.value)}
+              className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none focus:border-gray-300 focus:bg-white"
+              placeholder="0"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-gray-700">Budget From (₹)</label>
+            <input
+              type="number"
+              value={budgetFrom}
+              onChange={(e) => setBudgetFrom(e.target.value)}
+              className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none focus:border-gray-300 focus:bg-white"
+              placeholder="0"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-gray-700">Budget To (₹)</label>
+            <input
+              type="number"
+              value={budgetTo}
+              onChange={(e) => setBudgetTo(e.target.value)}
+              className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none focus:border-gray-300 focus:bg-white"
+              placeholder="0"
+            />
           </div>
         </div>
 
@@ -350,13 +410,13 @@ export default function ConvertToLeadPage() {
                   <div>
                     <label className="mb-1 block text-xs text-gray-600">Customization Type</label>
                     <select
-                      value={product.customizationType}
-                      onChange={(e) => updateProduct(product.id, "customizationType", e.target.value)}
+                      value={product.customizationTypeId}
+                      onChange={(e) => updateProduct(product.id, "customizationTypeId", e.target.value)}
                       className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm outline-none"
                     >
                       <option value="">Select</option>
                       {customizationTypes.map((type) => (
-                        <option key={type} value={type}>{type}</option>
+                        <option key={type._id} value={type._id}>{type.name}</option>
                       ))}
                     </select>
                   </div>
@@ -419,7 +479,6 @@ export default function ConvertToLeadPage() {
                       onChange={(e) => updateProduct(product.id, "rate", Number(e.target.value))}
                       onFocus={(e) => e.target.select()}
                       className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm outline-none"
-                      readOnly
                     />
                   </div>
 
@@ -438,20 +497,6 @@ export default function ConvertToLeadPage() {
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs text-gray-600">Shipping (₹)</label>
-                    <input
-                      type="number"
-                      value={product.shippingCharge}
-                      onChange={(e) => {
-                        const value = e.target.value === '' ? 0 : parseFloat(e.target.value) || 0;
-                        updateProduct(product.id, "shippingCharge", value);
-                      }}
-                      onFocus={(e) => e.target.select()}
-                      className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm outline-none"
-                    />
-                  </div>
-
-                  <div>
                     <label className="mb-1 block text-xs text-gray-600">Total</label>
                     <div className="flex h-[34px] items-center rounded-lg border border-gray-300 bg-gray-100 px-2 text-sm font-semibold text-gray-900">
                       ₹{product.total.toFixed(2)}
@@ -463,24 +508,29 @@ export default function ConvertToLeadPage() {
           </div>
         </div>
 
-        {/* Delivery Date */}
-        <div className="mb-6">
-          <label className="mb-1 block text-xs font-medium text-gray-700">Delivery Date</label>
-          <input
-            type="date"
-            value={deliveryDate}
-            onChange={(e) => setDeliveryDate(e.target.value)}
-            className="w-full max-w-sm rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none focus:border-gray-300 focus:bg-white"
-          />
-        </div>
-
         {/* Total Amount */}
         <div className="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-gray-700">Total Amount:</span>
-            <span className="text-lg font-bold text-gray-900">
-              ₹{products.reduce((sum, p) => sum + p.total, 0).toFixed(2)}
-            </span>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-700">Products Total:</span>
+              <span className="font-semibold text-gray-900">
+                ₹{products.reduce((sum, p) => sum + p.total, 0).toFixed(2)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-700">Shipping Charges:</span>
+              <span className="font-semibold text-gray-900">
+                ₹{(parseFloat(shippingCharges) || 0).toFixed(2)}
+              </span>
+            </div>
+            <div className="border-t border-gray-300 pt-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-gray-700">Grand Total:</span>
+                <span className="text-lg font-bold text-green-600">
+                  ₹{calculateGrandTotal().toFixed(2)}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 

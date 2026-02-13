@@ -9,15 +9,15 @@ import toast from "react-hot-toast";
 import { api } from "@/utils/axiosInstance";
 import { baseUrl } from "../../../config";
 
-type InquiryCategoryRow = {
+type CustomizationTypeRow = {
   _id?: string;
   name: string;
   createdAt?: string;
 };
 
-export default function InquiryCategoryPage() {
+export default function CustomizationTypePage() {
   const [open, setOpen] = useState(false);
-  const [categories, setCategories] = useState<InquiryCategoryRow[]>([]);
+  const [customizationTypes, setCustomizationTypes] = useState<CustomizationTypeRow[]>([]);
   const [form, setForm] = useState({ name: "" });
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
   const [editMode, setEditMode] = useState<{ isEdit: boolean; id: string | null }>({ isEdit: false, id: null });
@@ -27,9 +27,9 @@ export default function InquiryCategoryPage() {
   const [totalRecords, setTotalRecords] = useState(0);
   const [search, setSearch] = useState("");
 
-  const columns: Column<InquiryCategoryRow>[] = useMemo(
+  const columns: Column<CustomizationTypeRow>[] = useMemo(
     () => [
-      { key: "name", label: "Category Name" },
+      { key: "name", label: "Customization Type" },
       { 
         key: "createdAt", 
         label: "Created Date",
@@ -71,7 +71,7 @@ export default function InquiryCategoryPage() {
     setEditMode({ isEdit: false, id: null });
   };
 
-  const handleEdit = (row: InquiryCategoryRow) => {
+  const handleEdit = (row: CustomizationTypeRow) => {
     setForm({ name: row.name });
     setEditMode({ isEdit: true, id: row._id! });
     setOpen(true);
@@ -81,11 +81,11 @@ export default function InquiryCategoryPage() {
     if (!deleteDialog.id) return;
 
     try {
-      await api.delete(`${baseUrl.INQUIRYCATEGORY}/${deleteDialog.id}`);
-      setCategories((prev) => prev.filter((c) => c._id !== deleteDialog.id));
-      toast.success("Category deleted successfully!");
+      await api.delete(`${baseUrl.CUSTOMIZATIONTYPE}/${deleteDialog.id}`);
+      setCustomizationTypes((prev) => prev.filter((c) => c._id !== deleteDialog.id));
+      toast.success("Customization Type deleted successfully!");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to delete category");
+      toast.error(err.response?.data?.message || "Failed to delete customization type");
     }
   };
 
@@ -94,29 +94,29 @@ export default function InquiryCategoryPage() {
 
     try {
       const payload = { name: form.name };
-      const res = await api.put(`${baseUrl.INQUIRYCATEGORY}/${editMode.id}`, payload);
-      setCategories((prev) => prev.map((c) => (c._id === editMode.id ? res.data.data : c)));
-      toast.success("Category updated successfully!");
+      const res = await api.put(`${baseUrl.CUSTOMIZATIONTYPE}/${editMode.id}`, payload);
+      setCustomizationTypes((prev) => prev.map((c) => (c._id === editMode.id ? res.data.data : c)));
+      toast.success("Customization Type updated successfully!");
       setOpen(false);
       resetForm();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to update category");
+      toast.error(err.response?.data?.message || "Failed to update customization type");
     }
   };
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchCustomizationTypes = async () => {
       try {
-        const res = await api.get(`${baseUrl.INQUIRYCATEGORY}?page=${page}&limit=10&search=${search}`);
-        setCategories(res.data.data);
+        const res = await api.get(`${baseUrl.CUSTOMIZATIONTYPE}?page=${page}&limit=10&search=${search}`);
+        setCustomizationTypes(res.data.data);
         setTotalPages(res.data.pagination?.totalPages || 1);
         setTotalRecords(res.data.pagination?.totalRecords || 0);
       } catch (err: any) {
-        toast.error(err.response?.data?.message || "Failed to fetch categories");
+        toast.error(err.response?.data?.message || "Failed to fetch customization types");
       }
     };
 
-    fetchCategories();
+    fetchCustomizationTypes();
   }, [page, search]);
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -130,13 +130,13 @@ export default function InquiryCategoryPage() {
     } else {
       try {
         const payload = { name: form.name };
-        const res = await api.post(baseUrl.INQUIRYCATEGORY, payload);
-        setCategories((prev) => [res.data.data, ...prev]);
-        toast.success("Category created successfully!");
+        const res = await api.post(baseUrl.CUSTOMIZATIONTYPE, payload);
+        setCustomizationTypes((prev) => [res.data.data, ...prev]);
+        toast.success("Customization Type created successfully!");
         setOpen(false);
         resetForm();
       } catch (err: any) {
-        toast.error(err.response?.data?.message || "Failed to create category");
+        toast.error(err.response?.data?.message || "Failed to create customization type");
       }
     }
   };
@@ -152,15 +152,15 @@ export default function InquiryCategoryPage() {
           className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-gray-200 transition-all duration-300 hover:ring-gray-300 hover:shadow"
         >
           <Plus className="h-4 w-4" />
-          Add Category
+          Add Customization Type
         </button>
       </div>
 
       <DataTable
-        title="Inquiry Categories"
-        data={categories}
+        title="Customization Types"
+        data={customizationTypes}
         pageSize={10}
-        searchPlaceholder="Search category..."
+        searchPlaceholder="Search customization type..."
         columns={columns}
         currentPage={page}
         totalPages={totalPages}
@@ -175,8 +175,8 @@ export default function InquiryCategoryPage() {
           setOpen(false);
           resetForm();
         }}
-        title={editMode.isEdit ? "Edit Inquiry Category" : "Add Inquiry Category"}
-        description={editMode.isEdit ? "Update inquiry category." : "Create a new inquiry category."}
+        title={editMode.isEdit ? "Edit Customization Type" : "Add Customization Type"}
+        description={editMode.isEdit ? "Update customization type." : "Create a new customization type."}
         footer={
           <div className="flex flex-wrap items-center justify-end gap-3">
             <button
@@ -192,20 +192,20 @@ export default function InquiryCategoryPage() {
             <button
               className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800"
               type="submit"
-              form="category-form"
+              form="customization-type-form"
             >
-              {editMode.isEdit ? "Update Category" : "Save Category"}
+              {editMode.isEdit ? "Update" : "Save"}
             </button>
           </div>
         }
       >
         <form
-          id="category-form"
+          id="customization-type-form"
           onSubmit={handleSubmit}
           className="space-y-4"
         >
           <label className="block text-sm text-gray-600">
-            Category Name
+            Customization Type Name
             <input
               required
               value={form.name}
@@ -213,7 +213,7 @@ export default function InquiryCategoryPage() {
                 setForm((prev) => ({ ...prev, name: e.target.value }))
               }
               className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-gray-300 focus:bg-white"
-              placeholder="Enter category name"
+              placeholder="Enter customization type name"
             />
           </label>
         </form>
@@ -223,8 +223,8 @@ export default function InquiryCategoryPage() {
         open={deleteDialog.open}
         onClose={() => setDeleteDialog({ open: false, id: null })}
         onConfirm={handleDelete}
-        title="Delete Category"
-        message="Are you sure you want to delete this category? This action cannot be undone."
+        title="Delete Customization Type"
+        message="Are you sure you want to delete this customization type? This action cannot be undone."
         confirmText="Delete"
       />
 
@@ -232,8 +232,8 @@ export default function InquiryCategoryPage() {
         open={confirmDialog}
         onClose={() => setConfirmDialog(false)}
         onConfirm={confirmSubmit}
-        title={editMode.isEdit ? "Update Category" : "Add Category"}
-        message={editMode.isEdit ? "Are you sure you want to update this category?" : "Are you sure you want to add this category?"}
+        title={editMode.isEdit ? "Update Customization Type" : "Add Customization Type"}
+        message={editMode.isEdit ? "Are you sure you want to update this customization type?" : "Are you sure you want to add this customization type?"}
         confirmText={editMode.isEdit ? "Update" : "Add"}
       />
     </>

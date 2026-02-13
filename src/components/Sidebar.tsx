@@ -145,6 +145,15 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                 Inquiry Category
               </Link>
               <Link
+                href="/settings/customization-type"
+                className={`block rounded-xl px-3 py-2 transition ${isActive("/settings/customization-type")
+                  ? "bg-white/10 text-white"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
+                  }`}
+              >
+                Customization Type
+              </Link>
+              <Link
                 href="/settings/module-suggestion"
                 className={`block rounded-xl px-3 py-2 transition ${isActive("/settings/module-suggestion")
                   ? "bg-white/10 text-white"
