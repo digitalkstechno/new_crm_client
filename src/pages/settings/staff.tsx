@@ -16,12 +16,14 @@ type StaffRow = {
   email: string;
   phone: string;
   password?: string;
+  role?: string;
 };
 
 export default function StaffPage() {
   const [open, setOpen] = useState(false);
   const [staff, setStaff] = useState<StaffRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [roles, setRoles] = useState<any[]>([]);
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
   const [editMode, setEditMode] = useState<{ isEdit: boolean; id: string | null }>({ isEdit: false, id: null });
   const [confirmDialog, setConfirmDialog] = useState(false);
@@ -35,6 +37,7 @@ export default function StaffPage() {
     email: "",
     phone: "",
     password: "",
+    role: "",
   });
 
   const handleDelete = async () => {
@@ -55,6 +58,7 @@ export default function StaffPage() {
       email: row.email,
       phone: row.phone,
       password: "",
+      role: row.role || "",
     });
     setEditMode({ isEdit: true, id: row._id! });
     setOpen(true);
@@ -83,6 +87,11 @@ export default function StaffPage() {
       { key: "fullName", label: "Full Name" },
       { key: "email", label: "Email" },
       { key: "phone", label: "Phone Number" },
+      {
+        key: "role",
+        label: "Role",
+        render: (value: any) => value?.roleName || "N/A",
+      },
       {
         key: "_id",
         label: "Actions",
@@ -113,6 +122,7 @@ export default function StaffPage() {
       email: "",
       phone: "",
       password: "",
+      role: "",
     });
     setEditMode({ isEdit: false, id: null });
   };
@@ -131,6 +141,19 @@ export default function StaffPage() {
       setLoading(false);
     }
   };
+
+  const fetchRoles = async () => {
+    try {
+      const response = await api.get(`${baseUrl.ROLE}/fetch-all?limit=100`);
+      setRoles(response.data.data);
+    } catch (err: any) {
+      toast.error("Failed to fetch roles");
+    }
+  };
+
+  useEffect(() => {
+    fetchRoles();
+  }, []);
 
   useEffect(() => {
     fetchAllStaff();
@@ -274,6 +297,25 @@ export default function StaffPage() {
                 className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-gray-300 focus:bg-white"
                 placeholder={editMode.isEdit ? "Leave blank to keep current" : "Enter password"}
               />
+            </label>
+
+            <label className="block text-sm text-gray-600">
+              Role
+              <select
+                required
+                value={form.role}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, role: e.target.value }))
+                }
+                className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-gray-300 focus:bg-white"
+              >
+                <option value="">Select Role</option>
+                {roles.map((role) => (
+                  <option key={role._id} value={role._id}>
+                    {role.roleName}
+                  </option>
+                ))}
+              </select>
             </label>
           </div>
         </form>

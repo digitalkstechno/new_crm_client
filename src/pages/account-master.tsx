@@ -63,7 +63,11 @@ export default function AccountMasterPage() {
   const fetchStaff = async () => {
     try {
       const response = await api.get(`${baseUrl.STAFF}?page=1&limit=100`);
-      setStaffList(response.data.data || []);
+      // Filter staff who have account master access
+      const filteredStaff = response.data.data?.filter((staff: any) => 
+        staff.role?.canAccessAccountMaster === true
+      ) || [];
+      setStaffList(filteredStaff);
     } catch (error) {
       toast.error("Failed to fetch staff");
     }
@@ -73,7 +77,22 @@ export default function AccountMasterPage() {
     setLoading(true);
     try {
       const response = await api.get(`${baseUrl.ACCOUNTMASTER}?page=${page}&limit=10&search=${search}`);
-      setAccounts(response.data.data || []);
+      
+      // Get current user's role and staff ID
+      const userRole = localStorage.getItem("userRole");
+      const staffId = localStorage.getItem("staffId");
+      const accountMasterViewType = localStorage.getItem("accountMasterViewType");
+      
+      let filteredAccounts = response.data.data || [];
+      
+      // If view type is "view_own", filter only assigned accounts
+      if (accountMasterViewType === "view_own" && staffId) {
+        filteredAccounts = filteredAccounts.filter((account: AccountRow) => 
+          account.assignBy?._id === staffId
+        );
+      }
+      
+      setAccounts(filteredAccounts);
       setTotalPages(response.data.pagination?.totalPages || 1);
       setTotalRecords(response.data.pagination?.totalRecords || 0);
     } catch (error) {

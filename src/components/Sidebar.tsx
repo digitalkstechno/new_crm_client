@@ -18,6 +18,19 @@ type SidebarProps = {
 export default function Sidebar({ collapsed }: SidebarProps) {
   const pathname = usePathname();
   const [view, setView] = useState<"main" | "settings">("main");
+  const [canAccessSettings, setCanAccessSettings] = useState(false);
+  const [userName, setUserName] = useState("User");
+  const [userRole, setUserRole] = useState("Role");
+
+  useEffect(() => {
+    const settingsAccess = localStorage.getItem("canAccessSettings");
+    setCanAccessSettings(settingsAccess === "true");
+    
+    const name = localStorage.getItem("userName");
+    const role = localStorage.getItem("userRole");
+    if (name) setUserName(name);
+    if (role) setUserRole(role);
+  }, []);
 
   // 🔥 Auto switch view based on route
   useEffect(() => {
@@ -101,16 +114,18 @@ export default function Sidebar({ collapsed }: SidebarProps) {
               </Link>
 
               {/* Settings Button */}
-              <button
-                onClick={() => setView("settings")}
-                className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 transition ${pathname.startsWith("/settings")
-                  ? "bg-white/10 text-white"
-                  : "text-slate-400 hover:text-white hover:bg-white/5"
-                  }`}
-              >
-                <Settings className="h-5 w-5" />
-                {!collapsed && "Settings"}
-              </button>
+              {canAccessSettings && (
+                <button
+                  onClick={() => setView("settings")}
+                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 transition ${pathname.startsWith("/settings")
+                    ? "bg-white/10 text-white"
+                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                    }`}
+                >
+                  <Settings className="h-5 w-5" />
+                  {!collapsed && "Settings"}
+                </button>
+              )}
             </div>
 
             {/* ================= SETTINGS VIEW ================= */}
@@ -133,6 +148,15 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                   }`}
               >
                 Staff
+              </Link>
+              <Link
+                href="/settings/role"
+                className={`block rounded-xl px-3 py-2 transition ${isActive("/settings/role")
+                  ? "bg-white/10 text-white"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
+                  }`}
+              >
+                Role Management
               </Link>
               <Link
                 href="/settings/customization-type"
@@ -174,16 +198,16 @@ export default function Sidebar({ collapsed }: SidebarProps) {
         <div className="mt-auto border-t border-white/10 px-3 py-3">
           <div className="flex items-center gap-3 rounded-xl bg-white/5 p-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white">
-              A
+              {userName.charAt(0).toUpperCase()}
             </div>
 
             {!collapsed && (
               <div>
                 <div className="text-sm font-medium text-white">
-                  Alex Rivera
+                  {userName}
                 </div>
                 <div className="text-xs text-slate-300">
-                  Sales Lead
+                  {userRole}
                 </div>
               </div>
             )}

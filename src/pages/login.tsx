@@ -57,6 +57,29 @@ const handleSubmit = async (event: React.FormEvent) => {
     // ✅ Save token
     localStorage.setItem("token", data.token);
 
+    // ✅ Save user data
+    if (data.data) {
+      localStorage.setItem("userName", data.data.fullName);
+      localStorage.setItem("userRole", data.data.role?.roleName || "User");
+      localStorage.setItem("staffId", data.data._id);
+    }
+
+    // ✅ Save permissions
+    if (data.permissions) {
+      localStorage.setItem("permissions", JSON.stringify(data.permissions));
+    }
+
+    // ✅ Save settings access
+    if (data.canAccessSettings !== undefined) {
+      localStorage.setItem("canAccessSettings", String(data.canAccessSettings));
+    }
+
+    // ✅ Save account master access and view type
+    if (data.data?.role) {
+      localStorage.setItem("canAccessAccountMaster", String(data.data.role.canAccessAccountMaster || false));
+      localStorage.setItem("accountMasterViewType", data.data.role.accountMasterViewType || "view_own");
+    }
+
     // ✅ Remember email
     if (remember) {
       localStorage.setItem("rememberEmail", email);

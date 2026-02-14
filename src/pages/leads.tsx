@@ -7,20 +7,9 @@ import DataTable, { Column } from "@/components/DataTable";
 import { api } from "@/utils/axiosInstance";
 import { baseUrl } from "../../config";
 import toast from "react-hot-toast";
+import { LEAD_STATUSES, STATUS_COLORS, LeadStatus } from "@/constants/leadStatus";
 
 /* ================= TYPES ================= */
-
-type LeadStatus =
-  | "New Lead"
-  | "Quotation Given"
-  | "Follow Remark"
-  | "Order Confirmation"
-  | "PI"
-  | "Order Execution"
-  | "Dispatch"
-  | "Final Payment"
-  | "Completed"
-  | "Lost";
 
 type Lead = {
   _id: string;
@@ -32,34 +21,13 @@ type Lead = {
   accountMaster?: {
     companyName: string;
     clientName: string;
+    sourcebyTypeOfClient?: string;
+    assignBy?: {
+      _id: string;
+      fullName: string;
+    };
   };
   items: any[];
-};
-
-const STATUSES: LeadStatus[] = [
-  "New Lead",
-  "Quotation Given",
-  "Follow Remark",
-  "Order Confirmation",
-  "PI",
-  "Order Execution",
-  "Dispatch",
-  "Final Payment",
-  "Completed",
-  "Lost",
-];
-
-const STATUS_COLORS: Record<LeadStatus, string> = {
-  "New Lead": "bg-blue-100 text-blue-700",
-  "Quotation Given": "bg-purple-100 text-purple-700",
-  "Follow Remark": "bg-yellow-100 text-yellow-700",
-  "Order Confirmation": "bg-green-100 text-green-700",
-  "PI": "bg-indigo-100 text-indigo-700",
-  "Order Execution": "bg-orange-100 text-orange-700",
-  "Dispatch": "bg-cyan-100 text-cyan-700",
-  "Final Payment": "bg-pink-100 text-pink-700",
-  "Completed": "bg-emerald-100 text-emerald-700",
-  "Lost": "bg-red-100 text-red-700",
 };
 
 /* ================= PAGE ================= */
@@ -73,32 +41,18 @@ export default function LeadsPage() {
   const [totalRecords, setTotalRecords] = useState(0);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [allowedStatuses, setAllowedStatuses] = useState<LeadStatus[]>([]);
   const [kanbanPages, setKanbanPages] = useState<Record<LeadStatus, number>>({} as any);
   const [kanbanHasMore, setKanbanHasMore] = useState<Record<LeadStatus, boolean>>({} as any);
   const [kanbanLoading, setKanbanLoading] = useState<Record<LeadStatus, boolean>>({} as any);
   const [kanbanLeads, setKanbanLeads] = useState<Record<LeadStatus, Lead[]>>({} as any);
 
   useEffect(() => {
-    if (view === "table") {
-      fetchLeads();
-    } else {
-      const initialPages: any = {};
-      const initialHasMore: any = {};
-      const initialLoading: any = {};
-      const initialLeads: any = {};
-      STATUSES.forEach(status => {
-        initialPages[status] = 1;
-        initialHasMore[status] = true;
-        initialLoading[status] = false;
-        initialLeads[status] = [];
-      });
-      setKanbanPages(initialPages);
-      setKanbanHasMore(initialHasMore);
-      setKanbanLoading(initialLoading);
-      setKanbanLeads(initialLeads);
-      STATUSES.forEach(status => fetchKanbanLeadsByStatus(status, 1));
+    const permissions = localStorage.getItem("permissions");
+    if (permissions) {
+      setAllowedStatuses(JSON.parse(permissions));
     }
-  }, [view, page, search, statusFilter]);
+  }, []);
 
   const fetchLeads = async () => {
     try {
@@ -106,7 +60,21 @@ export default function LeadsPage() {
         ? `${baseUrl.LEAD}/status/${encodeURIComponent(statusFilter)}?page=${page}&limit=10&search=${search}`
         : `${baseUrl.LEAD}?page=${page}&limit=10&search=${search}`;
       const response = await api.get(url);
-      setLeads(response.data.data || []);
+      
+      let filteredLeads = response.data.data || [];
+      
+      // Get current user's role and staff ID
+      const staffId = localStorage.getItem("staffId");
+      const accountMasterViewType = localStorage.getItem("accountMasterViewType");
+      
+      // If view type is "view_own", filter only assigned leads
+      if (accountMasterViewType === "view_own" && staffId) {
+        filteredLeads = filteredLeads.filter((lead: Lead) => 
+          lead.accountMaster?.assignBy?._id === staffId
+        );
+      }
+      
+      setLeads(filteredLeads);
       setTotalPages(response.data.pagination?.totalPages || 1);
       setTotalRecords(response.data.pagination?.totalRecords || 0);
     } catch (error) {
@@ -119,7 +87,19 @@ export default function LeadsPage() {
     setKanbanLoading(prev => ({ ...prev, [status]: true }));
     try {
       const response = await api.get(`${baseUrl.LEAD}/status/${encodeURIComponent(status)}?page=${pageNum}&limit=10`);
-      const newLeads = response.data.data || [];
+      let newLeads = response.data.data || [];
+      
+      // Get current user's role and staff ID
+      const staffId = localStorage.getItem("staffId");
+      const accountMasterViewType = localStorage.getItem("accountMasterViewType");
+      
+      // If view type is "view_own", filter only assigned leads
+      if (accountMasterViewType === "view_own" && staffId) {
+        newLeads = newLeads.filter((lead: Lead) => 
+          lead.accountMaster?.assignBy?._id === staffId
+        );
+      }
+      
       setKanbanLeads(prev => ({
         ...prev,
         [status]: [...(prev[status] || []), ...newLeads]
@@ -134,6 +114,31 @@ export default function LeadsPage() {
       setKanbanLoading(prev => ({ ...prev, [status]: false }));
     }
   };
+
+  useEffect(() => {
+    if (allowedStatuses.length === 0) return;
+    
+    if (view === "table") {
+      fetchLeads();
+    } else {
+      const initialPages: any = {};
+      const initialHasMore: any = {};
+      const initialLoading: any = {};
+      const initialLeads: any = {};
+      allowedStatuses.forEach(status => {
+        initialPages[status] = 1;
+        initialHasMore[status] = true;
+        initialLoading[status] = false;
+        initialLeads[status] = [];
+      });
+      setKanbanPages(initialPages);
+      setKanbanHasMore(initialHasMore);
+      setKanbanLoading(initialLoading);
+      setKanbanLeads(initialLeads);
+      allowedStatuses.forEach(status => fetchKanbanLeadsByStatus(status, 1));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, page, search, statusFilter, allowedStatuses.length]);
 
   const handleKanbanScroll = (status: LeadStatus) => (e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
@@ -260,7 +265,7 @@ export default function LeadsPage() {
             className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm outline-none"
           >
             <option value="">All Status</option>
-            {STATUSES.map((status) => (
+            {allowedStatuses.map((status) => (
               <option key={status} value={status}>{status}</option>
             ))}
           </select>
@@ -287,7 +292,7 @@ export default function LeadsPage() {
       {/* KANBAN */}
       {view === "kanban" && (
         <div className="flex gap-4">
-          {STATUSES.map((status) => (
+          {allowedStatuses.map((status) => (
             <KanbanColumn
               key={status}
               status={status}
@@ -297,6 +302,7 @@ export default function LeadsPage() {
               onScroll={handleKanbanScroll(status)}
               loading={kanbanLoading[status]}
               hasMore={kanbanHasMore[status]}
+              allowedStatuses={allowedStatuses}
             />
           ))}
         </div>
@@ -317,6 +323,7 @@ function KanbanColumn({
   onScroll,
   loading,
   hasMore,
+  allowedStatuses,
 }: {
   status: LeadStatus;
   leads: Lead[];
@@ -325,6 +332,7 @@ function KanbanColumn({
   onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   loading: boolean;
   hasMore: boolean;
+  allowedStatuses: LeadStatus[];
 }) {
   return (
     <div className="w-80 flex-shrink-0 rounded-2xl bg-gray-100 p-3">
@@ -373,7 +381,7 @@ function KanbanColumn({
                   className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1 text-xs outline-none"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  {STATUSES.map((s) => (
+                  {allowedStatuses.map((s) => (
                     <option key={s} value={s}>{s}</option>
                   ))}
                 </select>

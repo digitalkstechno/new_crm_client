@@ -7,6 +7,10 @@ export const baseUrl = {
     STAFF: `${API}staff`,
     LOGIN: `${API}staff/login`,
 
+    // ROLE
+    ROLE: `${API}role`,
+    ROLE_STATUSES: `${API}role/statuses`,
+
     // Inquiry
     INQUIRYCATEGORY: `${API}inquirycategory`,
 
