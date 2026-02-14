@@ -52,6 +52,7 @@ type Lead = {
   }>;
   remarks?: Array<{ date: string; remark: string }>;
   paymentHistory?: Array<{ date: string; amount: string; modeOfPayment: string; remark?: string }>;
+  followUps?: Array<{ date: string; description: string; createdAt: string }>;
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -336,6 +337,22 @@ export default function LeadDetailsPage() {
                   <p className="text-xs text-gray-500">{new Date(payment.date).toLocaleDateString()}</p>
                 </div>
                 {payment.remark && <p className="mt-2 text-xs text-gray-600">{payment.remark}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* FOLLOW UPS */}
+      {lead.followUps && lead.followUps.length > 0 && (
+        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <h2 className="mb-4 text-lg font-semibold text-gray-900">Follow Ups</h2>
+          <div className="space-y-3">
+            {lead.followUps.map((followUp, index) => (
+              <div key={index} className="rounded-lg border-l-4 border-green-500 bg-green-50 p-3">
+                <p className="text-xs font-semibold text-green-700">{new Date(followUp.date).toLocaleString()}</p>
+                <p className="mt-1 text-sm text-gray-900">{followUp.description}</p>
+                <p className="mt-1 text-xs text-gray-500">Added on: {new Date(followUp.createdAt).toLocaleString()}</p>
               </div>
             ))}
           </div>
