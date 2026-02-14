@@ -62,7 +62,7 @@ export default function AccountMasterPage() {
 
   const fetchStaff = async () => {
     try {
-      const response = await api.get(`${baseUrl.STAFF}?page=1&limit=100`);
+      const response = await api.get(baseUrl.STAFF_DROPDOWN);
       // Filter staff who have account master access
       const filteredStaff = response.data.data?.filter((staff: any) => 
         staff.role?.canAccessAccountMaster === true
@@ -118,7 +118,6 @@ export default function AccountMasterPage() {
     assignById: "",
     remark: "",
   });
-  console.log("🚀 ~ AccountMasterPage ~ form:", form)
 
   const columns: Column<AccountRow>[] = useMemo(
     () => [

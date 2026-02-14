@@ -46,6 +46,7 @@ export default function LeadsPage() {
   const [kanbanHasMore, setKanbanHasMore] = useState<Record<LeadStatus, boolean>>({} as any);
   const [kanbanLoading, setKanbanLoading] = useState<Record<LeadStatus, boolean>>({} as any);
   const [kanbanLeads, setKanbanLeads] = useState<Record<LeadStatus, Lead[]>>({} as any);
+  const [kanbanTotalCounts, setKanbanTotalCounts] = useState<Record<LeadStatus, number>>({} as any);
 
   useEffect(() => {
     const permissions = localStorage.getItem("permissions");
@@ -108,6 +109,14 @@ export default function LeadsPage() {
         ...prev,
         [status]: pageNum < (response.data.pagination?.totalPages || 1)
       }));
+      
+      // Store total count
+      if (pageNum === 1) {
+        setKanbanTotalCounts(prev => ({
+          ...prev,
+          [status]: response.data.pagination?.totalRecords || 0
+        }));
+      }
     } catch (error) {
       toast.error("Failed to fetch leads");
     } finally {
@@ -147,6 +156,25 @@ export default function LeadsPage() {
       setKanbanPages(prev => ({ ...prev, [status]: nextPage }));
       fetchKanbanLeadsByStatus(status, nextPage);
     }
+  };
+
+  const handleDragStart = (e: React.DragEvent, leadId: string, fromStatus: LeadStatus) => {
+    e.dataTransfer.setData("leadId", leadId);
+    e.dataTransfer.setData("fromStatus", fromStatus);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = async (e: React.DragEvent, toStatus: LeadStatus) => {
+    e.preventDefault();
+    const leadId = e.dataTransfer.getData("leadId");
+    const fromStatus = e.dataTransfer.getData("fromStatus") as LeadStatus;
+    
+    if (fromStatus === toStatus) return;
+    
+    await handleStatusChange(leadId, toStatus);
   };
 
   const handleStatusChange = async (leadId: string, newStatus: LeadStatus) => {
@@ -297,9 +325,13 @@ export default function LeadsPage() {
               key={status}
               status={status}
               leads={getLeadsByStatus(status)}
+              totalCount={kanbanTotalCounts[status] || 0}
               onStatusChange={handleStatusChange}
               onViewLead={handleViewLead}
               onScroll={handleKanbanScroll(status)}
+              onDragStart={handleDragStart}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
               loading={kanbanLoading[status]}
               hasMore={kanbanHasMore[status]}
               allowedStatuses={allowedStatuses}
@@ -318,28 +350,40 @@ export default function LeadsPage() {
 function KanbanColumn({
   status,
   leads,
+  totalCount,
   onStatusChange,
   onViewLead,
   onScroll,
+  onDragStart,
+  onDragOver,
+  onDrop,
   loading,
   hasMore,
   allowedStatuses,
 }: {
   status: LeadStatus;
   leads: Lead[];
+  totalCount: number;
   onStatusChange: (leadId: string, newStatus: LeadStatus) => void;
   onViewLead: (lead: Lead) => void;
   onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
+  onDragStart: (e: React.DragEvent, leadId: string, fromStatus: LeadStatus) => void;
+  onDragOver: (e: React.DragEvent) => void;
+  onDrop: (e: React.DragEvent, toStatus: LeadStatus) => void;
   loading: boolean;
   hasMore: boolean;
   allowedStatuses: LeadStatus[];
 }) {
   return (
-    <div className="w-80 flex-shrink-0 rounded-2xl bg-gray-100 p-3">
+    <div 
+      className="w-80 flex-shrink-0 rounded-2xl bg-gray-100 p-3"
+      onDragOver={onDragOver}
+      onDrop={(e) => onDrop(e, status)}
+    >
       <div className="mb-3 flex items-center justify-between sticky top-0 bg-gray-100 z-10">
         <h3 className="text-sm font-semibold text-gray-900">{status}</h3>
         <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-semibold text-gray-700">
-          {leads.length}
+          {totalCount}
         </span>
       </div>
 
@@ -349,12 +393,13 @@ function KanbanColumn({
           return (
             <div
               key={lead._id}
-              className={`cursor-pointer rounded-xl p-3 shadow-sm ring-1 transition hover:shadow-md ${
+              draggable
+              onDragStart={(e) => onDragStart(e, lead._id, status)}
+              className={`rounded-xl p-3 shadow-sm ring-1 transition hover:shadow-md cursor-grab active:cursor-grabbing ${
                 isOEM
                   ? "bg-yellow-100 ring-yellow-300 hover:bg-yellow-200"
                   : "bg-white ring-gray-200"
               }`}
-              onClick={() => onViewLead(lead)}
             >
               <h4 className="text-sm font-semibold text-gray-900">
                 {lead.accountMaster?.companyName || "N/A"}
@@ -372,19 +417,13 @@ function KanbanColumn({
               </div>
 
               <div className="mt-2">
-                <select
-                  value={lead.leadStatus}
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    onStatusChange(lead._id, e.target.value as LeadStatus);
-                  }}
-                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1 text-xs outline-none"
-                  onClick={(e) => e.stopPropagation()}
+                <button
+                  onClick={() => onViewLead(lead)}
+                  className="w-full inline-flex items-center justify-center gap-1 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800"
                 >
-                  {allowedStatuses.map((s) => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
+                  <Eye className="h-3 w-3" />
+                  View Details
+                </button>
               </div>
             </div>
           );

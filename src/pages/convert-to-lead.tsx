@@ -99,7 +99,7 @@ export default function ConvertToLeadPage() {
 
   const fetchInquiryCategories = async () => {
     try {
-      const response = await api.get(baseUrl.INQUIRYCATEGORY);
+      const response = await api.get(baseUrl.INQUIRYCATEGORY_DROPDOWN);
       setInquiryCategories(response.data.data || []);
     } catch (error) {
       toast.error("Failed to fetch inquiry categories");
@@ -108,7 +108,7 @@ export default function ConvertToLeadPage() {
 
   const fetchCustomizationTypes = async () => {
     try {
-      const response = await api.get(baseUrl.CUSTOMIZATIONTYPE);
+      const response = await api.get(baseUrl.CUSTOMIZATIONTYPE_DROPDOWN);
       setCustomizationTypes(response.data.data || []);
     } catch (error) {
       toast.error("Failed to fetch customization types");

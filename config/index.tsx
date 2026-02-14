@@ -5,6 +5,7 @@ export const baseUrl = {
 
     // STAFF
     STAFF: `${API}staff`,
+    STAFF_DROPDOWN: `${API}staff/dropdown`,
     LOGIN: `${API}staff/login`,
 
     // ROLE
@@ -13,9 +14,11 @@ export const baseUrl = {
 
     // Inquiry
     INQUIRYCATEGORY: `${API}inquirycategory`,
+    INQUIRYCATEGORY_DROPDOWN: `${API}inquirycategory/dropdown`,
 
     // Customization Type
     CUSTOMIZATIONTYPE: `${API}customizationtype`,
+    CUSTOMIZATIONTYPE_DROPDOWN: `${API}customizationtype/dropdown`,
 
     // Model
     MODEL_SUGGESTION: `${API}model`,
