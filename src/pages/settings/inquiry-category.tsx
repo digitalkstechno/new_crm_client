@@ -3,6 +3,7 @@
 import DataTable, { Column } from "@/components/DataTable";
 import Dialog from "@/components/Dialog";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import TableSkeleton from "@/components/TableSkeleton";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import toast from "react-hot-toast";
@@ -18,6 +19,7 @@ type InquiryCategoryRow = {
 export default function InquiryCategoryPage() {
   const [open, setOpen] = useState(false);
   const [categories, setCategories] = useState<InquiryCategoryRow[]>([]);
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ name: "" });
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
   const [editMode, setEditMode] = useState<{ isEdit: boolean; id: string | null }>({ isEdit: false, id: null });
@@ -106,6 +108,7 @@ export default function InquiryCategoryPage() {
 
   useEffect(() => {
     const fetchCategories = async () => {
+      setLoading(true);
       try {
         const res = await api.get(`${baseUrl.INQUIRYCATEGORY}?page=${page}&limit=10&search=${search}`);
         setCategories(res.data.data);
@@ -113,6 +116,8 @@ export default function InquiryCategoryPage() {
         setTotalRecords(res.data.pagination?.totalRecords || 0);
       } catch (err: any) {
         toast.error(err.response?.data?.message || "Failed to fetch categories");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -156,18 +161,22 @@ export default function InquiryCategoryPage() {
         </button>
       </div>
 
-      <DataTable
-        title="Inquiry Categories"
-        data={categories}
-        pageSize={10}
-        searchPlaceholder="Search category..."
-        columns={columns}
-        currentPage={page}
-        totalPages={totalPages}
-        totalRecords={totalRecords}
-        onPageChange={setPage}
-        onSearch={setSearch}
-      />
+      {loading ? (
+        <TableSkeleton />
+      ) : (
+        <DataTable
+          title="Inquiry Categories"
+          data={categories}
+          pageSize={10}
+          searchPlaceholder="Search category..."
+          columns={columns}
+          currentPage={page}
+          totalPages={totalPages}
+          totalRecords={totalRecords}
+          onPageChange={setPage}
+          onSearch={setSearch}
+        />
+      )}
 
       <Dialog
         open={open}

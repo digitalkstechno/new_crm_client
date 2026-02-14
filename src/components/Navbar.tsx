@@ -47,7 +47,9 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("crm:rememberEmail"); // optional
+    localStorage.removeItem("token");
+    localStorage.removeItem("crm:rememberEmail");
+    localStorage.clear();
     router.push("/login");
   };
 

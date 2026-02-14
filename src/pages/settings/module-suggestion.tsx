@@ -3,6 +3,7 @@
 import DataTable, { Column } from "@/components/DataTable";
 import Dialog from "@/components/Dialog";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import TableSkeleton from "@/components/TableSkeleton";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import toast from "react-hot-toast";
@@ -232,18 +233,22 @@ export default function ModelSuggestionPage() {
         </button>
       </div>
 
-      <DataTable
-        title="Model Suggestions"
-        data={models}
-        pageSize={10}
-        searchPlaceholder="Search model name or model number..."
-        columns={columns}
-        currentPage={page}
-        totalPages={totalPages}
-        totalRecords={totalRecords}
-        onPageChange={setPage}
-        onSearch={setSearch}
-      />
+      {loading ? (
+        <TableSkeleton />
+      ) : (
+        <DataTable
+          title="Model Suggestions"
+          data={models}
+          pageSize={10}
+          searchPlaceholder="Search model name or model number..."
+          columns={columns}
+          currentPage={page}
+          totalPages={totalPages}
+          totalRecords={totalRecords}
+          onPageChange={setPage}
+          onSearch={setSearch}
+        />
+      )}
 
       <Dialog
         open={open}

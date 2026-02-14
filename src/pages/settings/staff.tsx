@@ -3,6 +3,7 @@
 import DataTable, { Column } from "@/components/DataTable";
 import Dialog from "@/components/Dialog";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import TableSkeleton from "@/components/TableSkeleton";
 import { api } from "@/utils/axiosInstance";
 import { Plus, Trash2, Edit } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
@@ -172,18 +173,22 @@ export default function StaffPage() {
         </button>
       </div>
 
-      <DataTable
-        title="Staff Management"
-        data={staff}
-        pageSize={10}
-        searchPlaceholder="Search staff name, email, phone..."
-        columns={columns}
-        currentPage={page}
-        totalPages={totalPages}
-        totalRecords={totalRecords}
-        onPageChange={setPage}
-        onSearch={setSearch}
-      />
+      {loading ? (
+        <TableSkeleton />
+      ) : (
+        <DataTable
+          title="Staff Management"
+          data={staff}
+          pageSize={10}
+          searchPlaceholder="Search staff name, email, phone..."
+          columns={columns}
+          currentPage={page}
+          totalPages={totalPages}
+          totalRecords={totalRecords}
+          onPageChange={setPage}
+          onSearch={setSearch}
+        />
+      )}
 
       <Dialog
         open={open}

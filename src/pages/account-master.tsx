@@ -1,6 +1,7 @@
 import DataTable, { Column } from "@/components/DataTable";
 import Dialog from "@/components/Dialog";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import TableSkeleton from "@/components/TableSkeleton";
 import axios from "axios";
 import { Plus,Edit, Trash2, SendToBack } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
@@ -45,6 +46,7 @@ export default function AccountMasterPage() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [accounts, setAccounts] = useState<AccountRow[]>([]);
+  const [loading, setLoading] = useState(true);
   const [staffList, setStaffList] = useState<Staff[]>([]);
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
   const [editMode, setEditMode] = useState<{ isEdit: boolean; id: string | null }>({ isEdit: false, id: null });
@@ -68,6 +70,7 @@ export default function AccountMasterPage() {
   };
 
   const fetchAccounts = async () => {
+    setLoading(true);
     try {
       const response = await api.get(`${baseUrl.ACCOUNTMASTER}?page=${page}&limit=10&search=${search}`);
       setAccounts(response.data.data || []);
@@ -75,6 +78,8 @@ export default function AccountMasterPage() {
       setTotalRecords(response.data.pagination?.totalRecords || 0);
     } catch (error) {
       toast.error("Failed to fetch accounts");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -294,19 +299,23 @@ export default function AccountMasterPage() {
         </button>
       </div>
 
-      <DataTable
-        title="Account Master"
-        data={accounts}
-        pageSize={10}
-        searchPlaceholder="Search company, client..."
-        columns={columns}
-        currentPage={page}
-        totalPages={totalPages}
-        totalRecords={totalRecords}
-        onPageChange={setPage}
-        onSearch={setSearch}
-        rowClassName={(row) => row.sourcebyTypeOfClient === "O.E.M" ? "bg-yellow-50 hover:bg-yellow-100" : ""}
-      />
+      {loading ? (
+        <TableSkeleton />
+      ) : (
+        <DataTable
+          title="Account Master"
+          data={accounts}
+          pageSize={10}
+          searchPlaceholder="Search company, client..."
+          columns={columns}
+          currentPage={page}
+          totalPages={totalPages}
+          totalRecords={totalRecords}
+          onPageChange={setPage}
+          onSearch={setSearch}
+          rowClassName={(row) => row.sourcebyTypeOfClient === "O.E.M" ? "bg-yellow-50 hover:bg-yellow-100" : ""}
+        />
+      )}
 
       <Dialog
         open={open}
