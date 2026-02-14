@@ -71,17 +71,27 @@ export default function Navbar() {
         </button>
 
         {/* Dropdown */}
-        {open && (
-          <div className="absolute right-0 mt-2 w-40 rounded-xl bg-slate-900 shadow-xl ring-1 ring-white/10">
-            <button
-              onClick={handleLogout}
-              className="flex w-full items-center gap-2 rounded-xl px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition"
-            >
-              <LogOut className="h-4 w-4" />
-              Logout
-            </button>
-          </div>
-        )}
+      {/* Dropdown */}
+{open && (
+  <div className="absolute right-0 mt-2 w-48 rounded-2xl bg-white shadow-lg border border-gray-200 animate-in fade-in zoom-in-95 duration-150">
+    
+    {/* Header (optional but looks premium) */}
+    <div className="px-4 py-3 border-b border-gray-100">
+      <p className="text-sm font-medium text-gray-700">Account</p>
+      <p className="text-xs text-gray-400">Manage your account</p>
+    </div>
+
+    {/* Logout Button */}
+    <button
+      onClick={handleLogout}
+      className="flex w-full items-center gap-3 px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition rounded-b-2xl"
+    >
+      <LogOut className="h-4 w-4" />
+      Logout
+    </button>
+  </div>
+)}
+
       </div>
     </header>
   );
