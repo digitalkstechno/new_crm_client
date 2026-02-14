@@ -8,6 +8,11 @@ import {
   CalendarClock,
   Settings,
   ArrowLeft,
+  Users,
+  Shield,
+  Palette,
+  FolderOpen,
+  Package,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -21,6 +26,7 @@ export default function Sidebar({ collapsed }: SidebarProps) {
   const [canAccessSettings, setCanAccessSettings] = useState(false);
   const [userName, setUserName] = useState("User");
   const [userRole, setUserRole] = useState("Role");
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     const settingsAccess = localStorage.getItem("canAccessSettings");
@@ -30,16 +36,26 @@ export default function Sidebar({ collapsed }: SidebarProps) {
     const role = localStorage.getItem("userRole");
     if (name) setUserName(name);
     if (role) setUserRole(role);
-  }, []);
 
-  // 🔥 Auto switch view based on route
+    // Set view based on current pathname on mount WITHOUT animation
+    if (pathname.startsWith("/settings")) {
+      setView("settings");
+    }
+    
+    // Enable animation after initial render
+    setTimeout(() => setIsInitialized(true), 50);
+  }, [pathname]);
+
+  // 🔥 Auto switch view based on route (only after initialization)
   useEffect(() => {
+    if (!isInitialized) return;
+    
     if (pathname.startsWith("/settings")) {
       setView("settings");
     } else {
       setView("main");
     }
-  }, [pathname]);
+  }, [pathname, isInitialized]);
 
   const isActive = (path: string) => pathname === path;
 
@@ -73,7 +89,7 @@ export default function Sidebar({ collapsed }: SidebarProps) {
         {/* ===== SLIDER CONTAINER ===== */}
         <div className="relative flex-1 overflow-hidden">
           <div
-            className={`flex h-full transition-transform duration-300 ${view === "settings" ? "-translate-x-full" : "translate-x-0"
+            className={`flex h-full ${isInitialized ? 'transition-transform duration-300' : ''} ${view === "settings" ? "-translate-x-full" : "translate-x-0"
               }`}
           >
 
@@ -142,49 +158,54 @@ export default function Sidebar({ collapsed }: SidebarProps) {
 
               <Link
                 href="/settings/staff"
-                className={`block rounded-xl px-3 py-2 transition ${isActive("/settings/staff")
+                className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${isActive("/settings/staff")
                   ? "bg-white/10 text-white"
                   : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`}
               >
-                User Management
+                <Users className="h-5 w-5" />
+                {!collapsed && "User Management"}
               </Link>
               <Link
                 href="/settings/role"
-                className={`block rounded-xl px-3 py-2 transition ${isActive("/settings/role")
+                className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${isActive("/settings/role")
                   ? "bg-white/10 text-white"
                   : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`}
               >
-                Role Management
+                <Shield className="h-5 w-5" />
+                {!collapsed && "Role Management"}
               </Link>
               <Link
                 href="/settings/customization-type"
-                className={`block rounded-xl px-3 py-2 transition ${isActive("/settings/customization-type")
+                className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${isActive("/settings/customization-type")
                   ? "bg-white/10 text-white"
                   : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`}
               >
-                Customization Type
+                <Palette className="h-5 w-5" />
+                {!collapsed && "Customization Type"}
               </Link>
               <Link
                 href="/settings/inquiry-category"
-                className={`block rounded-xl px-3 py-2 transition ${isActive("/settings/inquiry-category")
+                className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${isActive("/settings/inquiry-category")
                   ? "bg-white/10 text-white"
                   : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`}
               >
-                Inquiry Category
+                <FolderOpen className="h-5 w-5" />
+                {!collapsed && "Inquiry Category"}
               </Link>
 
               <Link
                 href="/settings/module-suggestion"
-                className={`block rounded-xl px-3 py-2 transition ${isActive("/settings/module-suggestion")
+                className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${isActive("/settings/module-suggestion")
                   ? "bg-white/10 text-white"
                   : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`}
               >
-                Module Suggestion
+                <Package className="h-5 w-5" />
+                {!collapsed && "Module Suggestion"}
               </Link>
 
 

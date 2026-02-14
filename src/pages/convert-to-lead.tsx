@@ -45,8 +45,9 @@ const customizationTypes = [
 
 export default function ConvertToLeadPage() {
   const router = useRouter();
-  const { accountId } = router.query;
+  const { accountId, leadId } = router.query;
   const [accountData, setAccountData] = useState<any>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
   
   const getTodayDate = () => {
     const today = new Date();
@@ -82,10 +83,13 @@ export default function ConvertToLeadPage() {
   useEffect(() => {
     fetchInquiryCategories();
     fetchCustomizationTypes();
-    if (accountId && accountId !== 'undefined') {
+    if (leadId) {
+      setIsEditMode(true);
+      fetchLeadData();
+    } else if (accountId && accountId !== 'undefined') {
       fetchAccountData();
     }
-  }, [accountId]);
+  }, [accountId, leadId]);
 
   const fetchAccountData = async () => {
     if (!accountId || accountId === 'undefined') return;
@@ -94,6 +98,46 @@ export default function ConvertToLeadPage() {
       setAccountData(response.data.data);
     } catch (error) {
       toast.error("Failed to fetch account data");
+    }
+  };
+
+  const fetchLeadData = async () => {
+    if (!leadId) return;
+    try {
+      const response = await api.get(`${baseUrl.LEAD}/${leadId}`);
+      const lead = response.data.data;
+      
+      setAccountData(lead.accountMaster);
+      setLeadDate(lead.leadDate.split('T')[0]);
+      setClientType(lead.clientType);
+      setDeliveryDate(lead.deliveryDate.split('T')[0]);
+      setShippingCharges(lead.shippingCharges || "");
+      setBudgetFrom(lead.budget?.from || "");
+      setBudgetTo(lead.budget?.to || "");
+      
+      const loadedProducts = lead.items.map((item: any) => {
+        const categoryId = item.inquiryCategory._id;
+        if (!allModelSuggestions[categoryId]) {
+          fetchModelsByCategory(categoryId, item._id);
+        }
+        return {
+          id: item._id,
+          inquiryCategoryId: item.inquiryCategory._id,
+          modelSuggestionId: item.modelSuggestion._id,
+          customizationTypeId: item.customizationType._id,
+          personalization: item.personalization?.isPersonalized ? "Yes" : "No",
+          location: item.personalization?.location || "",
+          name: item.personalization?.name || "",
+          description: item.personalization?.description || "",
+          qty: parseInt(item.qty),
+          rate: parseFloat(item.rate),
+          gst: parseFloat(item.gst),
+          total: parseFloat(item.total),
+        };
+      });
+      setProducts(loadedProducts);
+    } catch (error) {
+      toast.error("Failed to fetch lead data");
     }
   };
 
@@ -207,7 +251,7 @@ export default function ConvertToLeadPage() {
   const handleConvertLead = async () => {
     const validationErrors: string[] = [];
     
-    if (!accountId || accountId === 'undefined') validationErrors.push("Account ID is required");
+    if (!isEditMode && (!accountId || accountId === 'undefined')) validationErrors.push("Account ID is required");
     if (!leadDate) validationErrors.push("Lead Date is required");
     if (!clientType) validationErrors.push("Client Type is required");
     if (!deliveryDate) validationErrors.push("Delivery Date is required");
@@ -256,23 +300,31 @@ export default function ConvertToLeadPage() {
           from: budgetFrom,
           to: budgetTo,
         },
-        accountMaster: accountId,
+        accountMaster: isEditMode ? accountData._id : accountId,
         items,
         totalAmount: totalAmount.toString(),
+        leadStatus: "Order Confirmation",
       };
       
-      await api.post(baseUrl.LEAD, payload);
-      toast.success("Lead converted successfully!");
+      if (isEditMode) {
+        await api.put(`${baseUrl.LEAD}/${leadId}`, payload);
+        toast.success("Lead updated successfully!");
+      } else {
+        await api.post(baseUrl.LEAD, payload);
+        toast.success("Lead converted successfully!");
+      }
       router.push("/leads");
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to convert lead");
+      toast.error(error.response?.data?.message || "Failed to save lead");
     }
   };
 
   return (
     <div className="mx-auto max-w-6xl p-6">
       <div className="rounded-2xl bg-white p-6 shadow-sm">
-        <h1 className="mb-6 text-xl font-semibold text-gray-900">Convert to Lead</h1>
+        <h1 className="mb-6 text-xl font-semibold text-gray-900">
+          {isEditMode ? "Edit Lead" : "Convert to Lead"}
+        </h1>
 
         {/* Validation Errors */}
         {errors.length > 0 && (
@@ -540,7 +592,7 @@ export default function ConvertToLeadPage() {
             onClick={handleConvertLead}
             className="rounded-lg bg-slate-900 px-6 py-2 text-sm font-semibold text-white hover:bg-slate-800"
           >
-            Convert Lead
+            {isEditMode ? "Save & Move to Order Confirmation" : "Convert Lead"}
           </button>
         </div>
       </div>

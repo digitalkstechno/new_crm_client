@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { Eye } from "lucide-react";
+import { Eye, Calendar, CheckSquare, XCircle } from "lucide-react";
 import DataTable, { Column } from "@/components/DataTable";
+import FollowUpDialog from "@/components/FollowUpDialog";
+import OrderExecutionDialog from "@/components/OrderExecutionDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { api } from "@/utils/axiosInstance";
 import { baseUrl } from "../../config";
 import toast from "react-hot-toast";
@@ -28,6 +31,7 @@ type Lead = {
     };
   };
   items: any[];
+  maxStatusReached?: LeadStatus;
 };
 
 /* ================= PAGE ================= */
@@ -47,6 +51,9 @@ export default function LeadsPage() {
   const [kanbanLoading, setKanbanLoading] = useState<Record<LeadStatus, boolean>>({} as any);
   const [kanbanLeads, setKanbanLeads] = useState<Record<LeadStatus, Lead[]>>({} as any);
   const [kanbanTotalCounts, setKanbanTotalCounts] = useState<Record<LeadStatus, number>>({} as any);
+  const [followUpDialog, setFollowUpDialog] = useState<{ isOpen: boolean; leadId: string | null; pendingStatus?: LeadStatus }>({ isOpen: false, leadId: null });
+  const [orderExecutionDialog, setOrderExecutionDialog] = useState<{ isOpen: boolean; lead: Lead | null }>({ isOpen: false, lead: null });
+  const [lostConfirmDialog, setLostConfirmDialog] = useState<{ isOpen: boolean; leadId: string | null }>({ isOpen: false, leadId: null });
 
   useEffect(() => {
     const permissions = localStorage.getItem("permissions");
@@ -174,12 +181,59 @@ export default function LeadsPage() {
     
     if (fromStatus === toStatus) return;
     
-    await handleStatusChange(leadId, toStatus);
+    // Check backward movement
+    const lead = [...leads, ...Object.values(kanbanLeads).flat()].find(l => l._id === leadId);
+    if (lead) {
+      const LEAD_STATUSES_ORDER = ["New Lead", "Quotation Given", "Follow Up", "Order Confirmation", "PI", "Order Execution", "Dispatch", "Final Payment", "Completed"];
+      const currentMaxIndex = LEAD_STATUSES_ORDER.indexOf(lead.maxStatusReached || lead.leadStatus);
+      const newIndex = LEAD_STATUSES_ORDER.indexOf(toStatus);
+      
+      if (newIndex < currentMaxIndex && toStatus !== "Lost") {
+        toast.error("Cannot move lead backwards in status");
+        return;
+      }
+    }
+    
+    if (toStatus === "Follow Up") {
+      setFollowUpDialog({ isOpen: true, leadId, pendingStatus: toStatus });
+    } else if (fromStatus === "Follow Up" && toStatus === "Order Confirmation") {
+      router.push(`/convert-to-lead?leadId=${leadId}`);
+    } else if (toStatus === "Dispatch") {
+      // Fetch fresh lead data from API to check isDone status
+      try {
+        const response = await api.get(`${baseUrl.LEAD}/${leadId}`);
+        const freshLead = response.data.data;
+        const allDone = freshLead.items.every((item: any) => item.isDone);
+        if (!allDone) {
+          toast.error("All items must be marked as done before dispatch");
+          return;
+        }
+        await handleStatusChange(leadId, toStatus);
+      } catch (error) {
+        toast.error("Failed to verify lead status");
+      }
+    } else {
+      await handleStatusChange(leadId, toStatus);
+    }
   };
 
   const handleStatusChange = async (leadId: string, newStatus: LeadStatus) => {
     try {
       await api.put(`${baseUrl.LEAD}/${leadId}`, { leadStatus: newStatus });
+      
+      // Update counts
+      if (view === "kanban") {
+        const lead = Object.values(kanbanLeads).flat().find(l => l._id === leadId);
+        if (lead) {
+          const oldStatus = lead.leadStatus;
+          setKanbanTotalCounts(prev => ({
+            ...prev,
+            [oldStatus]: Math.max(0, (prev[oldStatus] || 0) - 1),
+            [newStatus]: (prev[newStatus] || 0) + 1
+          }));
+        }
+      }
+      
       if (view === "table") {
         setLeads(prev => prev.map(l => l._id === leadId ? { ...l, leadStatus: newStatus } : l));
       } else {
@@ -199,13 +253,84 @@ export default function LeadsPage() {
         setKanbanLeads(updatedLeads);
       }
       toast.success("Status updated");
-    } catch (error) {
-      toast.error("Failed to update status");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to update status");
     }
   };
 
   const handleViewLead = (lead: Lead) => {
     router.push(`/lead-details/${lead._id}`);
+  };
+
+  const handleFollowUpClick = (leadId: string) => {
+    setFollowUpDialog({ isOpen: true, leadId });
+  };
+
+  const handleOrderExecutionClick = (lead: Lead) => {
+    setOrderExecutionDialog({ isOpen: true, lead });
+  };
+
+  const handleMoveToLost = async (leadId: string) => {
+    setLostConfirmDialog({ isOpen: true, leadId });
+  };
+
+  const confirmMoveToLost = async () => {
+    if (lostConfirmDialog.leadId) {
+      await handleStatusChange(lostConfirmDialog.leadId, "Lost");
+    }
+  };
+
+  const handleFollowUpSubmit = async (date: string, description: string) => {
+    try {
+      const { leadId, pendingStatus } = followUpDialog;
+      if (!leadId) return;
+
+      await api.post(`${baseUrl.LEAD}/${leadId}/followup`, { date, description });
+      
+      if (pendingStatus) {
+        await handleStatusChange(leadId, pendingStatus);
+      }
+      
+      toast.success("Follow up added successfully");
+      setFollowUpDialog({ isOpen: false, leadId: null });
+    } catch (error) {
+      toast.error("Failed to add follow up");
+    }
+  };
+
+  const refetchLeads = () => {
+    if (view === "table") {
+      fetchLeads();
+    } else {
+      allowedStatuses.forEach(status => {
+        setKanbanLeads(prev => ({ ...prev, [status]: [] }));
+        setKanbanPages(prev => ({ ...prev, [status]: 1 }));
+        fetchKanbanLeadsByStatus(status, 1);
+      });
+    }
+  };
+
+  const refetchSingleLead = async (leadId: string) => {
+    try {
+      const response = await api.get(`${baseUrl.LEAD}/${leadId}`);
+      const updatedLead = response.data.data;
+      
+      if (view === "table") {
+        setLeads(prev => prev.map(l => l._id === leadId ? updatedLead : l));
+      } else {
+        setKanbanLeads(prev => {
+          const updated = { ...prev };
+          for (const status in updated) {
+            updated[status] = updated[status].map(l => 
+              l._id === leadId ? updatedLead : l
+            );
+          }
+          return updated;
+        });
+      }
+    } catch (error) {
+      console.error("Failed to refetch lead", error);
+    }
   };
 
   const getLeadsByStatus = (status: LeadStatus) => {
@@ -247,13 +372,42 @@ export default function LeadsPage() {
       key: "_id", 
       label: "Action",
       render: (value: any, row: Lead) => (
-        <button
-          onClick={() => handleViewLead(row)}
-          className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800"
-        >
-          <Eye className="h-3 w-3" />
-          View
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => handleViewLead(row)}
+            className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800"
+          >
+            <Eye className="h-3 w-3" />
+            View
+          </button>
+          {row.leadStatus === "Follow Up" && (
+            <button
+              onClick={() => handleFollowUpClick(row._id)}
+              className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700"
+            >
+              <Calendar className="h-3 w-3" />
+              Follow Up
+            </button>
+          )}
+          {row.leadStatus === "Order Execution" && (
+            <button
+              onClick={() => handleOrderExecutionClick(row)}
+              className="inline-flex items-center gap-1 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-700"
+            >
+              <CheckSquare className="h-3 w-3" />
+              Items
+            </button>
+          )}
+          {row.leadStatus !== "Lost" && (
+            <button
+              onClick={() => handleMoveToLost(row._id)}
+              className="inline-flex items-center gap-1 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700"
+            >
+              <XCircle className="h-3 w-3" />
+              Lost
+            </button>
+          )}
+        </div>
       )
     },
   ];
@@ -328,6 +482,9 @@ export default function LeadsPage() {
               totalCount={kanbanTotalCounts[status] || 0}
               onStatusChange={handleStatusChange}
               onViewLead={handleViewLead}
+              onFollowUpClick={handleFollowUpClick}
+              onOrderExecutionClick={handleOrderExecutionClick}
+              onMoveToLost={handleMoveToLost}
               onScroll={handleKanbanScroll(status)}
               onDragStart={handleDragStart}
               onDragOver={handleDragOver}
@@ -340,7 +497,29 @@ export default function LeadsPage() {
         </div>
       )}
 
+      <FollowUpDialog
+        isOpen={followUpDialog.isOpen}
+        onClose={() => setFollowUpDialog({ isOpen: false, leadId: null })}
+        onSubmit={handleFollowUpSubmit}
+      />
 
+      {orderExecutionDialog.lead && (
+        <OrderExecutionDialog
+          isOpen={orderExecutionDialog.isOpen}
+          onClose={() => setOrderExecutionDialog({ isOpen: false, lead: null })}
+          leadId={orderExecutionDialog.lead._id}
+          items={orderExecutionDialog.lead.items}
+          onUpdate={() => refetchSingleLead(orderExecutionDialog.lead!._id)}
+        />
+      )}
+
+      <ConfirmationDialog
+        isOpen={lostConfirmDialog.isOpen}
+        onClose={() => setLostConfirmDialog({ isOpen: false, leadId: null })}
+        onConfirm={confirmMoveToLost}
+        title="Mark Lead as Lost?"
+        message="Are you sure you want to mark this lead as Lost? This action will move the lead to Lost status and it cannot be recovered to previous statuses."
+      />
     </>
   );
 }
@@ -353,6 +532,9 @@ function KanbanColumn({
   totalCount,
   onStatusChange,
   onViewLead,
+  onFollowUpClick,
+  onOrderExecutionClick,
+  onMoveToLost,
   onScroll,
   onDragStart,
   onDragOver,
@@ -366,6 +548,9 @@ function KanbanColumn({
   totalCount: number;
   onStatusChange: (leadId: string, newStatus: LeadStatus) => void;
   onViewLead: (lead: Lead) => void;
+  onFollowUpClick: (leadId: string) => void;
+  onOrderExecutionClick: (lead: Lead) => void;
+  onMoveToLost: (leadId: string) => void;
   onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   onDragStart: (e: React.DragEvent, leadId: string, fromStatus: LeadStatus) => void;
   onDragOver: (e: React.DragEvent) => void;
@@ -390,6 +575,8 @@ function KanbanColumn({
       <div className="h-[calc(100vh-220px)] overflow-y-auto space-y-3" onScroll={onScroll}>
         {leads.map((lead) => {
           const isOEM = lead.accountMaster?.sourcebyTypeOfClient === "O.E.M";
+          const doneItems = lead.items?.filter((item: any) => item.isDone).length || 0;
+          const totalItems = lead.items?.length || 0;
           return (
             <div
               key={lead._id}
@@ -413,17 +600,50 @@ function KanbanColumn({
 
               <div className="mt-2 flex items-center justify-between text-xs text-gray-400">
                 <span>{new Date(lead.deliveryDate).toLocaleDateString()}</span>
-                <span>{lead.items?.length || 0} items</span>
+                <span>{totalItems} items</span>
               </div>
 
-              <div className="mt-2">
+              {status === "Order Execution" && (
+                <div className="mt-2 rounded bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
+                  Done: {doneItems} | Pending: {totalItems - doneItems}
+                </div>
+              )}
+
+              <div className="mt-2 flex gap-1">
                 <button
                   onClick={() => onViewLead(lead)}
-                  className="w-full inline-flex items-center justify-center gap-1 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800"
+                  className="flex-1 inline-flex items-center justify-center gap-1 rounded-lg bg-slate-900 px-2 py-1.5 text-xs font-semibold text-white hover:bg-slate-800"
                 >
                   <Eye className="h-3 w-3" />
-                  View Details
+                  View
                 </button>
+                {status === "Follow Up" && (
+                  <button
+                    onClick={() => onFollowUpClick(lead._id)}
+                    className="flex-1 inline-flex items-center justify-center gap-1 rounded-lg bg-blue-600 px-2 py-1.5 text-xs font-semibold text-white hover:bg-blue-700"
+                  >
+                    <Calendar className="h-3 w-3" />
+                    Follow Up
+                  </button>
+                )}
+                {status === "Order Execution" && (
+                  <button
+                    onClick={() => onOrderExecutionClick(lead)}
+                    className="flex-1 inline-flex items-center justify-center gap-1 rounded-lg bg-green-600 px-2 py-1.5 text-xs font-semibold text-white hover:bg-green-700"
+                  >
+                    <CheckSquare className="h-3 w-3" />
+                    Items
+                  </button>
+                )}
+                {status !== "Lost" && (
+                  <button
+                    onClick={() => onMoveToLost(lead._id)}
+                    className="flex-1 inline-flex items-center justify-center gap-1 rounded-lg bg-red-600 px-2 py-1.5 text-xs font-semibold text-white hover:bg-red-700"
+                  >
+                    <XCircle className="h-3 w-3" />
+                    Lost
+                  </button>
+                )}
               </div>
             </div>
           );
