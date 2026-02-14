@@ -147,7 +147,7 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                   : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`}
               >
-                Staff
+                User Management
               </Link>
               <Link
                 href="/settings/role"

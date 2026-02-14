@@ -46,9 +46,9 @@ export default function StaffPage() {
     try {
       await api.delete(`${baseUrl.STAFF}/${deleteDialog.id}`);
       setStaff((prev) => prev.filter((s) => s._id !== deleteDialog.id));
-      toast.success("Staff deleted successfully!");
+      toast.success("User deleted successfully!");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to delete staff");
+      toast.error(err.response?.data?.message || "Failed to delete user");
     }
   };
 
@@ -73,12 +73,12 @@ export default function StaffPage() {
 
       const response = await api.put(`${baseUrl.STAFF}/${editMode.id}`, payload);
       setStaff((prev) => prev.map((s) => (s._id === editMode.id ? response.data.data : s)));
-      toast.success("Staff updated successfully!");
+      toast.success("User updated successfully!");
       setOpen(false);
       resetForm();
       setEditMode({ isEdit: false, id: null });
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to update staff");
+      toast.error(err.response?.data?.message || "Failed to update User");
     }
   };
 
@@ -136,7 +136,7 @@ export default function StaffPage() {
       setTotalPages(response.data.pagination?.totalPages || 1);
       setTotalRecords(response.data.pagination?.totalRecords || 0);
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to fetch staff");
+      toast.error(err.response?.data?.message || "Failed to fetch User");
     } finally {
       setLoading(false);
     }
@@ -172,11 +172,11 @@ export default function StaffPage() {
         const payload = { ...form };
         const response = await api.post(baseUrl.STAFF, payload);
         setStaff((prev) => [response.data.data, ...prev]);
-        toast.success("Staff added successfully!");
+        toast.success("User added successfully!");
         setOpen(false);
         resetForm();
       } catch (err: any) {
-        toast.error(err.response?.data?.message || "Failed to add staff");
+        toast.error(err.response?.data?.message || "Failed to add user");
       }
     }
   };
@@ -192,7 +192,7 @@ export default function StaffPage() {
           className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-gray-200 transition-all duration-300 hover:ring-gray-300 hover:shadow"
         >
           <Plus className="h-4 w-4" />
-          Add Staff
+          Add User
         </button>
       </div>
 
@@ -200,10 +200,10 @@ export default function StaffPage() {
         <TableSkeleton />
       ) : (
         <DataTable
-          title="Staff Management"
+          title="User Management"
           data={staff}
           pageSize={10}
-          searchPlaceholder="Search staff name, email, phone..."
+          searchPlaceholder="Search User name, email, phone..."
           columns={columns}
           currentPage={page}
           totalPages={totalPages}
@@ -219,8 +219,8 @@ export default function StaffPage() {
           setOpen(false);
           resetForm();
         }}
-        title={editMode.isEdit ? "Edit Staff" : "Add New Staff"}
-        description={editMode.isEdit ? "Update staff member details." : "Fill staff details to create new staff account."}
+        title={editMode.isEdit ? "Edit User" : "Add New User"}
+        description={editMode.isEdit ? "Update User member details." : "Fill User details to create new User account."}
         footer={
           <div className="flex flex-wrap items-center justify-end gap-3">
             <button
@@ -238,7 +238,7 @@ export default function StaffPage() {
               type="submit"
               form="staff-form"
             >
-              {editMode.isEdit ? "Update Staff" : "Save Staff"}
+              {editMode.isEdit ? "Update User" : "Save User"}
             </button>
           </div>
         }
@@ -326,7 +326,7 @@ export default function StaffPage() {
         onClose={() => setDeleteDialog({ open: false, id: null })}
         onConfirm={handleDelete}
         title="Delete Staff"
-        message="Are you sure you want to delete this staff member? This action cannot be undone."
+        message="Are you sure you want to delete this User member? This action cannot be undone."
         confirmText="Delete"
       />
 
@@ -334,8 +334,8 @@ export default function StaffPage() {
         open={confirmDialog}
         onClose={() => setConfirmDialog(false)}
         onConfirm={confirmSubmit}
-        title={editMode.isEdit ? "Update Staff" : "Add Staff"}
-        message={editMode.isEdit ? "Are you sure you want to update this staff member?" : "Are you sure you want to add this staff member?"}
+        title={editMode.isEdit ? "Update User" : "Add User"}
+        message={editMode.isEdit ? "Are you sure you want to update this User member?" : "Are you sure you want to add this User member?"}
         confirmText={editMode.isEdit ? "Update" : "Add"}
       />
     </>

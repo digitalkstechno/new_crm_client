@@ -69,7 +69,7 @@ export default function AccountMasterPage() {
       ) || [];
       setStaffList(filteredStaff);
     } catch (error) {
-      toast.error("Failed to fetch staff");
+      toast.error("Failed to fetch user");
     }
   };
 
