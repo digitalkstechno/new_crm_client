@@ -66,7 +66,7 @@ export default function AccountMasterPage() {
     try {
       const response = await api.get(baseUrl.STAFF_DROPDOWN);
       // Filter staff who have account master access
-      const filteredStaff = response.data.data?.filter((staff: any) => 
+      const filteredStaff = response.data.data?.filter((staff: any) =>
         staff.role?.canAccessAccountMaster === true
       ) || [];
       setStaffList(filteredStaff);
@@ -79,21 +79,21 @@ export default function AccountMasterPage() {
     setLoading(true);
     try {
       const response = await api.get(`${baseUrl.ACCOUNTMASTER}?page=${page}&limit=10&search=${search}`);
-      
+
       // Get current user's role and staff ID
       const userRole = localStorage.getItem("userRole");
       const staffId = localStorage.getItem("staffId");
       const accountMasterViewType = localStorage.getItem("accountMasterViewType");
-      
+
       let filteredAccounts = response.data.data || [];
-      
+
       // If view type is "view_own", filter only assigned accounts
       if (accountMasterViewType === "view_own" && staffId) {
-        filteredAccounts = filteredAccounts.filter((account: AccountRow) => 
+        filteredAccounts = filteredAccounts.filter((account: AccountRow) =>
           account.assignBy?._id === staffId
         );
       }
-      
+
       setAccounts(filteredAccounts);
       setTotalPages(response.data.pagination?.totalPages || 1);
       setTotalRecords(response.data.pagination?.totalRecords || 0);
@@ -350,16 +350,16 @@ export default function AccountMasterPage() {
       const response = await api.post(`${baseUrl.ACCOUNTMASTER}/import`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      
+
       const { success, failed, errors } = response.data.data;
-      
+
       if (failed > 0) {
         toast.error(`Import completed: ${success} success, ${failed} failed. Check console for errors.`);
         console.error('Import errors:', errors);
       } else {
         toast.success(`Successfully imported ${success} records!`);
       }
-      
+
       fetchAccounts();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to import data');
@@ -372,29 +372,40 @@ export default function AccountMasterPage() {
 
   return (
     <>
-      <div className="mb-4 flex justify-between items-center">
-        <div className="flex gap-2">
+      <div className="mb-6 flex justify-end items-center">
+        <div className="flex gap-3">
+          <button
+            onClick={() => {
+              resetForm();
+              setOpen(true);
+              fetchStaff();
+            }}
+            className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 transition-all"
+          >
+            <Plus className="h-4 w-4" />
+            Add Account
+          </button>
           <button
             onClick={downloadSampleExcel}
-            className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
+            className="inline-flex items-center gap-2 rounded-lg border border-green-200 bg-white px-4 py-2.5 text-sm font-medium text-green-700 shadow-sm hover:bg-green-50 transition-all"
           >
             <FileSpreadsheet className="h-4 w-4" />
-            Download Sample
+            Sample Excel
           </button>
           <button
             onClick={exportToExcel}
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+            className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-white px-4 py-2.5 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-50 transition-all"
           >
             <Download className="h-4 w-4" />
-            Export Excel
+            Export
           </button>
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={importing}
-            className="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700 disabled:bg-gray-400"
+            className="inline-flex items-center gap-2 rounded-lg border border-purple-200 bg-white px-4 py-2.5 text-sm font-medium text-purple-700 shadow-sm hover:bg-purple-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Upload className="h-4 w-4" />
-            {importing ? 'Importing...' : 'Import Excel'}
+            {importing ? 'Importing...' : 'Import'}
           </button>
           <input
             ref={fileInputRef}
@@ -404,17 +415,6 @@ export default function AccountMasterPage() {
             className="hidden"
           />
         </div>
-        <button
-          onClick={() => {
-            resetForm();
-            setOpen(true);
-            fetchStaff();
-          }}
-          className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
-        >
-          <Plus className="h-4 w-4" />
-          Add Account
-        </button>
       </div>
 
       {loading ? (
