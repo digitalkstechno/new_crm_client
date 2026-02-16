@@ -3,8 +3,8 @@ import Dialog from "@/components/Dialog";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import TableSkeleton from "@/components/TableSkeleton";
 import axios from "axios";
-import { Plus,Edit, Trash2, SendToBack } from "lucide-react";
-import { useMemo, useState, useEffect } from "react";
+import { Plus, Edit, Trash2, SendToBack, Download, Upload, FileSpreadsheet } from "lucide-react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { baseUrl } from "../../config";
 import toast from "react-hot-toast";
 import { api } from "@/utils/axiosInstance";
@@ -44,6 +44,7 @@ const sourceOptions = [
 
 export default function AccountMasterPage() {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   const [accounts, setAccounts] = useState<AccountRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,6 +56,7 @@ export default function AccountMasterPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
   const [search, setSearch] = useState("");
+  const [importing, setImporting] = useState(false);
 
   useEffect(() => {
     fetchAccounts();
@@ -300,10 +302,108 @@ export default function AccountMasterPage() {
     }
   };
 
+  const downloadSampleExcel = async () => {
+    try {
+      const response = await api.get(`${baseUrl.ACCOUNTMASTER}/sample-excel`, {
+        responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'AccountMaster_Sample.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success('Sample Excel downloaded!');
+    } catch (error) {
+      toast.error('Failed to download sample');
+    }
+  };
+
+  const exportToExcel = async () => {
+    try {
+      const response = await api.get(`${baseUrl.ACCOUNTMASTER}/export`, {
+        responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'AccountMaster_Export.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success('Data exported successfully!');
+    } catch (error) {
+      toast.error('Failed to export data');
+    }
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setImporting(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await api.post(`${baseUrl.ACCOUNTMASTER}/import`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      const { success, failed, errors } = response.data.data;
+      
+      if (failed > 0) {
+        toast.error(`Import completed: ${success} success, ${failed} failed. Check console for errors.`);
+        console.error('Import errors:', errors);
+      } else {
+        toast.success(`Successfully imported ${success} records!`);
+      }
+      
+      fetchAccounts();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to import data');
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
 
   return (
     <>
-      <div className="mb-4 flex justify-end">
+      <div className="mb-4 flex justify-between items-center">
+        <div className="flex gap-2">
+          <button
+            onClick={downloadSampleExcel}
+            className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
+          >
+            <FileSpreadsheet className="h-4 w-4" />
+            Download Sample
+          </button>
+          <button
+            onClick={exportToExcel}
+            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+          >
+            <Download className="h-4 w-4" />
+            Export Excel
+          </button>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={importing}
+            className="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700 disabled:bg-gray-400"
+          >
+            <Upload className="h-4 w-4" />
+            {importing ? 'Importing...' : 'Import Excel'}
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
+        </div>
         <button
           onClick={() => {
             resetForm();

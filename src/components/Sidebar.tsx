@@ -103,7 +103,9 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                   : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`}
               >
-                <Home className="h-5 w-5" />
+                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/") ? "bg-blue-500" : "bg-blue-500/20"}`}>
+                  <Home className="h-4 w-4 text-white" />
+                </div>
                 {!collapsed && "Dashboard"}
               </Link>
 
@@ -114,7 +116,9 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                   : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`}
               >
-                <CalendarClock className="h-5 w-5" />
+                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/account-master") ? "bg-green-500" : "bg-green-500/20"}`}>
+                  <CalendarClock className="h-4 w-4 text-white" />
+                </div>
                 {!collapsed && "Account Master"}
               </Link>
 
@@ -125,7 +129,9 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                   : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`}
               >
-                <User2 className="h-5 w-5" />
+                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/leads") ? "bg-purple-500" : "bg-purple-500/20"}`}>
+                  <User2 className="h-4 w-4 text-white" />
+                </div>
                 {!collapsed && "Leads"}
               </Link>
 
@@ -138,7 +144,9 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                     : "text-slate-400 hover:text-white hover:bg-white/5"
                     }`}
                 >
-                  <Settings className="h-5 w-5" />
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${pathname.startsWith("/settings") ? "bg-orange-500" : "bg-orange-500/20"}`}>
+                    <Settings className="h-4 w-4 text-white" />
+                  </div>
                   {!collapsed && "Settings"}
                 </button>
               )}
@@ -163,7 +171,9 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                   : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`}
               >
-                <Users className="h-5 w-5" />
+                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/settings/staff") ? "bg-cyan-500" : "bg-cyan-500/20"}`}>
+                  <Users className="h-4 w-4 text-white" />
+                </div>
                 {!collapsed && "User Management"}
               </Link>
               <Link
@@ -173,7 +183,9 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                   : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`}
               >
-                <Shield className="h-5 w-5" />
+                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/settings/role") ? "bg-red-500" : "bg-red-500/20"}`}>
+                  <Shield className="h-4 w-4 text-white" />
+                </div>
                 {!collapsed && "Role Management"}
               </Link>
               <Link
@@ -183,7 +195,9 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                   : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`}
               >
-                <Palette className="h-5 w-5" />
+                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/settings/customization-type") ? "bg-pink-500" : "bg-pink-500/20"}`}>
+                  <Palette className="h-4 w-4 text-white" />
+                </div>
                 {!collapsed && "Customization Type"}
               </Link>
               <Link
@@ -193,7 +207,9 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                   : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`}
               >
-                <FolderOpen className="h-5 w-5" />
+                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/settings/inquiry-category") ? "bg-yellow-500" : "bg-yellow-500/20"}`}>
+                  <FolderOpen className="h-4 w-4 text-white" />
+                </div>
                 {!collapsed && "Inquiry Category"}
               </Link>
 
@@ -204,7 +220,9 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                   : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`}
               >
-                <Package className="h-5 w-5" />
+                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/settings/module-suggestion") ? "bg-indigo-500" : "bg-indigo-500/20"}`}>
+                  <Package className="h-4 w-4 text-white" />
+                </div>
                 {!collapsed && "Module Suggestion"}
               </Link>
 

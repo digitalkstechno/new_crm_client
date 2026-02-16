@@ -43,7 +43,7 @@ export default function App({ Component, pageProps }: AppProps) {
     };
   }, [router]);
 
-  if (isLoading || isNavigating) {
+  if (isLoading) {
     return <Loader />;
   }
 
@@ -54,6 +54,14 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
       <Toaster position="top-right" />
+      {isNavigating && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
+          <div className="flex flex-col items-center gap-3">
+            <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-gray-900"></div>
+            <p className="text-sm text-gray-900 font-medium">Loading...</p>
+          </div>
+        </div>
+      )}
       {shouldUseLayout ? (
         <Layout>
           <Component {...pageProps} />

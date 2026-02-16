@@ -5,7 +5,7 @@ import Dialog from "@/components/Dialog";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import TableSkeleton from "@/components/TableSkeleton";
 import { api } from "@/utils/axiosInstance";
-import { Plus, Trash2, Edit } from "lucide-react";
+import { Plus, Trash2, Edit, Shield, CheckSquare, Settings, Eye } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { baseUrl } from "../../../config";
@@ -239,7 +239,7 @@ export default function RolePage() {
         footer={
           <div className="flex flex-wrap items-center justify-end gap-3">
             <button
-              className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 transition hover:border-gray-300 hover:text-gray-900"
+              className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:border-slate-400"
               onClick={() => {
                 setOpen(false);
                 resetForm();
@@ -249,120 +249,155 @@ export default function RolePage() {
               Cancel
             </button>
             <button
-              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800"
+              className="rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 hover:shadow-md"
               type="submit"
               form="role-form"
             >
-              {editMode.isEdit ? "Update Role" : "Save Role"}
+              {editMode.isEdit ? "Update Role" : "Create Role"}
             </button>
           </div>
         }
       >
         <form id="role-form" onSubmit={handleSubmit} className="space-y-4">
-          <label className="block text-sm text-gray-600">
-            Role Name
+          <div>
+            <label className="block text-sm font-semibold text-gray-900 mb-2">
+              Role Name <span className="text-red-500">*</span>
+            </label>
             <input
               required
               value={form.roleName}
               onChange={(e) =>
                 setForm((prev) => ({ ...prev, roleName: e.target.value }))
               }
-              className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-gray-300 focus:bg-white"
-              placeholder="Enter role name"
+              className="w-full rounded-lg border-2 border-gray-200 px-4 py-2.5 text-sm text-gray-900 outline-none transition focus:border-blue-500"
+              placeholder="e.g., Sales Manager"
             />
-          </label>
-
-          <div className="block text-sm text-gray-600">
-            <p className="mb-2">Allowed Lead Statuses</p>
-            <div className="space-y-2">
-              <button
-                type="button"
-                onClick={() => setForm(prev => ({ ...prev, allowedStatuses: allStatuses }))}
-                className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-              >
-                Select All
-              </button>
-              <span className="mx-2 text-gray-400">|</span>
-              <button
-                type="button"
-                onClick={() => setForm(prev => ({ ...prev, allowedStatuses: [] }))}
-                className="text-xs text-red-600 hover:text-red-700 font-medium"
-              >
-                Clear All
-              </button>
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              {allStatuses.map((status) => (
-                <label key={status} className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={form.allowedStatuses.includes(status)}
-                    onChange={() => toggleStatus(status)}
-                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-gray-700">{status}</span>
-                </label>
-              ))}
-            </div>
           </div>
 
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={form.canAccessSettings}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, canAccessSettings: e.target.checked }))
-              }
-              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-            />
-            <span className="text-sm text-gray-700">Can Access Settings</span>
-          </label>
-
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={form.canAccessAccountMaster}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, canAccessAccountMaster: e.target.checked }))
-              }
-              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-            />
-            <span className="text-sm text-gray-700">Can Access Account Master</span>
-          </label>
-
-          {form.canAccessAccountMaster && (
-            <div className="block text-sm text-gray-600">
-              <p className="mb-2">Account Master View Type</p>
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="accountMasterViewType"
-                    value="view_all"
-                    checked={form.accountMasterViewType === "view_all"}
-                    onChange={(e) =>
-                      setForm((prev) => ({ ...prev, accountMasterViewType: e.target.value as "view_all" | "view_own" }))
-                    }
-                    className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-gray-700">View All</span>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-semibold text-gray-900">
+                  Lead Statuses <span className="text-red-500">*</span>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="accountMasterViewType"
-                    value="view_own"
-                    checked={form.accountMasterViewType === "view_own"}
-                    onChange={(e) =>
-                      setForm((prev) => ({ ...prev, accountMasterViewType: e.target.value as "view_all" | "view_own" }))
-                    }
-                    className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-gray-700">View Own</span>
-                </label>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setForm(prev => ({ ...prev, allowedStatuses: allStatuses }))}
+                    className="text-xs font-bold text-blue-600 hover:text-blue-700"
+                  >
+                    All
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setForm(prev => ({ ...prev, allowedStatuses: [] }))}
+                    className="text-xs font-bold text-gray-500 hover:text-gray-700"
+                  >
+                    Clear
+                  </button>
+                </div>
               </div>
+              <div className="border-2 border-gray-200 rounded-lg overflow-hidden bg-white max-h-64 overflow-y-auto">
+                {allStatuses.map((status) => (
+                  <label
+                    key={status}
+                    className={`flex items-center gap-2 px-3 py-2 cursor-pointer transition border-b border-gray-100 last:border-0 ${
+                      form.allowedStatuses.includes(status)
+                        ? 'bg-blue-50 font-semibold text-blue-900'
+                        : 'hover:bg-gray-50 text-gray-700'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={form.allowedStatuses.includes(status)}
+                      onChange={() => toggleStatus(status)}
+                      className="h-4 w-4 rounded border-2 border-gray-300 text-blue-600 focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                    />
+                    <span className="text-xs">{status}</span>
+                  </label>
+                ))}
+              </div>
+              <p className="text-xs text-gray-500 mt-1.5">{form.allowedStatuses.length} selected</p>
             </div>
-          )}
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm font-semibold text-gray-900 block mb-2">Permissions</label>
+                
+                <div className="space-y-2">
+                  <label className={`flex items-center gap-2 p-2.5 rounded-lg cursor-pointer transition border-2 ${
+                    form.canAccessSettings ? 'bg-green-50 border-green-400' : 'bg-gray-50 border-gray-200 hover:border-gray-300'
+                  }`}>
+                    <input
+                      type="checkbox"
+                      checked={form.canAccessSettings}
+                      onChange={(e) =>
+                        setForm((prev) => ({ ...prev, canAccessSettings: e.target.checked }))
+                      }
+                      className="h-4 w-4 rounded border-2 border-gray-300 text-green-600 focus:ring-1 focus:ring-green-500 cursor-pointer"
+                    />
+                    <span className={`text-xs font-semibold ${
+                      form.canAccessSettings ? 'text-green-900' : 'text-gray-700'
+                    }`}>Access Settings</span>
+                  </label>
+
+                  <label className={`flex items-center gap-2 p-2.5 rounded-lg cursor-pointer transition border-2 ${
+                    form.canAccessAccountMaster ? 'bg-purple-50 border-purple-400' : 'bg-gray-50 border-gray-200 hover:border-gray-300'
+                  }`}>
+                    <input
+                      type="checkbox"
+                      checked={form.canAccessAccountMaster}
+                      onChange={(e) =>
+                        setForm((prev) => ({ ...prev, canAccessAccountMaster: e.target.checked }))
+                      }
+                      className="h-4 w-4 rounded border-2 border-gray-300 text-purple-600 focus:ring-1 focus:ring-purple-500 cursor-pointer"
+                    />
+                    <span className={`text-xs font-semibold ${
+                      form.canAccessAccountMaster ? 'text-purple-900' : 'text-gray-700'
+                    }`}>Access Account Master</span>
+                  </label>
+                </div>
+              </div>
+
+              {form.canAccessAccountMaster && (
+                <div className="p-3 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg border-2 border-purple-200">
+                  <p className="text-xs font-bold text-purple-900 mb-2">View Type</p>
+                  <div className="space-y-1.5">
+                    <label className={`flex items-center gap-2 p-2 rounded-md cursor-pointer transition ${
+                      form.accountMasterViewType === "view_all" ? 'bg-white shadow-sm' : 'hover:bg-white/50'
+                    }`}>
+                      <input
+                        type="radio"
+                        name="accountMasterViewType"
+                        value="view_all"
+                        checked={form.accountMasterViewType === "view_all"}
+                        onChange={(e) =>
+                          setForm((prev) => ({ ...prev, accountMasterViewType: e.target.value as "view_all" | "view_own" }))
+                        }
+                        className="h-4 w-4 border-2 border-gray-300 text-purple-600 focus:ring-1 focus:ring-purple-500 cursor-pointer"
+                      />
+                      <span className="text-xs font-medium text-gray-700">View All</span>
+                    </label>
+                    <label className={`flex items-center gap-2 p-2 rounded-md cursor-pointer transition ${
+                      form.accountMasterViewType === "view_own" ? 'bg-white shadow-sm' : 'hover:bg-white/50'
+                    }`}>
+                      <input
+                        type="radio"
+                        name="accountMasterViewType"
+                        value="view_own"
+                        checked={form.accountMasterViewType === "view_own"}
+                        onChange={(e) =>
+                          setForm((prev) => ({ ...prev, accountMasterViewType: e.target.value as "view_all" | "view_own" }))
+                        }
+                        className="h-4 w-4 border-2 border-gray-300 text-purple-600 focus:ring-1 focus:ring-purple-500 cursor-pointer"
+                      />
+                      <span className="text-xs font-medium text-gray-700">View Own</span>
+                    </label>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </form>
       </Dialog>
 
