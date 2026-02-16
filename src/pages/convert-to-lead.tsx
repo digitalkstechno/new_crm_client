@@ -303,7 +303,7 @@ export default function ConvertToLeadPage() {
         accountMaster: isEditMode ? accountData._id : accountId,
         items,
         totalAmount: totalAmount.toString(),
-        leadStatus: "Order Confirmation",
+        leadStatus: "New Lead",
       };
       
       if (isEditMode) {
