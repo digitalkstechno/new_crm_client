@@ -431,6 +431,7 @@ export default function AccountMasterPage() {
           totalRecords={totalRecords}
           onPageChange={setPage}
           onSearch={setSearch}
+          initialSearch={search}
           rowClassName={(row) => row.sourcebyTypeOfClient === "O.E.M" ? "bg-yellow-50 hover:bg-yellow-100" : ""}
         />
       )}

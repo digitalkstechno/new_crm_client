@@ -225,6 +225,7 @@ export default function RolePage() {
           totalRecords={totalRecords}
           onPageChange={setPage}
           onSearch={setSearch}
+          initialSearch={search}
         />
       )}
 

@@ -167,6 +167,7 @@ export default function CustomizationTypePage() {
         totalRecords={totalRecords}
         onPageChange={setPage}
         onSearch={setSearch}
+        initialSearch={search}
       />
 
       <Dialog

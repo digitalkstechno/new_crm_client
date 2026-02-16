@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Search , Eye, Edit, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 
 export type Column<T, K extends keyof T = keyof T> = {
   key: K;
@@ -15,12 +15,13 @@ type DataTableProps<T> = {
   columns: Column<T, keyof T>[];
   pageSize?: number;
   searchPlaceholder?: string;
-  currentPage?: number;
-  totalPages?: number;
-  totalRecords?: number;
-  onPageChange?: (page: number) => void;
-  onSearch?: (query: string) => void;
+  currentPage: number;
+  totalPages: number;
+  totalRecords: number;
+  onPageChange: (page: number) => void;
+  onSearch: (query: string) => void;
   rowClassName?: (row: T) => string;
+  initialSearch?: string; // Add this prop to accept initial search value
 };
 
 export default function DataTable<T extends Record<string, unknown>>({
@@ -32,68 +33,35 @@ export default function DataTable<T extends Record<string, unknown>>({
   searchPlaceholder = "Search...",
   currentPage,
   totalPages,
-  totalRecords: totalRecordsProp,
+  totalRecords,
   onPageChange,
   onSearch,
   rowClassName,
+  initialSearch = "",
 }: DataTableProps<T>) {
-  const [query, setQuery] = useState("");
-  const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
 
-  const isServerPagination = currentPage !== undefined && totalPages !== undefined && onPageChange !== undefined;
-  const isServerSearch = onSearch !== undefined;
-
-  const filteredData = useMemo(() => {
-    if (isServerPagination || isServerSearch) return data;
-    if (!query.trim()) return data;
-    const needle = query.toLowerCase();
-    return data.filter((row) =>
-      columns.some((column) => {
-        const value = row[column.key];
-        if (value === null || value === undefined) return false;
-        return String(value).toLowerCase().includes(needle);
-      })
-    );
-  }, [data, columns, query, isServerPagination, isServerSearch]);
-
-  const totalPagesCalc = isServerPagination ? totalPages : Math.max(1, Math.ceil(filteredData.length / pageSize));
-  const currentPageCalc = isServerPagination ? currentPage : page;
-
+  // Update local state when initialSearch prop changes
   useEffect(() => {
-    if (isServerSearch) {
-      const timer = setTimeout(() => {
-        onSearch(query);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [query, isServerSearch, onSearch]);
+    setSearchQuery(initialSearch);
+  }, [initialSearch]);
 
+  // Handle search with debounce
   useEffect(() => {
-    if (!isServerPagination && page > totalPagesCalc) {
-      setPage(totalPagesCalc);
-    }
-  }, [page, totalPagesCalc, isServerPagination]);
+    const timer = setTimeout(() => {
+      // Only call onSearch if the query actually changed from the initial value
+      if (searchQuery !== initialSearch) {
+        onSearch(searchQuery);
+        onPageChange(1); // Reset to page 1 when search changes
+      }
+    }, 500);
 
-  useEffect(() => {
-    if (!isServerSearch) {
-      setPage(1);
-    }
-  }, [query, isServerSearch]);
+    return () => clearTimeout(timer);
+  }, [searchQuery, onSearch, initialSearch, onPageChange]);
 
-  const startIndex = (currentPageCalc - 1) * pageSize;
-  const paginatedData = isServerPagination ? data : filteredData.slice(startIndex, startIndex + pageSize);
-
-  const totalRecords = isServerPagination && totalRecordsProp ? totalRecordsProp : filteredData.length;
+  const startIndex = (currentPage - 1) * pageSize;
   const rangeStart = data.length === 0 ? 0 : startIndex + 1;
-  const rangeEnd = isServerPagination ? startIndex + data.length : Math.min(startIndex + pageSize, filteredData.length);
-
-  const handlePageChange = (newPage: number) => {
-    if (isServerPagination) {
-      onPageChange(newPage);
-    } else {
-      setPage(newPage);
-    }
-  };
+  const rangeEnd = startIndex + data.length;
 
   return (
     <section className="rounded-2xl bg-white p-6 shadow-sm">
@@ -109,8 +77,8 @@ export default function DataTable<T extends Record<string, unknown>>({
           <div className="relative w-full max-w-xs">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
               placeholder={searchPlaceholder}
               className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-3 text-sm text-gray-700 outline-none transition focus:border-gray-300 focus:bg-white"
             />
@@ -131,14 +99,14 @@ export default function DataTable<T extends Record<string, unknown>>({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {paginatedData.length === 0 ? (
+              {data.length === 0 ? (
                 <tr>
                   <td colSpan={columns.length} className="px-4 py-6 text-center text-gray-500">
                     No results found.
                   </td>
                 </tr>
               ) : (
-                paginatedData.map((row, rowIndex) => (
+                data.map((row, rowIndex) => (
                   <tr key={rowIndex} className={`bg-white ${rowClassName ? rowClassName(row) : ""}`}>
                     {columns.map((column) => {
                       const value = row[column.key];
@@ -147,7 +115,7 @@ export default function DataTable<T extends Record<string, unknown>>({
                           key={String(column.key)}
                           className={`px-4 py-3 text-gray-700 ${column.className ?? ""}`}
                         >
-                          {column.render ? column.render(value, row) : String(value)}
+                          {column.render ? column.render(value, row) : String(value ?? '')}
                         </td>
                       );
                     })}
@@ -161,13 +129,13 @@ export default function DataTable<T extends Record<string, unknown>>({
 
       <div className="mt-4 flex flex-col items-center justify-between gap-3 sm:flex-row">
         <p className="text-xs text-gray-500">
-          Page {currentPageCalc} of {totalPagesCalc}
+          Page {currentPage} of {totalPages}
         </p>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => handlePageChange(Math.max(1, currentPageCalc - 1))}
+            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
             className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 transition hover:border-gray-300 hover:text-gray-900 disabled:opacity-50"
-            disabled={currentPageCalc === 1}
+            disabled={currentPage === 1}
           >
             <ChevronLeft className="h-4 w-4" />
             Prev
@@ -175,16 +143,16 @@ export default function DataTable<T extends Record<string, unknown>>({
           <div className="flex items-center gap-1">
             {(() => {
               const pages = [];
-              const showFirst = currentPageCalc > 2;
-              const showLast = currentPageCalc < totalPagesCalc - 1;
-              const showLeftDots = currentPageCalc > 3;
-              const showRightDots = currentPageCalc < totalPagesCalc - 2;
+              const showFirst = currentPage > 2;
+              const showLast = currentPage < totalPages - 1;
+              const showLeftDots = currentPage > 3;
+              const showRightDots = currentPage < totalPages - 2;
 
               if (showFirst) {
                 pages.push(
                   <button
                     key={1}
-                    onClick={() => handlePageChange(1)}
+                    onClick={() => onPageChange(1)}
                     className="h-8 w-8 rounded-lg border border-gray-200 text-xs font-semibold text-gray-600 transition hover:border-gray-300 hover:text-gray-900"
                   >
                     1
@@ -200,35 +168,35 @@ export default function DataTable<T extends Record<string, unknown>>({
                 );
               }
 
-              if (currentPageCalc > 1) {
+              if (currentPage > 1) {
                 pages.push(
                   <button
-                    key={currentPageCalc - 1}
-                    onClick={() => handlePageChange(currentPageCalc - 1)}
+                    key={currentPage - 1}
+                    onClick={() => onPageChange(currentPage - 1)}
                     className="h-8 w-8 rounded-lg border border-gray-200 text-xs font-semibold text-gray-600 transition hover:border-gray-300 hover:text-gray-900"
                   >
-                    {currentPageCalc - 1}
+                    {currentPage - 1}
                   </button>
                 );
               }
 
               pages.push(
                 <button
-                  key={currentPageCalc}
+                  key={currentPage}
                   className="h-8 w-8 rounded-lg bg-gray-900 text-xs font-semibold text-white"
                 >
-                  {currentPageCalc}
+                  {currentPage}
                 </button>
               );
 
-              if (currentPageCalc < totalPagesCalc) {
+              if (currentPage < totalPages) {
                 pages.push(
                   <button
-                    key={currentPageCalc + 1}
-                    onClick={() => handlePageChange(currentPageCalc + 1)}
+                    key={currentPage + 1}
+                    onClick={() => onPageChange(currentPage + 1)}
                     className="h-8 w-8 rounded-lg border border-gray-200 text-xs font-semibold text-gray-600 transition hover:border-gray-300 hover:text-gray-900"
                   >
-                    {currentPageCalc + 1}
+                    {currentPage + 1}
                   </button>
                 );
               }
@@ -244,11 +212,11 @@ export default function DataTable<T extends Record<string, unknown>>({
               if (showLast) {
                 pages.push(
                   <button
-                    key={totalPagesCalc}
-                    onClick={() => handlePageChange(totalPagesCalc)}
+                    key={totalPages}
+                    onClick={() => onPageChange(totalPages)}
                     className="h-8 w-8 rounded-lg border border-gray-200 text-xs font-semibold text-gray-600 transition hover:border-gray-300 hover:text-gray-900"
                   >
-                    {totalPagesCalc}
+                    {totalPages}
                   </button>
                 );
               }
@@ -257,9 +225,9 @@ export default function DataTable<T extends Record<string, unknown>>({
             })()}
           </div>
           <button
-            onClick={() => handlePageChange(Math.min(totalPagesCalc, currentPageCalc + 1))}
+            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
             className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 transition hover:border-gray-300 hover:text-gray-900 disabled:opacity-50"
-            disabled={currentPageCalc === totalPagesCalc}
+            disabled={currentPage === totalPages}
           >
             Next
             <ChevronRight className="h-4 w-4" />

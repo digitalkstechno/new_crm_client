@@ -415,43 +415,47 @@ export default function LeadsPage() {
   return (
     <>
       {/* HEADER */}
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-6">
+        <div className="mb-4">
+          <h1 className="text-2xl font-bold text-gray-900">
+            {view === "kanban" ? "Kanban Board" : "Leads"}
+          </h1>
+        </div>
+        
         <div className="flex gap-2">
           <button
             onClick={() => setView("table")}
-            className={`rounded-lg px-4 py-2 text-sm ${
+            className={`rounded-lg px-4 py-2 text-sm font-medium ${
               view === "table"
                 ? "bg-black text-white"
-                : "border"
+                : "border border-gray-200 text-gray-700 hover:bg-gray-50"
             }`}
           >
             Table View
           </button>
-
           <button
             onClick={() => setView("kanban")}
-            className={`rounded-lg px-4 py-2 text-sm ${
+            className={`rounded-lg px-4 py-2 text-sm font-medium ${
               view === "kanban"
                 ? "bg-black text-white"
-                : "border"
+                : "border border-gray-200 text-gray-700 hover:bg-gray-50"
             }`}
           >
             Kanban View
           </button>
+          {view === "table" && (
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="ml-auto rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm outline-none"
+            >
+              <option value="">All Status</option>
+              {allowedStatuses.map((status) => (
+                <option key={status} value={status}>{status}</option>
+              ))}
+            </select>
+          )}
         </div>
-
-        {view === "table" && (
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm outline-none"
-          >
-            <option value="">All Status</option>
-            {allowedStatuses.map((status) => (
-              <option key={status} value={status}>{status}</option>
-            ))}
-          </select>
-        )}
       </div>
 
       {/* TABLE */}
@@ -467,13 +471,14 @@ export default function LeadsPage() {
           totalRecords={totalRecords}
           onPageChange={setPage}
           onSearch={setSearch}
+          initialSearch={search}
           rowClassName={(row) => row.accountMaster?.sourcebyTypeOfClient === "O.E.M" ? "bg-yellow-50 hover:bg-yellow-100" : ""}
         />
       )}
 
       {/* KANBAN */}
       {view === "kanban" && (
-        <div className="flex gap-4">
+        <div className="flex gap-4 overflow-x-auto pb-4 h-[calc(100vh-230px)]">
           {allowedStatuses.map((status) => (
             <KanbanColumn
               key={status}
@@ -559,20 +564,33 @@ function KanbanColumn({
   hasMore: boolean;
   allowedStatuses: LeadStatus[];
 }) {
+  const columnColors: Record<string, string> = {
+    "New Lead": "bg-blue-50",
+    "Quotation Given": "bg-purple-50",
+    "Follow Up": "bg-amber-50",
+    "Order Confirmation": "bg-cyan-50",
+    "PI": "bg-indigo-50",
+    "Order Execution": "bg-orange-50",
+    "Dispatch": "bg-teal-50",
+    "Final Payment": "bg-green-50",
+    "Completed": "bg-emerald-50",
+    "Lost": "bg-red-50"
+  };
+
   return (
     <div 
-      className="w-80 flex-shrink-0 rounded-2xl bg-gray-100 p-3"
+      className={`w-80 flex-shrink-0 rounded-2xl p-4 h-full flex flex-col ${columnColors[status] || "bg-gray-50"}`}
       onDragOver={onDragOver}
       onDrop={(e) => onDrop(e, status)}
     >
-      <div className="mb-3 flex items-center justify-between sticky top-0 bg-gray-100 z-10">
-        <h3 className="text-sm font-semibold text-gray-900">{status}</h3>
-        <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-semibold text-gray-700">
+      <div className="mb-4 flex items-center justify-between flex-shrink-0">
+        <h3 className="text-base font-bold text-gray-900">{status}</h3>
+        <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-gray-700 shadow-sm">
           {totalCount}
         </span>
       </div>
 
-      <div className="h-[calc(100vh-220px)] overflow-y-auto space-y-3" onScroll={onScroll}>
+      <div className="flex-1 space-y-3 overflow-y-auto pr-1" onScroll={onScroll}>
         {leads.map((lead) => {
           const isOEM = lead.accountMaster?.sourcebyTypeOfClient === "O.E.M";
           const doneItems = lead.items?.filter((item: any) => item.isDone).length || 0;
@@ -582,65 +600,74 @@ function KanbanColumn({
               key={lead._id}
               draggable
               onDragStart={(e) => onDragStart(e, lead._id, status)}
-              className={`rounded-xl p-3 shadow-sm ring-1 transition hover:shadow-md cursor-grab active:cursor-grabbing ${
-                isOEM
-                  ? "bg-yellow-100 ring-yellow-300 hover:bg-yellow-200"
-                  : "bg-white ring-gray-200"
+              className={`group cursor-grab rounded-2xl p-4 shadow-sm transition-all hover:shadow-lg active:cursor-grabbing ${
+                isOEM ? "bg-yellow-50 ring-2 ring-yellow-400" : "bg-white"
               }`}
             >
-              <h4 className="text-sm font-semibold text-gray-900">
+              <h4 className="text-sm font-bold text-gray-900 line-clamp-1">
                 {lead.accountMaster?.companyName || "N/A"}
               </h4>
-              <p className="text-xs text-gray-500">{lead.accountMaster?.clientName || "N/A"}</p>
+              <p className="mt-1 text-xs text-gray-500 line-clamp-2">
+                {lead.accountMaster?.clientName || "N/A"}
+              </p>
 
-              <div className="mt-2 flex items-center justify-between">
-                <span className="text-xs text-gray-600">{lead.clientType}</span>
+              <div className="mt-3 flex items-center justify-between">
+                <span className="text-xs text-gray-400">
+                  {new Date(lead.deliveryDate).toLocaleDateString()}
+                </span>
+              </div>
+
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                <span className="rounded-lg bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700">
+                  {lead.clientType}
+                </span>
+                {isOEM && (
+                  <span className="rounded-lg bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-700">
+                    OEM
+                  </span>
+                )}
+                {status === "Order Execution" && totalItems > 0 && (
+                  <span className="rounded-lg bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
+                    {doneItems}/{totalItems} Done
+                  </span>
+                )}
+              </div>
+
+              <div className="mt-3 flex items-center justify-between">
                 <span className="text-sm font-bold text-green-600">₹{lead.totalAmount}</span>
-              </div>
-
-              <div className="mt-2 flex items-center justify-between text-xs text-gray-400">
-                <span>{new Date(lead.deliveryDate).toLocaleDateString()}</span>
-                <span>{totalItems} items</span>
-              </div>
-
-              {status === "Order Execution" && (
-                <div className="mt-2 rounded bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
-                  Done: {doneItems} | Pending: {totalItems - doneItems}
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-xs font-semibold text-gray-600">
+                  {lead.accountMaster?.assignBy?.fullName?.charAt(0) || "?"}
                 </div>
-              )}
+              </div>
 
-              <div className="mt-2 flex gap-1">
+              <div className="mt-3 flex gap-1.5">
                 <button
                   onClick={() => onViewLead(lead)}
-                  className="flex-1 inline-flex items-center justify-center gap-1 rounded-lg bg-slate-900 px-2 py-1.5 text-xs font-semibold text-white hover:bg-slate-800"
+                  className="flex-1 rounded-xl bg-slate-900 px-2 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"
                 >
-                  <Eye className="h-3 w-3" />
                   View
                 </button>
                 {status === "Follow Up" && (
                   <button
                     onClick={() => onFollowUpClick(lead._id)}
-                    className="flex-1 inline-flex items-center justify-center gap-1 rounded-lg bg-blue-600 px-2 py-1.5 text-xs font-semibold text-white hover:bg-blue-700"
+                    className="flex-1 rounded-xl bg-blue-600 px-2 py-2 text-xs font-semibold text-white transition hover:bg-blue-700"
                   >
-                    <Calendar className="h-3 w-3" />
                     Follow Up
                   </button>
                 )}
                 {status === "Order Execution" && (
                   <button
                     onClick={() => onOrderExecutionClick(lead)}
-                    className="flex-1 inline-flex items-center justify-center gap-1 rounded-lg bg-green-600 px-2 py-1.5 text-xs font-semibold text-white hover:bg-green-700"
+                    className="flex-1 rounded-xl bg-green-600 px-2 py-2 text-xs font-semibold text-white transition hover:bg-green-700"
                   >
-                    <CheckSquare className="h-3 w-3" />
                     Items
                   </button>
                 )}
                 {status !== "Lost" && (
                   <button
                     onClick={() => onMoveToLost(lead._id)}
-                    className="flex-1 inline-flex items-center justify-center gap-1 rounded-lg bg-red-600 px-2 py-1.5 text-xs font-semibold text-white hover:bg-red-700"
+                    className="rounded-xl bg-red-600 px-2 py-2 text-xs font-semibold text-white transition hover:bg-red-700"
                   >
-                    <XCircle className="h-3 w-3" />
                     Lost
                   </button>
                 )}

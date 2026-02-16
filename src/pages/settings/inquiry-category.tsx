@@ -175,6 +175,7 @@ export default function InquiryCategoryPage() {
           totalRecords={totalRecords}
           onPageChange={setPage}
           onSearch={setSearch}
+          initialSearch={search}
         />
       )}
 

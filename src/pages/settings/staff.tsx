@@ -210,6 +210,7 @@ export default function StaffPage() {
           totalRecords={totalRecords}
           onPageChange={setPage}
           onSearch={setSearch}
+          initialSearch={search}
         />
       )}
 

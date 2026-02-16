@@ -247,6 +247,7 @@ export default function ModelSuggestionPage() {
           totalRecords={totalRecords}
           onPageChange={setPage}
           onSearch={setSearch}
+          initialSearch={search}
         />
       )}
 
