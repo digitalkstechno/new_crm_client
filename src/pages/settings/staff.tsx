@@ -128,8 +128,8 @@ export default function StaffPage() {
   };
 
   // 🔥 Fetch all staff from API
-  const fetchAllStaff = async () => {
-    setLoading(true);
+  const fetchAllStaff = async (showLoader = true) => {
+    if (showLoader) setLoading(true);
     try {
       const response = await api.get(`${baseUrl.STAFF}?page=${page}&limit=10&search=${search}`);
       setStaff(response.data.data);
@@ -138,7 +138,7 @@ export default function StaffPage() {
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to fetch User");
     } finally {
-      setLoading(false);
+      if (showLoader) setLoading(false);
     }
   };
 
@@ -156,7 +156,7 @@ export default function StaffPage() {
   }, []);
 
   useEffect(() => {
-    fetchAllStaff();
+    fetchAllStaff(page === 1 && search === "");
   }, [page, search]);
 
   const handleSubmit = async (event: React.FormEvent) => {

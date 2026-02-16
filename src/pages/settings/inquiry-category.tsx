@@ -106,22 +106,22 @@ export default function InquiryCategoryPage() {
     }
   };
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      setLoading(true);
-      try {
-        const res = await api.get(`${baseUrl.INQUIRYCATEGORY}?page=${page}&limit=10&search=${search}`);
-        setCategories(res.data.data);
-        setTotalPages(res.data.pagination?.totalPages || 1);
-        setTotalRecords(res.data.pagination?.totalRecords || 0);
-      } catch (err: any) {
-        toast.error(err.response?.data?.message || "Failed to fetch categories");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchCategories = async (showLoader = true) => {
+    if (showLoader) setLoading(true);
+    try {
+      const res = await api.get(`${baseUrl.INQUIRYCATEGORY}?page=${page}&limit=10&search=${search}`);
+      setCategories(res.data.data);
+      setTotalPages(res.data.pagination?.totalPages || 1);
+      setTotalRecords(res.data.pagination?.totalRecords || 0);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to fetch categories");
+    } finally {
+      if (showLoader) setLoading(false);
+    }
+  };
 
-    fetchCategories();
+  useEffect(() => {
+    fetchCategories(page === 1 && search === "");
   }, [page, search]);
 
   const handleSubmit = async (event: React.FormEvent) => {

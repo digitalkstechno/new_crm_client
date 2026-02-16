@@ -163,8 +163,8 @@ export default function ModelSuggestionPage() {
   };
 
   // 🔥 Fetch all model suggestions
-  const fetchModels = async () => {
-    setLoading(true);
+  const fetchModels = async (showLoader = true) => {
+    if (showLoader) setLoading(true);
     try {
       const res = await api.get(`${baseUrl.MODEL_SUGGESTION}?page=${page}&limit=10&search=${search}`);
       setModels(res.data.data);
@@ -173,13 +173,13 @@ export default function ModelSuggestionPage() {
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to fetch models");
     } finally {
-      setLoading(false);
+      if (showLoader) setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchCategories();
-    fetchModels();
+    fetchModels(page === 1 && search === "");
   }, [page, search]);
 
   const handleSubmit = async (event: React.FormEvent) => {

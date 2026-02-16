@@ -59,7 +59,7 @@ export default function AccountMasterPage() {
   const [importing, setImporting] = useState(false);
 
   useEffect(() => {
-    fetchAccounts();
+    fetchAccounts(page === 1 && search === "");
   }, [page, search]);
 
   const fetchStaff = async () => {
@@ -75,19 +75,17 @@ export default function AccountMasterPage() {
     }
   };
 
-  const fetchAccounts = async () => {
-    setLoading(true);
+  const fetchAccounts = async (showLoader = true) => {
+    if (showLoader) setLoading(true);
     try {
       const response = await api.get(`${baseUrl.ACCOUNTMASTER}?page=${page}&limit=10&search=${search}`);
 
-      // Get current user's role and staff ID
       const userRole = localStorage.getItem("userRole");
       const staffId = localStorage.getItem("staffId");
       const accountMasterViewType = localStorage.getItem("accountMasterViewType");
 
       let filteredAccounts = response.data.data || [];
 
-      // If view type is "view_own", filter only assigned accounts
       if (accountMasterViewType === "view_own" && staffId) {
         filteredAccounts = filteredAccounts.filter((account: AccountRow) =>
           account.assignBy?._id === staffId
@@ -100,7 +98,7 @@ export default function AccountMasterPage() {
     } catch (error) {
       toast.error("Failed to fetch accounts");
     } finally {
-      setLoading(false);
+      if (showLoader) setLoading(false);
     }
   };
 

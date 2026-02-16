@@ -147,8 +147,8 @@ export default function RolePage() {
     setEditMode({ isEdit: false, id: null });
   };
 
-  const fetchAllRoles = async () => {
-    setLoading(true);
+  const fetchAllRoles = async (showLoader = true) => {
+    if (showLoader) setLoading(true);
     try {
       const response = await api.get(`${baseUrl.ROLE}/fetch-all?page=${page}&limit=10&search=${search}`);
       setRoles(response.data.data);
@@ -157,12 +157,12 @@ export default function RolePage() {
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to fetch roles");
     } finally {
-      setLoading(false);
+      if (showLoader) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchAllRoles();
+    fetchAllRoles(page === 1 && search === "");
   }, [page, search]);
 
   const handleSubmit = async (event: React.FormEvent) => {
