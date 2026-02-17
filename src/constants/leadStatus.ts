@@ -5,8 +5,8 @@ export const LEAD_STATUSES = [
   "Order Confirmation",
   "PI",
   "Order Execution",
-  "Dispatch",
   "Final Payment",
+  "Dispatch",
   "Completed",
   "Lost",
 ] as const;

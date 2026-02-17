@@ -16,6 +16,7 @@ type Lead = {
   totalAmount: string;
   shippingCharges?: string;
   budget?: { from?: string; to?: string };
+  confirmationRemark?: string;
   accountMaster?: {
     companyName: string;
     clientName: string;
@@ -194,6 +195,12 @@ export default function LeadDetailsPage() {
             <p className="mt-1 text-sm text-gray-700">{lead.accountMaster.remark}</p>
           </div>
         )}
+        {lead.confirmationRemark && (
+          <div className="mt-4 rounded-lg bg-blue-50 p-3">
+            <label className="text-xs font-semibold text-blue-700">Confirmation Remark</label>
+            <p className="mt-1 text-sm text-gray-700">{lead.confirmationRemark}</p>
+          </div>
+        )}
       </div>
 
       {/* LEAD INFO */}
@@ -240,6 +247,45 @@ export default function LeadDetailsPage() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* PAYMENT SUMMARY */}
+      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="mb-4 flex items-center gap-2">
+          <DollarSign className="h-5 w-5 text-gray-600" />
+          <h2 className="text-lg font-semibold text-gray-900">Payment Summary</h2>
+        </div>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
+            <span className="text-sm font-medium text-gray-700">Total Amount</span>
+            <span className="text-lg font-bold text-gray-900">₹{lead.totalAmount}</span>
+          </div>
+          <div className="flex items-center justify-between rounded-lg bg-green-50 p-3">
+            <span className="text-sm font-medium text-green-700">Advance Paid</span>
+            <span className="text-lg font-bold text-green-600">
+              ₹{(lead.paymentHistory || []).reduce((sum, p) => sum + parseFloat(p.amount || "0"), 0).toFixed(2)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between rounded-lg bg-red-50 p-3">
+            <span className="text-sm font-medium text-red-700">Pending Amount</span>
+            <span className="text-lg font-bold text-red-600">
+              ₹{(parseFloat(lead.totalAmount) - (lead.paymentHistory || []).reduce((sum, p) => sum + parseFloat(p.amount || "0"), 0)).toFixed(2)}
+            </span>
+          </div>
+        </div>
+        {lead.paymentHistory && lead.paymentHistory.length > 0 && (
+          <div className="mt-4">
+            <h3 className="mb-2 text-sm font-semibold text-gray-700">Payment History</h3>
+            <div className="space-y-2">
+              {lead.paymentHistory.map((payment, index) => (
+                <div key={index} className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-2">
+                  <span className="text-sm text-gray-900">₹{payment.amount}</span>
+                  <span className="text-xs text-gray-500">{new Date(payment.date).toLocaleDateString()}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ITEMS */}
@@ -316,27 +362,6 @@ export default function LeadDetailsPage() {
               <div key={index} className="rounded-lg border-l-4 border-blue-500 bg-blue-50 p-3">
                 <p className="text-xs text-gray-500">{new Date(remark.date).toLocaleString()}</p>
                 <p className="mt-1 text-sm text-gray-900">{remark.remark}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* PAYMENT HISTORY */}
-      {lead.paymentHistory && lead.paymentHistory.length > 0 && (
-        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">Payment History</h2>
-          <div className="space-y-3">
-            {lead.paymentHistory.map((payment, index) => (
-              <div key={index} className="rounded-lg border border-gray-200 bg-gray-50 p-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">₹{payment.amount}</p>
-                    <p className="text-xs text-gray-500">{payment.modeOfPayment}</p>
-                  </div>
-                  <p className="text-xs text-gray-500">{new Date(payment.date).toLocaleDateString()}</p>
-                </div>
-                {payment.remark && <p className="mt-2 text-xs text-gray-600">{payment.remark}</p>}
               </div>
             ))}
           </div>

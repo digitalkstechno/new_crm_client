@@ -60,6 +60,7 @@ export default function ConvertToLeadPage() {
   const [shippingCharges, setShippingCharges] = useState("");
   const [budgetFrom, setBudgetFrom] = useState("");
   const [budgetTo, setBudgetTo] = useState("");
+  const [confirmationRemark, setConfirmationRemark] = useState("");
   const [inquiryCategories, setInquiryCategories] = useState<InquiryCategory[]>([]);
   const [customizationTypes, setCustomizationTypes] = useState<InquiryCategory[]>([]);
   const [allModelSuggestions, setAllModelSuggestions] = useState<{ [key: string]: ModelSuggestion[] }>({});
@@ -114,6 +115,7 @@ export default function ConvertToLeadPage() {
       setShippingCharges(lead.shippingCharges || "");
       setBudgetFrom(lead.budget?.from || "");
       setBudgetTo(lead.budget?.to || "");
+      setConfirmationRemark(lead.confirmationRemark || "");
       
       const loadedProducts = lead.items.map((item: any) => {
         const categoryId = item.inquiryCategory._id;
@@ -303,7 +305,8 @@ export default function ConvertToLeadPage() {
         accountMaster: isEditMode ? accountData._id : accountId,
         items,
         totalAmount: totalAmount.toString(),
-        leadStatus: "New Lead",
+        leadStatus: isEditMode ? "Order Confirmation" : "New Lead",
+        confirmationRemark: isEditMode ? confirmationRemark : undefined,
       };
       
       if (isEditMode) {
@@ -401,6 +404,20 @@ export default function ConvertToLeadPage() {
             />
           </div>
         </div>
+
+        {/* Confirmation Remark - Only in Edit Mode */}
+        {isEditMode && (
+          <div className="mb-6">
+            <label className="mb-1 block text-xs font-medium text-gray-700">Confirmation Remark</label>
+            <textarea
+              value={confirmationRemark}
+              onChange={(e) => setConfirmationRemark(e.target.value)}
+              rows={3}
+              className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none focus:border-gray-300 focus:bg-white"
+              placeholder="Enter confirmation remark..."
+            />
+          </div>
+        )}
 
         {/* Products */}
         <div className="mb-6">
