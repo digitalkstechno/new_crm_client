@@ -39,6 +39,7 @@ type Lead = {
   items: any[];
   maxStatusReached?: LeadStatus;
   paymentHistory?: { amount: string; date: string }[];
+  followUps?: { date: string; description: string; createdAt: string }[];
 };
 
 /* ================= PAGE ================= */
@@ -251,7 +252,7 @@ export default function LeadsPage() {
         toast.error("Failed to verify lead status");
       }
     } else if (toStatus === "Dispatch") {
-      // Check pending payment = 0 before dispatch
+      // Check pending payment <= 1 before dispatch (tolerance for floating point and small amounts)
       try {
         const response = await api.get(`${baseUrl.LEAD}/${leadId}`);
         const freshLead = response.data.data;
@@ -260,7 +261,7 @@ export default function LeadsPage() {
         const paidAmount = (freshLead.paymentHistory || []).reduce((sum: number, p: any) => sum + parseFloat(p.amount || 0), 0);
         const pendingAmount = totalAmount - paidAmount;
         
-        if (pendingAmount > 0) {
+        if (pendingAmount > 1) {
           toast.error("Pending payment must be 0 before dispatch");
           return;
         }
@@ -355,6 +356,9 @@ export default function LeadsPage() {
       if (pendingStatus) {
         await handleStatusChange(leadId, pendingStatus);
       }
+      
+      // Refetch the lead to update followUps in UI
+      await refetchSingleLead(leadId);
       
       toast.success("Follow up added successfully");
       setFollowUpDialog({ isOpen: false, leadId: null });

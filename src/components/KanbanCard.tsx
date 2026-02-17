@@ -26,6 +26,7 @@ type Lead = {
   items: any[];
   maxStatusReached?: LeadStatus;
   paymentHistory?: { amount: string; date: string }[];
+  followUps?: { date: string; description: string; createdAt: string }[];
 };
 
 export default function KanbanCard({
@@ -122,6 +123,18 @@ export default function KanbanCard({
         {isHighlighted && (
           <span className="rounded-lg bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-700">
             {lead.accountMaster?.sourcebyTypeOfClient?.name}
+          </span>
+        )}
+        {status === "Follow Up" && lead.followUps && lead.followUps.length > 0 && (
+          <span className="rounded-lg bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700">
+            Next: {new Date(lead.followUps[lead.followUps.length - 1].date).toLocaleString('en-IN', { 
+              day: '2-digit', 
+              month: '2-digit', 
+              year: 'numeric', 
+              hour: '2-digit', 
+              minute: '2-digit',
+              hour12: true 
+            })}
           </span>
         )}
         {status === "Order Execution" && totalItems > 0 && (

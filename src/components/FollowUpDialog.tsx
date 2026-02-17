@@ -13,6 +13,8 @@ export default function FollowUpDialog({ isOpen, onClose, onSubmit }: FollowUpDi
 
   if (!isOpen) return null;
 
+  const today = new Date().toISOString().slice(0, 16);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (date && description) {
@@ -41,6 +43,7 @@ export default function FollowUpDialog({ isOpen, onClose, onSubmit }: FollowUpDi
               type="datetime-local"
               value={date}
               onChange={(e) => setDate(e.target.value)}
+              min={today}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-black"
               required
             />

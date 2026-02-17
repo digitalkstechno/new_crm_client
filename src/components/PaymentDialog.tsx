@@ -31,7 +31,7 @@ export default function PaymentDialog({
       setError("Please enter a valid amount");
       return;
     }
-    if (parseFloat(amount) > pendingAmount) {
+    if (parseFloat(amount) > pendingAmount + 0.01) {
       setError("Amount cannot exceed pending amount");
       return;
     }
@@ -69,13 +69,11 @@ export default function PaymentDialog({
           <input
             type="number"
             value={amount}
+            step="0.01"
             max={pendingAmount}
             onChange={(e) => {
-              const val = e.target.value;
-              if (val === "" || parseFloat(val) <= pendingAmount) {
-                setAmount(val);
-                setError("");
-              }
+              setAmount(e.target.value);
+              setError("");
             }}
             className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-gray-400"
             placeholder={`Max: ${pendingAmount.toFixed(2)}`}
