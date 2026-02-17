@@ -73,6 +73,11 @@ api.interceptors.response.use(
           );
 
           const { token, refreshToken: newRefreshToken } = response.data;
+          
+          if (!token || !newRefreshToken) {
+            throw new Error("Invalid refresh token response");
+          }
+          
           localStorage.setItem("token", token);
           localStorage.setItem("refreshToken", newRefreshToken);
 
