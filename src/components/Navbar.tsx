@@ -2,9 +2,17 @@
 
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { api } from "@/utils/axiosInstance";
+import { baseUrl } from "../../config";
 
-function titleFromPath(pathname: string) {
+function titleFromPath(pathname: string, leadName?: string) {
   if (pathname === "/") return "Dashboard";
+
+  // Handle lead-details with dynamic name
+  if (pathname.includes("/lead-details/") && leadName) {
+    return `Lead Details > ${leadName}`;
+  }
 
   return pathname
     .split("/")
@@ -23,7 +31,20 @@ function titleFromPath(pathname: string) {
 
 export default function Navbar() {
   const router = useRouter();
-  const title = titleFromPath(router.pathname);
+  const [leadName, setLeadName] = useState<string>();
+
+  useEffect(() => {
+    if (router.pathname.includes("/lead-details/") && router.query.id) {
+      api.get(`${baseUrl.LEAD}/${router.query.id}`)
+        .then(res => {
+          const companyName = res.data.data?.accountMaster?.companyName;
+          if (companyName) setLeadName(companyName);
+        })
+        .catch(() => {});
+    }
+  }, [router.pathname, router.query.id]);
+
+  const title = titleFromPath(router.pathname, leadName);
 
   const handleLogout = () => {
     localStorage.removeItem("token");

@@ -72,7 +72,12 @@ export default function LeadsPage() {
       setAllowedStatuses(JSON.parse(permissions));
     }
     fetchClientTypes();
-  }, []);
+    
+    // Check if kanban query param exists
+    if (router.query.kanban === 'true') {
+      setView('kanban');
+    }
+  }, [router.query.kanban]);
 
   const fetchClientTypes = async () => {
     try {
@@ -525,7 +530,10 @@ export default function LeadsPage() {
         
         <div className="flex gap-2">
           <button
-            onClick={() => setView("table")}
+            onClick={() => {
+              setView("table");
+              router.push("/leads", undefined, { shallow: true });
+            }}
             className={`rounded-lg px-4 py-2 text-sm font-medium ${
               view === "table"
                 ? "bg-black text-white"
@@ -535,7 +543,10 @@ export default function LeadsPage() {
             Table View
           </button>
           <button
-            onClick={() => setView("kanban")}
+            onClick={() => {
+              setView("kanban");
+              router.push("/leads?kanban=true", undefined, { shallow: true });
+            }}
             className={`rounded-lg px-4 py-2 text-sm font-medium ${
               view === "kanban"
                 ? "bg-black text-white"

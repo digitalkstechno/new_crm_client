@@ -316,7 +316,7 @@ export default function ConvertToLeadPage() {
         await api.post(baseUrl.LEAD, payload);
         toast.success("Lead converted successfully!");
       }
-      router.push("/leads");
+      router.push("/leads?kanban=true");
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to save lead");
     }
