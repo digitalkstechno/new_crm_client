@@ -13,6 +13,8 @@ import {
   Palette,
   FolderOpen,
   Package,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -23,6 +25,8 @@ type SidebarProps = {
 export default function Sidebar({ collapsed }: SidebarProps) {
   const pathname = usePathname();
   const [view, setView] = useState<"main" | "settings">("main");
+  const [userRoleOpen, setUserRoleOpen] = useState(false);
+  const [masterDataOpen, setMasterDataOpen] = useState(false);
   const [canAccessSettings, setCanAccessSettings] = useState(false);
   const [userName, setUserName] = useState("User");
   const [userRole, setUserRole] = useState("Role");
@@ -40,6 +44,14 @@ export default function Sidebar({ collapsed }: SidebarProps) {
     // Set view based on current pathname on mount WITHOUT animation
     if (pathname.startsWith("/settings")) {
       setView("settings");
+      if (pathname === "/settings/staff" || pathname === "/settings/role") {
+        setUserRoleOpen(true);
+      }
+      if (pathname === "/settings/customization-type" || pathname === "/settings/inquiry-category" || 
+          pathname === "/settings/module-suggestion" || pathname === "/settings/client-type" || 
+          pathname === "/settings/source-from") {
+        setMasterDataOpen(true);
+      }
     }
     
     // Enable animation after initial render
@@ -164,96 +176,134 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                 {!collapsed && "Back"}
               </button>
 
-              <Link
-                href="/settings/staff"
-                className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${isActive("/settings/staff")
-                  ? "bg-white/10 text-white"
-                  : "text-slate-400 hover:text-white hover:bg-white/5"
-                  }`}
-              >
-                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/settings/staff") ? "bg-cyan-500" : "bg-cyan-500/20"}`}>
-                  <Users className="h-4 w-4 text-white" />
-                </div>
-                {!collapsed && "User Management"}
-              </Link>
-              <Link
-                href="/settings/role"
-                className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${isActive("/settings/role")
-                  ? "bg-white/10 text-white"
-                  : "text-slate-400 hover:text-white hover:bg-white/5"
-                  }`}
-              >
-                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/settings/role") ? "bg-red-500" : "bg-red-500/20"}`}>
-                  <Shield className="h-4 w-4 text-white" />
-                </div>
-                {!collapsed && "Role Management"}
-              </Link>
-              <Link
-                href="/settings/customization-type"
-                className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${isActive("/settings/customization-type")
-                  ? "bg-white/10 text-white"
-                  : "text-slate-400 hover:text-white hover:bg-white/5"
-                  }`}
-              >
-                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/settings/customization-type") ? "bg-pink-500" : "bg-pink-500/20"}`}>
-                  <Palette className="h-4 w-4 text-white" />
-                </div>
-                {!collapsed && "Customization Type"}
-              </Link>
-              <Link
-                href="/settings/inquiry-category"
-                className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${isActive("/settings/inquiry-category")
-                  ? "bg-white/10 text-white"
-                  : "text-slate-400 hover:text-white hover:bg-white/5"
-                  }`}
-              >
-                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/settings/inquiry-category") ? "bg-yellow-500" : "bg-yellow-500/20"}`}>
-                  <FolderOpen className="h-4 w-4 text-white" />
-                </div>
-                {!collapsed && "Inquiry Category"}
-              </Link>
+              <div>
+                <button
+                  onClick={() => {
+                    setUserRoleOpen(!userRoleOpen);
+                    setMasterDataOpen(false);
+                  }}
+                  className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 transition ${(pathname === "/settings/staff" || pathname === "/settings/role")
+                    ? "bg-white/10 text-white"
+                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                    }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${(pathname === "/settings/staff" || pathname === "/settings/role") ? "bg-cyan-500" : "bg-cyan-500/20"}`}>
+                      <Users className="h-4 w-4 text-white" />
+                    </div>
+                    {!collapsed && "User & Role"}
+                  </div>
+                  {!collapsed && (
+                    userRoleOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />
+                  )}
+                </button>
+                {userRoleOpen && !collapsed && (
+                  <div className="ml-11 mt-1 space-y-1">
+                    <Link
+                      href="/settings/staff"
+                      className={`block rounded-lg px-3 py-2 text-sm transition ${isActive("/settings/staff")
+                        ? "bg-white/10 text-white"
+                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                        }`}
+                    >
+                      User
+                    </Link>
+                    <Link
+                      href="/settings/role"
+                      className={`block rounded-lg px-3 py-2 text-sm transition ${isActive("/settings/role")
+                        ? "bg-white/10 text-white"
+                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                        }`}
+                    >
+                      Role
+                    </Link>
+                  </div>
+                )}
+              </div>
 
-              <Link
-                href="/settings/module-suggestion"
-                className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${isActive("/settings/module-suggestion")
-                  ? "bg-white/10 text-white"
-                  : "text-slate-400 hover:text-white hover:bg-white/5"
-                  }`}
-              >
-                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/settings/module-suggestion") ? "bg-indigo-500" : "bg-indigo-500/20"}`}>
-                  <Package className="h-4 w-4 text-white" />
-                </div>
-                {!collapsed && "Module Suggestion"}
-              </Link>
-
-              <Link
-                href="/settings/client-type"
-                className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${isActive("/settings/client-type")
-                  ? "bg-white/10 text-white"
-                  : "text-slate-400 hover:text-white hover:bg-white/5"
-                  }`}
-              >
-                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/settings/client-type") ? "bg-teal-500" : "bg-teal-500/20"}`}>
-                  <Users className="h-4 w-4 text-white" />
-                </div>
-                {!collapsed && "Client Type"}
-              </Link>
-
-              <Link
-                href="/settings/source-from"
-                className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${isActive("/settings/source-from")
-                  ? "bg-white/10 text-white"
-                  : "text-slate-400 hover:text-white hover:bg-white/5"
-                  }`}
-              >
-                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/settings/source-from") ? "bg-lime-500" : "bg-lime-500/20"}`}>
-                  <FolderOpen className="h-4 w-4 text-white" />
-                </div>
-                {!collapsed && "Source From"}
-              </Link>
-
-
-
+              <div>
+                <button
+                  onClick={() => {
+                    setMasterDataOpen(!masterDataOpen);
+                    setUserRoleOpen(false);
+                  }}
+                  className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 transition ${(
+                    pathname === "/settings/customization-type" || 
+                    pathname === "/settings/inquiry-category" || 
+                    pathname === "/settings/module-suggestion" || 
+                    pathname === "/settings/client-type" || 
+                    pathname === "/settings/source-from"
+                  )
+                    ? "bg-white/10 text-white"
+                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                    }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${(
+                      pathname === "/settings/customization-type" || 
+                      pathname === "/settings/inquiry-category" || 
+                      pathname === "/settings/module-suggestion" || 
+                      pathname === "/settings/client-type" || 
+                      pathname === "/settings/source-from"
+                    ) ? "bg-purple-500" : "bg-purple-500/20"}`}>
+                      <Package className="h-4 w-4 text-white" />
+                    </div>
+                    {!collapsed && "Master Data"}
+                  </div>
+                  {!collapsed && (
+                    masterDataOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />
+                  )}
+                </button>
+                {masterDataOpen && !collapsed && (
+                  <div className="ml-11 mt-1 space-y-1">
+                    <Link
+                      href="/settings/customization-type"
+                      className={`block rounded-lg px-3 py-2 text-sm transition ${isActive("/settings/customization-type")
+                        ? "bg-white/10 text-white"
+                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                        }`}
+                    >
+                      Customization Type
+                    </Link>
+                    <Link
+                      href="/settings/inquiry-category"
+                      className={`block rounded-lg px-3 py-2 text-sm transition ${isActive("/settings/inquiry-category")
+                        ? "bg-white/10 text-white"
+                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                        }`}
+                    >
+                      Inquiry Category
+                    </Link>
+                    <Link
+                      href="/settings/module-suggestion"
+                      className={`block rounded-lg px-3 py-2 text-sm transition ${isActive("/settings/module-suggestion")
+                        ? "bg-white/10 text-white"
+                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                        }`}
+                    >
+                      Module Suggestion
+                    </Link>
+                    <Link
+                      href="/settings/client-type"
+                      className={`block rounded-lg px-3 py-2 text-sm transition ${isActive("/settings/client-type")
+                        ? "bg-white/10 text-white"
+                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                        }`}
+                    >
+                      Client Type
+                    </Link>
+                    <Link
+                      href="/settings/source-from"
+                      className={`block rounded-lg px-3 py-2 text-sm transition ${isActive("/settings/source-from")
+                        ? "bg-white/10 text-white"
+                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                        }`}
+                    >
+                      Source From
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
 
           </div>
