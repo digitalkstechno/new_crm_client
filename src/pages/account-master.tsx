@@ -66,6 +66,11 @@ export default function AccountMasterPage() {
   const [totalRecords, setTotalRecords] = useState(0);
   const [search, setSearch] = useState("");
   const [importing, setImporting] = useState(false);
+  const [importConfirmDialog, setImportConfirmDialog] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [importResultDialog, setImportResultDialog] = useState(false);
+  const [importResults, setImportResults] = useState<any>(null);
+  const [excelMenuOpen, setExcelMenuOpen] = useState(false);
 
   useEffect(() => {
     fetchAccounts(page === 1 && search === "");
@@ -367,22 +372,28 @@ export default function AccountMasterPage() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    setSelectedFile(file);
+    setImportConfirmDialog(true);
+  };
+
+  const confirmImport = async () => {
+    if (!selectedFile) return;
+
     setImporting(true);
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', selectedFile);
 
     try {
       const response = await api.post(`${baseUrl.ACCOUNTMASTER}/import`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      const { success, failed, errors } = response.data.data;
-
-      if (failed > 0) {
-        toast.error(`Import completed: ${success} success, ${failed} failed. Check console for errors.`);
-        console.error('Import errors:', errors);
-      } else {
-        toast.success(`Successfully imported ${success} records!`);
+      const results = response.data.data;
+      setImportResults(results);
+      setImportResultDialog(true);
+      
+      if (results.failed === 0) {
+        toast.success(`Successfully imported ${results.success} records!`);
       }
 
       fetchAccounts();
@@ -390,8 +401,53 @@ export default function AccountMasterPage() {
       toast.error(error.response?.data?.message || 'Failed to import data');
     } finally {
       setImporting(false);
+      setSelectedFile(null);
+      setImportConfirmDialog(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
+  };
+
+  const downloadErrorExcel = () => {
+    if (!importResults?.failedRecords || importResults.failedRecords.length === 0) return;
+
+    const ExcelJS = require('exceljs');
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Failed Records');
+
+    sheet.columns = [
+      { header: 'Row Number', key: 'rowNumber', width: 12 },
+      { header: 'Company Name', key: 'companyName', width: 25 },
+      { header: 'Client Name', key: 'clientName', width: 20 },
+      { header: 'Mobile', key: 'mobile', width: 15 },
+      { header: 'Email', key: 'email', width: 25 },
+      { header: 'Website', key: 'website', width: 25 },
+      { header: 'Issue', key: 'issue', width: 40 }
+    ];
+
+    importResults.failedRecords.forEach((record: any) => {
+      sheet.addRow({
+        rowNumber: record.rowNumber,
+        companyName: record.companyName,
+        clientName: record.clientName,
+        mobile: record.mobile,
+        email: record.email,
+        website: record.website,
+        issue: record.issue
+      });
+    });
+
+    sheet.getRow(1).font = { bold: true };
+    sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFF0000' } };
+
+    workbook.xlsx.writeBuffer().then((buffer: any) => {
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'Failed_Records.xlsx';
+      link.click();
+      window.URL.revokeObjectURL(url);
+    });
   };
 
 
@@ -411,28 +467,61 @@ export default function AccountMasterPage() {
             <Plus className="h-4 w-4" />
             Add Account
           </button>
-          <button
-            onClick={downloadSampleExcel}
-            className="inline-flex items-center gap-2 rounded-lg border border-green-200 bg-white px-4 py-2.5 text-sm font-medium text-green-700 shadow-sm hover:bg-green-50 transition-all"
-          >
-            <FileSpreadsheet className="h-4 w-4" />
-            Sample Excel
-          </button>
-          <button
-            onClick={exportToExcel}
-            className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-white px-4 py-2.5 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-50 transition-all"
-          >
-            <Download className="h-4 w-4" />
-            Export
-          </button>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={importing}
-            className="inline-flex items-center gap-2 rounded-lg border border-purple-200 bg-white px-4 py-2.5 text-sm font-medium text-purple-700 shadow-sm hover:bg-purple-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Upload className="h-4 w-4" />
-            {importing ? 'Importing...' : 'Import'}
-          </button>
+          
+          <div className="relative">
+            <button
+              onClick={() => setExcelMenuOpen(!excelMenuOpen)}
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-all"
+            >
+              <FileSpreadsheet className="h-4 w-4" />
+              Excel Options
+            </button>
+            
+            {excelMenuOpen && (
+              <>
+                <div 
+                  className="fixed inset-0 z-10" 
+                  onClick={() => setExcelMenuOpen(false)}
+                />
+                <div className="absolute right-0 z-20 mt-2 w-56 rounded-lg border border-gray-200 bg-white shadow-lg">
+                  <div className="py-1">
+                    <button
+                      onClick={() => {
+                        downloadSampleExcel();
+                        setExcelMenuOpen(false);
+                      }}
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <FileSpreadsheet className="h-4 w-4 text-green-600" />
+                      <span>Download Sample</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        exportToExcel();
+                        setExcelMenuOpen(false);
+                      }}
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <Download className="h-4 w-4 text-blue-600" />
+                      <span>Export Data</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        fileInputRef.current?.click();
+                        setExcelMenuOpen(false);
+                      }}
+                      disabled={importing}
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Upload className="h-4 w-4 text-purple-600" />
+                      <span>{importing ? 'Importing...' : 'Import Data'}</span>
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+          
           <input
             ref={fileInputRef}
             type="file"
@@ -743,6 +832,65 @@ export default function AccountMasterPage() {
         message={editMode.isEdit ? "Are you sure you want to update this account?" : "Are you sure you want to add this account?"}
         confirmText={editMode.isEdit ? "Update" : "Add"}
       />
+
+      <ConfirmDialog
+        open={importConfirmDialog}
+        onClose={() => {
+          setImportConfirmDialog(false);
+          setSelectedFile(null);
+          if (fileInputRef.current) fileInputRef.current.value = '';
+        }}
+        onConfirm={confirmImport}
+        title="Import Excel File"
+        message={`Are you sure you want to import "${selectedFile?.name}"? This will add all records from the file.`}
+        confirmText="Upload"
+      />
+
+      <Dialog
+        open={importResultDialog}
+        onClose={() => setImportResultDialog(false)}
+        title="Import Results"
+        description="Summary of import operation"
+      >
+        {importResults && (
+          <div className="space-y-4">
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+              <div className="grid gap-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="font-medium text-gray-700">Total Records:</span>
+                  <span className="font-semibold text-gray-900">{importResults.success + importResults.failed}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium text-green-700">Successfully Added:</span>
+                  <span className="font-semibold text-green-900">{importResults.success}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium text-red-700">Failed:</span>
+                  <span className="font-semibold text-red-900">{importResults.failed}</span>
+                </div>
+              </div>
+            </div>
+
+            {importResults.failed > 0 && (
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold text-gray-900">Failed Records:</h4>
+                <div className="max-h-60 space-y-2 overflow-y-auto rounded-lg border border-red-200 bg-red-50 p-3">
+                  {importResults.errors.map((error: string, index: number) => (
+                    <p key={index} className="text-xs text-red-700">{error}</p>
+                  ))}
+                </div>
+                <button
+                  onClick={downloadErrorExcel}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+                >
+                  <Download className="h-4 w-4" />
+                  Download Failed Records Excel
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </Dialog>
     </>
   );
 }

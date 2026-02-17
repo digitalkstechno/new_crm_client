@@ -2,15 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { Eye, Calendar, CheckSquare, XCircle } from "lucide-react";
+import { Eye, Calendar, CheckSquare, XCircle, MessageCircle } from "lucide-react";
 import DataTable, { Column } from "@/components/DataTable";
 import FollowUpDialog from "@/components/FollowUpDialog";
 import OrderExecutionDialog from "@/components/OrderExecutionDialog";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import KanbanCard from "@/components/KanbanCard";
 import { api } from "@/utils/axiosInstance";
 import { baseUrl } from "../../config";
 import toast from "react-hot-toast";
-import { LEAD_STATUSES, STATUS_COLORS, LeadStatus } from "@/constants/leadStatus";
+import { LEAD_STATUSES, STATUS_COLORS, KANBAN_COLORS, LeadStatus } from "@/constants/leadStatus";
 
 /* ================= TYPES ================= */
 
@@ -388,6 +389,14 @@ export default function LeadsPage() {
       label: "Action",
       render: (value: any, row: Lead) => (
         <div className="flex gap-2">
+          <a
+            href={`https://wa.me/${row.accountMaster?.mobile || ''}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-700"
+          >
+            <MessageCircle className="h-3 w-3" />
+          </a>
           <button
             onClick={() => handleViewLead(row)}
             className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800"
@@ -581,117 +590,34 @@ function KanbanColumn({
   hasMore: boolean;
   allowedStatuses: LeadStatus[];
 }) {
-  const columnColors: Record<string, string> = {
-    "New Lead": "bg-blue-50",
-    "Quotation Given": "bg-purple-50",
-    "Follow Up": "bg-amber-50",
-    "Order Confirmation": "bg-cyan-50",
-    "PI": "bg-indigo-50",
-    "Order Execution": "bg-orange-50",
-    "Dispatch": "bg-teal-50",
-    "Final Payment": "bg-green-50",
-    "Completed": "bg-emerald-50",
-    "Lost": "bg-red-50"
-  };
-
   return (
     <div 
-      className={`w-80 flex-shrink-0 rounded-2xl p-4 h-full flex flex-col ${columnColors[status] || "bg-gray-50"}`}
+      className={`w-80 flex-shrink-0 rounded-2xl h-full flex flex-col ${KANBAN_COLORS[status]}`}
       onDragOver={onDragOver}
       onDrop={(e) => onDrop(e, status)}
     >
-      <div className="mb-4 flex items-center justify-between flex-shrink-0">
-        <h3 className="text-base font-bold text-gray-900">{status}</h3>
+      <div className="mb-4 p-4 flex items-center justify-between flex-shrink-0">
+        <span className="text-base font-bold text-white">
+          {status}
+        </span>
         <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-gray-700 shadow-sm">
           {totalCount}
         </span>
       </div>
 
-      <div className="flex-1 space-y-3 overflow-y-auto pr-1" onScroll={onScroll}>
-        {leads.map((lead) => {
-          const isHighlighted = lead.accountMaster?.sourcebyTypeOfClient?.isHighlight || false;
-          const doneItems = lead.items?.filter((item: any) => item.isDone).length || 0;
-          const totalItems = lead.items?.length || 0;
-          return (
-            <div
-              key={lead._id}
-              draggable
-              onDragStart={(e) => onDragStart(e, lead._id, status)}
-              className={`group cursor-grab rounded-2xl p-4 shadow-sm transition-all hover:shadow-lg active:cursor-grabbing ${
-                isHighlighted ? "bg-yellow-50 ring-2 ring-yellow-400" : "bg-white"
-              }`}
-            >
-              <h4 className="text-sm font-bold text-gray-900 line-clamp-1">
-                {lead.accountMaster?.companyName || "N/A"}
-              </h4>
-              <p className="mt-1 text-xs text-gray-500 line-clamp-2">
-                {lead.accountMaster?.clientName || "N/A"}
-              </p>
-
-              <div className="mt-3 flex items-center justify-between">
-                <span className="text-xs text-gray-400">
-                  {new Date(lead.deliveryDate).toLocaleDateString()}
-                </span>
-              </div>
-
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                <span className="rounded-lg bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700">
-                  {lead.clientType}
-                </span>
-                {isHighlighted && (
-                  <span className="rounded-lg bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-700">
-                    {lead.accountMaster?.sourcebyTypeOfClient?.name}
-                  </span>
-                )}
-                {status === "Order Execution" && totalItems > 0 && (
-                  <span className="rounded-lg bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
-                    {doneItems}/{totalItems} Done
-                  </span>
-                )}
-              </div>
-
-              <div className="mt-3 flex items-center justify-between">
-                <span className="text-sm font-bold text-green-600">₹{lead.totalAmount}</span>
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-xs font-semibold text-gray-600">
-                  {lead.accountMaster?.assignBy?.fullName?.charAt(0) || "?"}
-                </div>
-              </div>
-
-              <div className="mt-3 flex gap-1.5">
-                <button
-                  onClick={() => onViewLead(lead)}
-                  className="flex-1 rounded-xl bg-slate-900 px-2 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"
-                >
-                  View
-                </button>
-                {status === "Follow Up" && (
-                  <button
-                    onClick={() => onFollowUpClick(lead._id)}
-                    className="flex-1 rounded-xl bg-blue-600 px-2 py-2 text-xs font-semibold text-white transition hover:bg-blue-700"
-                  >
-                    Follow Up
-                  </button>
-                )}
-                {status === "Order Execution" && (
-                  <button
-                    onClick={() => onOrderExecutionClick(lead)}
-                    className="flex-1 rounded-xl bg-green-600 px-2 py-2 text-xs font-semibold text-white transition hover:bg-green-700"
-                  >
-                    Items
-                  </button>
-                )}
-                {status !== "Lost" && (
-                  <button
-                    onClick={() => onMoveToLost(lead._id)}
-                    className="rounded-xl bg-red-600 px-2 py-2 text-xs font-semibold text-white transition hover:bg-red-700"
-                  >
-                    Lost
-                  </button>
-                )}
-              </div>
-            </div>
-          );
-        })}
+      <div className="flex-1 space-y-3 overflow-y-auto px-4 pb-4 bg-gray-100 rounded-b-2xl" onScroll={onScroll}>
+        {leads.map((lead) => (
+          <KanbanCard
+            key={lead._id}
+            lead={lead}
+            status={status}
+            onDragStart={onDragStart}
+            onViewLead={onViewLead}
+            onFollowUpClick={onFollowUpClick}
+            onOrderExecutionClick={onOrderExecutionClick}
+            onMoveToLost={onMoveToLost}
+          />
+        ))}
         {loading && hasMore && (
           <div className="py-4 text-center text-xs text-gray-500">
             Loading...

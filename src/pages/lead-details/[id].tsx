@@ -22,8 +22,8 @@ type Lead = {
     mobile: string;
     email: string;
     website: string;
-    sourcebyTypeOfClient: string;
-    sourceFrom?: string;
+    sourcebyTypeOfClient?: { _id: string; name: string };
+    sourceFrom?: { _id: string; name: string };
     assignBy?: { _id: string; fullName: string };
     remark?: string;
     address?: {
@@ -173,12 +173,12 @@ export default function LeadDetailsPage() {
           </div>
           <div>
             <label className="text-xs font-semibold text-gray-500">Type of Client</label>
-            <p className="mt-1 text-sm text-gray-900">{lead.accountMaster?.sourcebyTypeOfClient || "N/A"}</p>
+            <p className="mt-1 text-sm text-gray-900">{lead.accountMaster?.sourcebyTypeOfClient?.name || "N/A"}</p>
           </div>
           {lead.accountMaster?.sourceFrom && (
             <div>
               <label className="text-xs font-semibold text-gray-500">Source From</label>
-              <p className="mt-1 text-sm text-gray-900">{lead.accountMaster.sourceFrom}</p>
+              <p className="mt-1 text-sm text-gray-900">{lead.accountMaster.sourceFrom.name}</p>
             </div>
           )}
           {lead.accountMaster?.assignBy && (
