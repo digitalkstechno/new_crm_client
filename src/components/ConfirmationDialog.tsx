@@ -6,9 +6,10 @@ type ConfirmationDialogProps = {
   onConfirm: () => void;
   title: string;
   message: string;
+  confirmButtonText?: string;
 };
 
-export default function ConfirmationDialog({ isOpen, onClose, onConfirm, title, message }: ConfirmationDialogProps) {
+export default function ConfirmationDialog({ isOpen, onClose, onConfirm, title, message, confirmButtonText = "Yes, Mark as Lost" }: ConfirmationDialogProps) {
   if (!isOpen) return null;
 
   return (
@@ -42,7 +43,7 @@ export default function ConfirmationDialog({ isOpen, onClose, onConfirm, title, 
             }}
             className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700 transition"
           >
-            Yes, Mark as Lost
+            {confirmButtonText}
           </button>
         </div>
       </div>
