@@ -34,4 +34,6 @@ export const baseUrl = {
     
     // lead
     LEAD: `${API}lead`,
+    DASHBOARD_STATS: `${API}lead/dashboard/stats`,
+    DASHBOARD_GRAPHS: `${API}lead/dashboard/graphs`,
 }

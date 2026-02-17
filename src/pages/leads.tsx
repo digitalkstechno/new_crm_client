@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { Eye, Calendar, CheckSquare, XCircle, MessageCircle } from "lucide-react";
+import { Eye, Calendar, CheckSquare, XCircle, MessageCircle, DollarSign } from "lucide-react";
 import DataTable, { Column } from "@/components/DataTable";
 import FollowUpDialog from "@/components/FollowUpDialog";
 import OrderExecutionDialog from "@/components/OrderExecutionDialog";
@@ -73,11 +73,14 @@ export default function LeadsPage() {
     }
     fetchClientTypes();
     
-    // Check if kanban query param exists
+    if (router.query.status && typeof router.query.status === 'string') {
+      setStatusFilter(router.query.status);
+    }
+    
     if (router.query.kanban === 'true') {
       setView('kanban');
     }
-  }, [router.query.kanban]);
+  }, [router.query.kanban, router.query.status]);
 
   const fetchClientTypes = async () => {
     try {
@@ -504,6 +507,14 @@ export default function LeadsPage() {
               Items
             </button>
           )}
+          {row.leadStatus === "Final Payment" && (
+            <button
+              onClick={() => setPaymentDialog({ isOpen: true, lead: row })}
+              className="inline-flex items-center gap-1 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-700"
+            >
+              Make Payment
+            </button>
+          )}
           {row.leadStatus !== "Lost" && row.leadStatus !== "Completed" && (
             <button
               onClick={() => handleMoveToLost(row._id)}
@@ -536,7 +547,7 @@ export default function LeadsPage() {
             }}
             className={`rounded-lg px-4 py-2 text-sm font-medium ${
               view === "table"
-                ? "bg-black text-white"
+                ? "bg-blue-600 text-white"
                 : "border border-gray-200 text-gray-700 hover:bg-gray-50"
             }`}
           >
@@ -549,7 +560,7 @@ export default function LeadsPage() {
             }}
             className={`rounded-lg px-4 py-2 text-sm font-medium ${
               view === "kanban"
-                ? "bg-black text-white"
+                ? "bg-blue-600 text-white"
                 : "border border-gray-200 text-gray-700 hover:bg-gray-50"
             }`}
           >

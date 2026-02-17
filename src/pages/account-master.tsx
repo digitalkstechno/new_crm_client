@@ -39,6 +39,7 @@ type AccountRow = {
     stateName?: string;
     countryName?: string;
   };
+  leadCount?: number;
 };
 
 const sourceOptions = [
@@ -71,10 +72,11 @@ export default function AccountMasterPage() {
   const [importResultDialog, setImportResultDialog] = useState(false);
   const [importResults, setImportResults] = useState<any>(null);
   const [excelMenuOpen, setExcelMenuOpen] = useState(false);
+  const [noLeadsFilter, setNoLeadsFilter] = useState(false);
 
   useEffect(() => {
-    fetchAccounts(page === 1 && search === "");
-  }, [page, search]);
+    fetchAccounts(page === 1 && search === "" && !noLeadsFilter);
+  }, [page, search, noLeadsFilter]);
 
   const fetchStaff = async () => {
     try {
@@ -108,7 +110,7 @@ export default function AccountMasterPage() {
   const fetchAccounts = async (showLoader = true) => {
     if (showLoader) setLoading(true);
     try {
-      const response = await api.get(`${baseUrl.ACCOUNTMASTER}?page=${page}&limit=10&search=${search}`);
+      const response = await api.get(`${baseUrl.ACCOUNTMASTER}?page=${page}&limit=10&search=${search}&noLeadsOnly=${noLeadsFilter}`);
 
       const userRole = localStorage.getItem("userRole");
       const staffId = localStorage.getItem("staffId");
@@ -165,6 +167,15 @@ export default function AccountMasterPage() {
         label: "Assigned Staff",
         render: (value) =>
           value ? (value as Staff).fullName : "-",
+      },
+      {
+        key: "leadCount",
+        label: "Leads",
+        render: (value: any) => (
+          <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
+            {value || 0}
+          </span>
+        ),
       },
       {
         key: "_id",
@@ -455,6 +466,16 @@ export default function AccountMasterPage() {
     <>
       <div className="mb-6 flex justify-end items-center">
         <div className="flex gap-3">
+          <button
+            onClick={() => setNoLeadsFilter(!noLeadsFilter)}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+              noLeadsFilter
+                ? "bg-blue-600 text-white"
+                : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+            }`}
+          >
+            {noLeadsFilter ? "Show All" : "No Leads Only"}
+          </button>
           <button
             onClick={() => {
               resetForm();

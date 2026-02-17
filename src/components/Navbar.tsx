@@ -54,17 +54,17 @@ export default function Navbar() {
   };
 
   return (
-    <header className="flex h-16 items-center justify-between rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 px-5 shadow-lg ring-1 ring-white/10">
+    <header className="flex h-16 items-center justify-between rounded-2xl bg-white px-5 shadow-sm border border-gray-200">
       
       {/* Title */}
-      <h1 className="text-lg font-semibold text-white">
+      <h1 className="text-lg font-semibold text-gray-900">
         {title}
       </h1>
 
       {/* Logout Button */}
       <button
         onClick={handleLogout}
-        className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-red-600 to-red-700 px-2 py-2 text-sm font-medium text-white shadow-lg ring-2 ring-red-500/50 transition hover:from-red-700 hover:to-red-800 hover:shadow-xl hover:ring-red-400/60"
+        className="flex items-center gap-2 rounded-lg bg-red-500 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-600 transition"
       >
         <LogOut className="h-4 w-4" />
       </button>

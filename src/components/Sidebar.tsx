@@ -76,21 +76,21 @@ export default function Sidebar({ collapsed }: SidebarProps) {
       className={`flex h-screen shrink-0 ${collapsed ? "w-16" : "w-64"
         } transition-all duration-300`}
     >
-      <div className="relative flex h-full w-full flex-col overflow-hidden rounded-r-2xl bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 shadow-xl ring-1 ring-white/10">
+      <div className="relative flex h-full w-full flex-col overflow-hidden rounded-r-2xl bg-white shadow-xl border-r border-gray-200">
 
         {/* ===== Logo ===== */}
-        <div className="flex h-16 items-center border-b border-white/10 px-4">
+        <div className="flex h-16 items-center border-b border-gray-200 px-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1b035c] to-[#615FFF] text-white font-bold shadow-md">
+            <div className="flex h-9 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-blue-500 text-white font-bold shadow-md">
               C
             </div>
 
             {!collapsed && (
               <div>
-                <div className="text-white font-semibold">
+                <div className="text-gray-900 font-semibold">
                   CRM System
                 </div>
-                <div className="text-xs text-gray-400">
+                <div className="text-xs text-gray-500">
                   Business Dashboard
                 </div>
               </div>
@@ -111,12 +111,12 @@ export default function Sidebar({ collapsed }: SidebarProps) {
               <Link
                 href="/"
                 className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${isActive("/")
-                  ? "bg-white/10 text-white"
-                  : "text-slate-400 hover:text-white hover:bg-white/5"
+                  ? "bg-blue-50 text-blue-600"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                   }`}
               >
-                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/") ? "bg-blue-500" : "bg-blue-500/20"}`}>
-                  <Home className="h-4 w-4 text-white" />
+                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/") ? "bg-blue-500" : "bg-blue-100"}`}>
+                  <Home className={`h-4 w-4 ${isActive("/") ? "text-white" : "text-blue-600"}`} />
                 </div>
                 {!collapsed && "Dashboard"}
               </Link>
@@ -124,12 +124,12 @@ export default function Sidebar({ collapsed }: SidebarProps) {
               <Link
                 href="/account-master"
                 className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${isActive("/account-master")
-                  ? "bg-white/10 text-white"
-                  : "text-slate-400 hover:text-white hover:bg-white/5"
+                  ? "bg-green-50 text-green-600"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                   }`}
               >
-                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/account-master") ? "bg-green-500" : "bg-green-500/20"}`}>
-                  <CalendarClock className="h-4 w-4 text-white" />
+                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/account-master") ? "bg-green-500" : "bg-green-100"}`}>
+                  <CalendarClock className={`h-4 w-4 ${isActive("/account-master") ? "text-white" : "text-green-600"}`} />
                 </div>
                 {!collapsed && "Account Master"}
               </Link>
@@ -137,12 +137,12 @@ export default function Sidebar({ collapsed }: SidebarProps) {
               <Link
                 href="/leads"
                 className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${isActive("/leads")
-                  ? "bg-white/10 text-white"
-                  : "text-slate-400 hover:text-white hover:bg-white/5"
+                  ? "bg-purple-50 text-purple-600"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                   }`}
               >
-                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/leads") ? "bg-purple-500" : "bg-purple-500/20"}`}>
-                  <User2 className="h-4 w-4 text-white" />
+                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/leads") ? "bg-purple-500" : "bg-purple-100"}`}>
+                  <User2 className={`h-4 w-4 ${isActive("/leads") ? "text-white" : "text-purple-600"}`} />
                 </div>
                 {!collapsed && "Leads"}
               </Link>
@@ -152,12 +152,12 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                 <button
                   onClick={() => setView("settings")}
                   className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 transition ${pathname.startsWith("/settings")
-                    ? "bg-white/10 text-white"
-                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                    ? "bg-orange-50 text-orange-600"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                     }`}
                 >
-                  <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${pathname.startsWith("/settings") ? "bg-orange-500" : "bg-orange-500/20"}`}>
-                    <Settings className="h-4 w-4 text-white" />
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${pathname.startsWith("/settings") ? "bg-orange-500" : "bg-orange-100"}`}>
+                    <Settings className={`h-4 w-4 ${pathname.startsWith("/settings") ? "text-white" : "text-orange-600"}`} />
                   </div>
                   {!collapsed && "Settings"}
                 </button>
@@ -170,7 +170,7 @@ export default function Sidebar({ collapsed }: SidebarProps) {
               {/* Back Button */}
               <button
                 onClick={() => setView("main")}
-                className="flex items-center gap-2 text-white px-3 py-2 mb-3 hover:bg-white/5 rounded-lg transition"
+                className="flex items-center gap-2 text-gray-700 px-3 py-2 mb-3 hover:bg-gray-50 rounded-lg transition"
               >
                 <ArrowLeft className="h-4 w-4" />
                 {!collapsed && "Back"}
@@ -183,13 +183,13 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                     setMasterDataOpen(false);
                   }}
                   className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 transition ${(pathname === "/settings/staff" || pathname === "/settings/role")
-                    ? "bg-white/10 text-white"
-                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                    ? "bg-cyan-50 text-cyan-600"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                     }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${(pathname === "/settings/staff" || pathname === "/settings/role") ? "bg-cyan-500" : "bg-cyan-500/20"}`}>
-                      <Users className="h-4 w-4 text-white" />
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${(pathname === "/settings/staff" || pathname === "/settings/role") ? "bg-cyan-500" : "bg-cyan-100"}`}>
+                      <Users className={`h-4 w-4 ${(pathname === "/settings/staff" || pathname === "/settings/role") ? "text-white" : "text-cyan-600"}`} />
                     </div>
                     {!collapsed && "User & Role"}
                   </div>
@@ -202,8 +202,8 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                     <Link
                       href="/settings/staff"
                       className={`block rounded-lg px-3 py-2 text-sm transition ${isActive("/settings/staff")
-                        ? "bg-white/10 text-white"
-                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                        ? "bg-cyan-50 text-cyan-600"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                         }`}
                     >
                       User
@@ -211,8 +211,8 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                     <Link
                       href="/settings/role"
                       className={`block rounded-lg px-3 py-2 text-sm transition ${isActive("/settings/role")
-                        ? "bg-white/10 text-white"
-                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                        ? "bg-cyan-50 text-cyan-600"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                         }`}
                     >
                       Role
@@ -234,8 +234,8 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                     pathname === "/settings/client-type" || 
                     pathname === "/settings/source-from"
                   )
-                    ? "bg-white/10 text-white"
-                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                    ? "bg-purple-50 text-purple-600"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                     }`}
                 >
                   <div className="flex items-center gap-3">
@@ -245,8 +245,14 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                       pathname === "/settings/module-suggestion" || 
                       pathname === "/settings/client-type" || 
                       pathname === "/settings/source-from"
-                    ) ? "bg-purple-500" : "bg-purple-500/20"}`}>
-                      <Package className="h-4 w-4 text-white" />
+                    ) ? "bg-purple-500" : "bg-purple-100"}`}>
+                      <Package className={`h-4 w-4 ${(
+                        pathname === "/settings/customization-type" || 
+                        pathname === "/settings/inquiry-category" || 
+                        pathname === "/settings/module-suggestion" || 
+                        pathname === "/settings/client-type" || 
+                        pathname === "/settings/source-from"
+                      ) ? "text-white" : "text-purple-600"}`} />
                     </div>
                     {!collapsed && "Master Data"}
                   </div>
@@ -259,8 +265,8 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                     <Link
                       href="/settings/customization-type"
                       className={`block rounded-lg px-3 py-2 text-sm transition ${isActive("/settings/customization-type")
-                        ? "bg-white/10 text-white"
-                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                        ? "bg-purple-50 text-purple-600"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                         }`}
                     >
                       Customization Type
@@ -268,8 +274,8 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                     <Link
                       href="/settings/inquiry-category"
                       className={`block rounded-lg px-3 py-2 text-sm transition ${isActive("/settings/inquiry-category")
-                        ? "bg-white/10 text-white"
-                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                        ? "bg-purple-50 text-purple-600"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                         }`}
                     >
                       Inquiry Category
@@ -277,8 +283,8 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                     <Link
                       href="/settings/module-suggestion"
                       className={`block rounded-lg px-3 py-2 text-sm transition ${isActive("/settings/module-suggestion")
-                        ? "bg-white/10 text-white"
-                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                        ? "bg-purple-50 text-purple-600"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                         }`}
                     >
                       Module Suggestion
@@ -286,8 +292,8 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                     <Link
                       href="/settings/client-type"
                       className={`block rounded-lg px-3 py-2 text-sm transition ${isActive("/settings/client-type")
-                        ? "bg-white/10 text-white"
-                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                        ? "bg-purple-50 text-purple-600"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                         }`}
                     >
                       Client Type
@@ -295,8 +301,8 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                     <Link
                       href="/settings/source-from"
                       className={`block rounded-lg px-3 py-2 text-sm transition ${isActive("/settings/source-from")
-                        ? "bg-white/10 text-white"
-                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                        ? "bg-purple-50 text-purple-600"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                         }`}
                     >
                       Source From
@@ -310,18 +316,18 @@ export default function Sidebar({ collapsed }: SidebarProps) {
         </div>
 
         {/* ===== Profile Section ===== */}
-        <div className="mt-auto border-t border-white/10 px-3 py-3">
-          <div className="flex items-center gap-3 rounded-xl bg-white/5 p-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white">
+        <div className="mt-auto border-t border-gray-200 px-3 py-3">
+          <div className="flex items-center gap-3 rounded-xl bg-gray-50 p-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
               {userName.charAt(0).toUpperCase()}
             </div>
 
             {!collapsed && (
               <div>
-                <div className="text-sm font-medium text-white">
+                <div className="text-sm font-medium text-gray-900">
                   {userName}
                 </div>
-                <div className="text-xs text-slate-300">
+                <div className="text-xs text-gray-500">
                   {userRole}
                 </div>
               </div>
