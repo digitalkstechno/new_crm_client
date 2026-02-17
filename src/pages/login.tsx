@@ -79,9 +79,7 @@ const handleSubmit = async (event: React.FormEvent) => {
     }, 800);
 
   } catch (err: any) {
-    toast.error(
-      err.response?.data?.message || "Login failed. Try again."
-    );
+    toast.error("Invalid email or password");
   } finally {
     setLoading(false);
   }
@@ -90,117 +88,95 @@ const handleSubmit = async (event: React.FormEvent) => {
 
 
   return (
-    <div className={`${geistSans.className} flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4`}>
-      <div className="grid w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-200 lg:grid-cols-[1.05fr_1fr]">
-
-        {/* Left Side */}
-        <div className="hidden flex-col justify-between gap-10 bg-gradient-to-br from-indigo-50 to-blue-50 p-10 text-slate-800 lg:flex">
-          <div className="flex items-center gap-3 text-sm font-semibold uppercase tracking-widest text-indigo-600">
-            <Sparkles className="h-4 w-4" />
-            CRM System
-          </div>
-
-          <div className="space-y-4">
-            <h1 className="text-3xl font-semibold leading-tight">
-              Manage your sales pipeline smarter & faster.
-            </h1>
-            <p className="text-sm text-slate-600">
-              Track leads, schedule follow-ups, monitor performance and grow your business with a powerful CRM dashboard.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-indigo-200 bg-white p-5 text-sm text-slate-600">
-            "Our team productivity improved within 2 weeks after using this CRM."
-            <div className="mt-3 text-xs font-semibold text-slate-800">— Sales Team</div>
-          </div>
-        </div>
-
-        {/* Right Side */}
-        <div className="flex flex-col justify-center bg-white px-6 py-10 sm:px-10">
-
-          <div className="mb-8">
-            <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">
-              Welcome Back
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-800">
-              Sign in to your account
+    <div className={`${geistSans.className} flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 px-4 py-8`}>
+      <div className="w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl">
+        <div className="flex flex-col justify-center bg-white px-8 py-12 sm:px-12">
+          <div className="mb-10">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-600">
+              <Lock className="h-4 w-4" />
+              Secure Login
+            </div>
+            <h2 className="text-3xl font-bold text-slate-900">
+              Welcome Back!
             </h2>
-            <p className="mt-2 text-sm text-slate-600">
-              Enter your email and password to continue.
+            <p className="mt-3 text-base text-slate-600">
+              Sign in to access your CRM dashboard and manage your leads.
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-
-            {/* Email */}
-            <label className="block">
-              <span className="text-xs font-semibold uppercase tracking-widest text-slate-600">
-                Email
-              </span>
-              <div className="mt-2 flex items-center gap-2 rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 focus-within:border-indigo-500">
-                <Mail className="h-4 w-4 text-slate-500" />
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Email Field */}
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-700">
+                Email Address
+              </label>
+              <div className="group relative">
+                <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-indigo-600" />
                 <input
                   type="email"
-                  className="w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400"
+                  className="w-full rounded-xl border-2 border-slate-200 bg-slate-50 py-3.5 pl-12 pr-4 text-slate-900 transition-all placeholder:text-slate-400 focus:border-indigo-600 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100"
                   placeholder="you@company.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
               </div>
-            </label>
+            </div>
 
-            {/* Password */}
-            <label className="block">
-              <span className="text-xs font-semibold uppercase tracking-widest text-slate-600">
+            {/* Password Field */}
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-700">
                 Password
-              </span>
-              <div className="mt-2 flex items-center gap-2 rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 focus-within:border-indigo-500">
-                <Lock className="h-4 w-4 text-slate-500" />
+              </label>
+              <div className="group relative">
+                <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-indigo-600" />
                 <input
                   type={showPassword ? "text" : "password"}
-                  className="w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400"
+                  className="w-full rounded-xl border-2 border-slate-200 bg-slate-50 py-3.5 pl-12 pr-12 text-slate-900 transition-all placeholder:text-slate-400 focus:border-indigo-600 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100"
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  required
                 />
                 <button
                   type="button"
-                  className="text-slate-500 hover:text-slate-800"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-700"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
-            </label>
+            </div>
 
-            {/* Errors */}
-            {error && (
-              <div className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-                {error}
-              </div>
-            )}
-
-            {success && (
-              <div className="rounded-xl border border-green-500/40 bg-green-500/10 px-4 py-3 text-sm text-green-300">
-                {success}
-              </div>
-            )}
-
-            {/* Submit */}
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-lg hover:bg-indigo-500 disabled:opacity-60"
+              className="group relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 py-4 text-base font-semibold text-white shadow-lg shadow-indigo-500/30 transition-all hover:shadow-xl hover:shadow-indigo-500/40 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading ? "Signing in..." : "Sign In"}
+              <span className="relative z-10">
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Signing in...
+                  </span>
+                ) : (
+                  "Sign In"
+                )}
+              </span>
+              <div className="absolute inset-0 -z-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 transition-opacity group-hover:opacity-100"></div>
             </button>
           </form>
 
-          <p className="mt-6 text-xs text-slate-400">
-            © 2026 CRM System. All rights reserved.
-          </p>
+          <div className="mt-8 text-center">
+            <p className="text-sm text-slate-500">
+              © 2025 CRM System. All rights reserved.
+            </p>
+          </div>
         </div>
-
       </div>
     </div>
   );
