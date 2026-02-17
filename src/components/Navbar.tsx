@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { User, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useRouter } from "next/router";
 
 function titleFromPath(pathname: string) {
@@ -26,26 +25,6 @@ export default function Navbar() {
   const router = useRouter();
   const title = titleFromPath(router.pathname);
 
-  const [open, setOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("crm:rememberEmail");
@@ -61,28 +40,13 @@ export default function Navbar() {
         {title}
       </h1>
 
-      {/* User Section */}
-      <div className="relative" ref={dropdownRef}>
-        <button
-          onClick={() => setOpen(!open)}
-          className="inline-flex items-center justify-center rounded-full bg-white/10 p-2 text-white ring-1 ring-white/20 transition hover:bg-white/15"
-        >
-          <User className="h-5 w-5" />
-        </button>
-
-        {/* Dropdown */}
-        {open && (
-          <div className="absolute right-0 mt-2 w-40 rounded-xl bg-slate-900 shadow-xl ring-1 ring-white/10">
-            <button
-              onClick={handleLogout}
-              className="flex w-full items-center gap-2 rounded-xl px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition"
-            >
-              <LogOut className="h-4 w-4" />
-              Logout
-            </button>
-          </div>
-        )}
-      </div>
+      {/* Logout Button */}
+      <button
+        onClick={handleLogout}
+        className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-red-600 to-red-700 px-2 py-2 text-sm font-medium text-white shadow-lg ring-2 ring-red-500/50 transition hover:from-red-700 hover:to-red-800 hover:shadow-xl hover:ring-red-400/60"
+      >
+        <LogOut className="h-4 w-4" />
+      </button>
     </header>
   );
 }
