@@ -20,6 +20,14 @@ export const baseUrl = {
     CUSTOMIZATIONTYPE: `${API}customizationtype`,
     CUSTOMIZATIONTYPE_DROPDOWN: `${API}customizationtype/dropdown`,
 
+    // Client Type
+    CLIENTTYPE: `${API}clienttype`,
+    CLIENTTYPE_DROPDOWN: `${API}clienttype/dropdown`,
+
+    // Source From
+    SOURCEFROM: `${API}sourcefrom`,
+    SOURCEFROM_DROPDOWN: `${API}sourcefrom/dropdown`,
+
     // Model
     MODEL_SUGGESTION: `${API}model`,
     MODEL_BY_CATEGORY: (categoryId: string) => `${API}model/category/${categoryId}`,

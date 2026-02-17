@@ -226,6 +226,32 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                 {!collapsed && "Module Suggestion"}
               </Link>
 
+              <Link
+                href="/settings/client-type"
+                className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${isActive("/settings/client-type")
+                  ? "bg-white/10 text-white"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
+                  }`}
+              >
+                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/settings/client-type") ? "bg-teal-500" : "bg-teal-500/20"}`}>
+                  <Users className="h-4 w-4 text-white" />
+                </div>
+                {!collapsed && "Client Type"}
+              </Link>
+
+              <Link
+                href="/settings/source-from"
+                className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${isActive("/settings/source-from")
+                  ? "bg-white/10 text-white"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
+                  }`}
+              >
+                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/settings/source-from") ? "bg-lime-500" : "bg-lime-500/20"}`}>
+                  <FolderOpen className="h-4 w-4 text-white" />
+                </div>
+                {!collapsed && "Source From"}
+              </Link>
+
 
 
             </div>

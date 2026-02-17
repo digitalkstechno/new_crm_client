@@ -24,7 +24,11 @@ type Lead = {
   accountMaster?: {
     companyName: string;
     clientName: string;
-    sourcebyTypeOfClient?: string;
+    sourcebyTypeOfClient?: {
+      _id: string;
+      name: string;
+      isHighlight?: boolean;
+    };
     assignBy?: {
       _id: string;
       fullName: string;
@@ -46,6 +50,7 @@ export default function LeadsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [allowedStatuses, setAllowedStatuses] = useState<LeadStatus[]>([]);
+  const [clientTypes, setClientTypes] = useState<any[]>([]);
   const [kanbanPages, setKanbanPages] = useState<Record<LeadStatus, number>>({} as any);
   const [kanbanHasMore, setKanbanHasMore] = useState<Record<LeadStatus, boolean>>({} as any);
   const [kanbanLoading, setKanbanLoading] = useState<Record<LeadStatus, boolean>>({} as any);
@@ -60,7 +65,17 @@ export default function LeadsPage() {
     if (permissions) {
       setAllowedStatuses(JSON.parse(permissions));
     }
+    fetchClientTypes();
   }, []);
+
+  const fetchClientTypes = async () => {
+    try {
+      const response = await api.get(baseUrl.CLIENTTYPE_DROPDOWN);
+      setClientTypes(response.data.data || []);
+    } catch (error) {
+      console.error("Failed to fetch client types");
+    }
+  };
 
   const fetchLeads = async () => {
     try {
@@ -472,7 +487,9 @@ export default function LeadsPage() {
           onPageChange={setPage}
           onSearch={setSearch}
           initialSearch={search}
-          rowClassName={(row) => row.accountMaster?.sourcebyTypeOfClient === "O.E.M" ? "bg-yellow-50 hover:bg-yellow-100" : ""}
+          rowClassName={(row) => {
+            return row.accountMaster?.sourcebyTypeOfClient?.isHighlight ? "bg-yellow-50 hover:bg-yellow-100" : "";
+          }}
         />
       )}
 
@@ -592,7 +609,7 @@ function KanbanColumn({
 
       <div className="flex-1 space-y-3 overflow-y-auto pr-1" onScroll={onScroll}>
         {leads.map((lead) => {
-          const isOEM = lead.accountMaster?.sourcebyTypeOfClient === "O.E.M";
+          const isHighlighted = lead.accountMaster?.sourcebyTypeOfClient?.isHighlight || false;
           const doneItems = lead.items?.filter((item: any) => item.isDone).length || 0;
           const totalItems = lead.items?.length || 0;
           return (
@@ -601,7 +618,7 @@ function KanbanColumn({
               draggable
               onDragStart={(e) => onDragStart(e, lead._id, status)}
               className={`group cursor-grab rounded-2xl p-4 shadow-sm transition-all hover:shadow-lg active:cursor-grabbing ${
-                isOEM ? "bg-yellow-50 ring-2 ring-yellow-400" : "bg-white"
+                isHighlighted ? "bg-yellow-50 ring-2 ring-yellow-400" : "bg-white"
               }`}
             >
               <h4 className="text-sm font-bold text-gray-900 line-clamp-1">
@@ -621,9 +638,9 @@ function KanbanColumn({
                 <span className="rounded-lg bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700">
                   {lead.clientType}
                 </span>
-                {isOEM && (
+                {isHighlighted && (
                   <span className="rounded-lg bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-700">
-                    OEM
+                    {lead.accountMaster?.sourcebyTypeOfClient?.name}
                   </span>
                 )}
                 {status === "Order Execution" && totalItems > 0 && (

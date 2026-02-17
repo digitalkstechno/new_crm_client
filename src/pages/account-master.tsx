@@ -21,8 +21,15 @@ type AccountRow = {
   mobile: string;
   email: string;
   website: string;
-  sourcebyTypeOfClient: string;
-  sourceFrom?: string;
+  sourcebyTypeOfClient?: {
+    _id: string;
+    name: string;
+    isHighlight?: boolean;
+  };
+  sourceFrom?: {
+    _id: string;
+    name: string;
+  };
   assignBy?: Staff;
   remark?: string;
   address?: {
@@ -49,6 +56,8 @@ export default function AccountMasterPage() {
   const [accounts, setAccounts] = useState<AccountRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [staffList, setStaffList] = useState<Staff[]>([]);
+  const [clientTypes, setClientTypes] = useState<any[]>([]);
+  const [sourceFroms, setSourceFroms] = useState<any[]>([]);
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
   const [editMode, setEditMode] = useState<{ isEdit: boolean; id: string | null }>({ isEdit: false, id: null });
   const [confirmDialog, setConfirmDialog] = useState(false);
@@ -65,7 +74,6 @@ export default function AccountMasterPage() {
   const fetchStaff = async () => {
     try {
       const response = await api.get(baseUrl.STAFF_DROPDOWN);
-      // Filter staff who have account master access
       const filteredStaff = response.data.data?.filter((staff: any) =>
         staff.role?.canAccessAccountMaster === true
       ) || [];
@@ -73,6 +81,23 @@ export default function AccountMasterPage() {
     } catch (error) {
       toast.error("Failed to fetch user");
     }
+  };
+
+  const fetchDropdowns = async () => {
+    try {
+      const [clientTypesRes, sourceFromsRes] = await Promise.all([
+        api.get(baseUrl.CLIENTTYPE_DROPDOWN),
+        api.get(baseUrl.SOURCEFROM_DROPDOWN)
+      ]);
+      setClientTypes(clientTypesRes.data.data || []);
+      setSourceFroms(sourceFromsRes.data.data || []);
+    } catch (error) {
+      toast.error("Failed to fetch dropdowns");
+    }
+  };
+
+  const getHighlightedClientType = () => {
+    return clientTypes.find(type => type.isHighlight)?.name || null;
   };
 
   const fetchAccounts = async (showLoader = true) => {
@@ -128,6 +153,7 @@ export default function AccountMasterPage() {
       {
         key: "sourcebyTypeOfClient",
         label: "Type of client",
+        render: (value: any) => value?.name || "-",
       },
       {
         key: "assignBy",
@@ -198,13 +224,14 @@ export default function AccountMasterPage() {
       mobile: row.mobile,
       email: row.email,
       website: row.website,
-      sourcebyTypeOfClient: row.sourcebyTypeOfClient,
-      sourceFrom: row.sourceFrom || "",
+      sourcebyTypeOfClient: row.sourcebyTypeOfClient?._id || "",
+      sourceFrom: row.sourceFrom?._id || "",
       assignById: row.assignBy?._id || "",
       remark: row.remark || "",
     });
     setEditMode({ isEdit: true, id: row._id! });
     fetchStaff();
+    fetchDropdowns();
     setOpen(true);
   };
 
@@ -377,6 +404,7 @@ export default function AccountMasterPage() {
               resetForm();
               setOpen(true);
               fetchStaff();
+              fetchDropdowns();
             }}
             className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 transition-all"
           >
@@ -430,7 +458,9 @@ export default function AccountMasterPage() {
           onPageChange={setPage}
           onSearch={setSearch}
           initialSearch={search}
-          rowClassName={(row) => row.sourcebyTypeOfClient === "O.E.M" ? "bg-yellow-50 hover:bg-yellow-100" : ""}
+          rowClassName={(row) => {
+            return row.sourcebyTypeOfClient?.isHighlight ? "bg-yellow-50 hover:bg-yellow-100" : "";
+          }}
         />
       )}
 
@@ -621,8 +651,8 @@ export default function AccountMasterPage() {
                   className="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-gray-300 focus:bg-white outline-none"
                 >
                   <option value="">Select Type</option>
-                  {sourceOptions.map((src) => (
-                    <option key={src}>{src}</option>
+                  {clientTypes.map((type) => (
+                    <option key={type._id} value={type._id}>{type.name}</option>
                   ))}
                 </select>
               </div>
@@ -631,14 +661,18 @@ export default function AccountMasterPage() {
                 <label className="text-sm text-gray-600">
                   Source From
                 </label>
-                <input
+                <select
                   value={form.sourceFrom}
                   onChange={(e) =>
                     setForm({ ...form, sourceFrom: e.target.value })
                   }
                   className="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-gray-300 focus:bg-white outline-none"
-                  placeholder="Enter source"
-                />
+                >
+                  <option value="">Select Source</option>
+                  {sourceFroms.map((source) => (
+                    <option key={source._id} value={source._id}>{source.name}</option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>
