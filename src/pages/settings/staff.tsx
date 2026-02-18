@@ -58,7 +58,7 @@ export default function StaffPage() {
       email: row.email,
       phone: row.phone,
       password: "",
-      role: row.role || "",
+      role: typeof row.role === 'object' && row.role !== null ? (row.role as any)._id : (row.role || ""),
     });
     setEditMode({ isEdit: true, id: row._id! });
     setOpen(true);

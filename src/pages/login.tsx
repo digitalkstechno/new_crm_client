@@ -7,6 +7,7 @@ import { Geist } from "next/font/google";
 import { baseUrl } from "../../config";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { clearUserCache } from "@/utils/tokenHelper";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -46,36 +47,32 @@ const handleSubmit = async (event: React.FormEvent) => {
 
     const data = response.data;
 
-    // ✅ Save token
+    clearUserCache();
     localStorage.setItem("token", data.token);
-
-    // ✅ Save user data
-    if (data.data) {
-      localStorage.setItem("userName", data.data.fullName);
-      localStorage.setItem("userRole", data.data.role?.roleName || "User");
-      localStorage.setItem("staffId", data.data._id);
-    }
-
-    // ✅ Save permissions
-    if (data.permissions) {
-      localStorage.setItem("permissions", JSON.stringify(data.permissions));
-    }
-
-    // ✅ Save settings access
-    if (data.canAccessSettings !== undefined) {
-      localStorage.setItem("canAccessSettings", String(data.canAccessSettings));
-    }
-
-    // ✅ Save account master access and view type
-    if (data.data?.role) {
-      localStorage.setItem("canAccessAccountMaster", String(data.data.role.canAccessAccountMaster || false));
-      localStorage.setItem("accountMasterViewType", data.data.role.accountMasterViewType || "view_own");
-    }
 
     toast.success("Login successful!");
 
+    // Fetch user data to determine redirect
+    const userResponse = await axios.get(baseUrl.STAFF + "/me", {
+      headers: { Authorization: `Bearer ${data.token}` }
+    });
+    
+    const userData = userResponse.data.data;
+    
+    // Determine first available route
+    let redirectPath = "/";
+    if (!userData.canAccessDashboard) {
+      if (userData.canAccessAccountMaster) {
+        redirectPath = "/account-master";
+      } else if (userData.permissions && userData.permissions.length > 0) {
+        redirectPath = "/leads";
+      } else if (userData.canAccessSettings) {
+        redirectPath = "/settings/role";
+      }
+    }
+
     setTimeout(() => {
-      router.push("/");
+      router.push(redirectPath);
     }, 800);
 
   } catch (err: any) {
