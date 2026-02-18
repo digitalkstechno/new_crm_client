@@ -590,22 +590,16 @@ export default function Home() {
                               )}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h3 className="text-sm font-semibold text-gray-900 group-hover:text-indigo-700 transition-colors">{model?.inquiryCategory}</h3>
+                              <h3 className="text-sm font-semibold text-gray-900 group-hover:text-indigo-700 transition-colors">{model.inquiryCategory}</h3>
                               <div className="flex flex-wrap items-center gap-2 mt-1.5">
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-100 text-blue-700 text-xs font-medium">
                                   <Package className="h-3 w-3" />
                                   {model.modelNo}
                                 </span>
-                                {}
-                                
-                                {model.category && (
-                                  <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-teal-100 text-teal-700 text-xs font-medium">
-                                    {model.category}
-                                  </span>
-                                )}
+                             
                                 {model.color && (
                                   <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-gray-100 text-gray-700 text-xs font-medium">
-                                    <span className="w-3 h-3 rounded-full border border-gray-300" style={{ backgroundColor: model.color }}></span>
+                                    
                                     {model.color}
                                   </span>
                                 )}
