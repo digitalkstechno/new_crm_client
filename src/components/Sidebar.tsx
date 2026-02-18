@@ -15,6 +15,7 @@ import {
   Package,
   ChevronDown,
   ChevronRight,
+  FileSpreadsheet,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -145,6 +146,19 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                   <User2 className={`h-4 w-4 ${isActive("/leads") ? "text-white" : "text-purple-600"}`} />
                 </div>
                 {!collapsed && "Leads"}
+              </Link>
+
+              <Link
+                href="/reports"
+                className={`flex items-center gap-3 rounded-xl px-3 py-2 transition ${isActive("/reports")
+                  ? "bg-teal-50 text-teal-600"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                  }`}
+              >
+                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/reports") ? "bg-teal-500" : "bg-teal-100"}`}>
+                  <FileSpreadsheet className={`h-4 w-4 ${isActive("/reports") ? "text-white" : "text-teal-600"}`} />
+                </div>
+                {!collapsed && "Excel Reports"}
               </Link>
 
               {/* Settings Button */}
