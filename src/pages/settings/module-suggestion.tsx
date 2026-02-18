@@ -15,10 +15,15 @@ type Category = {
   name: string;
 };
 
+type Color = {
+  _id: string;
+  name: string;
+};
+
 type ModelSuggestionRow = {
   _id?: string;
   modelNo: string;
-  color: string;
+  color: Color;
   rate: string;
   gst: number;
   category: Category;
@@ -29,6 +34,7 @@ export default function ModelSuggestionPage() {
   const [models, setModels] = useState<ModelSuggestionRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [colors, setColors] = useState<Color[]>([]);
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
   const [editMode, setEditMode] = useState<{ isEdit: boolean; id: string | null }>({ isEdit: false, id: null });
   const [confirmDialog, setConfirmDialog] = useState(false);
@@ -39,7 +45,7 @@ export default function ModelSuggestionPage() {
 
   const [form, setForm] = useState({
     modelNo: "",
-    color: "",
+    colorId: "",
     rate: "",
     gst: "18",
     categoryId: "",
@@ -48,7 +54,11 @@ export default function ModelSuggestionPage() {
   const columns: Column<ModelSuggestionRow>[] = useMemo(
     () => [
       { key: "modelNo", label: "Model No." },
-      { key: "color", label: "Color" },
+      {
+        key: "color",
+        label: "Color",
+        render: (value) => (value as Color)?.name || "-",
+      },
       {
         key: "category",
         label: "Category",
@@ -91,7 +101,7 @@ export default function ModelSuggestionPage() {
   const resetForm = () => {
     setForm({
       modelNo: "",
-      color: "",
+      colorId: "",
       rate: "",
       gst: "18",
       categoryId: "",
@@ -102,12 +112,14 @@ export default function ModelSuggestionPage() {
   const handleEdit = (row: ModelSuggestionRow) => {
     setForm({
       modelNo: row.modelNo,
-      color: row.color,
+      colorId: row.color?._id || "",
       rate: row.rate,
       gst: String(row.gst || 18),
       categoryId: row.category._id,
     });
     setEditMode({ isEdit: true, id: row._id! });
+    fetchCategories();
+    fetchColors();
     setOpen(true);
   };
 
@@ -129,18 +141,19 @@ export default function ModelSuggestionPage() {
     try {
       const payload = {
         modelNo: form.modelNo,
-        color: form.color,
+        color: form.colorId,
         rate: form.rate,
         gst: Number(form.gst),
         category: form.categoryId,
       };
       const res = await api.put(`${baseUrl.MODEL_SUGGESTION}/${editMode.id}`, payload);
       
-      // Populate category object from local state
       const selectedCategory = categories.find(c => c._id === form.categoryId);
+      const selectedColor = colors.find(c => c._id === form.colorId);
       const updatedModel = {
         ...res.data.data,
-        category: selectedCategory || res.data.data.category
+        category: selectedCategory || res.data.data.category,
+        color: selectedColor || res.data.data.color
       };
       
       setModels((prev) => prev.map((m) => (m._id === editMode.id ? updatedModel : m)));
@@ -152,17 +165,24 @@ export default function ModelSuggestionPage() {
     }
   };
 
-  // 🔥 Fetch all categories
   const fetchCategories = async () => {
     try {
-      const res = await api.get(baseUrl.INQUIRYCATEGORY);
+      const res = await api.get(baseUrl.INQUIRYCATEGORY_DROPDOWN);
       setCategories(res.data.data);
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to fetch categories");
     }
   };
 
-  // 🔥 Fetch all model suggestions
+  const fetchColors = async () => {
+    try {
+      const res = await api.get(baseUrl.COLOR_DROPDOWN);
+      setColors(res.data.data);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to fetch colors");
+    }
+  };
+
   const fetchModels = async (showLoader = true) => {
     if (showLoader) setLoading(true);
     try {
@@ -179,6 +199,7 @@ export default function ModelSuggestionPage() {
 
   useEffect(() => {
     fetchCategories();
+    fetchColors();
     fetchModels(page === 1 && search === "");
   }, [page, search]);
 
@@ -194,18 +215,19 @@ export default function ModelSuggestionPage() {
       try {
         const payload = {
           modelNo: form.modelNo,
-          color: form.color,
+          color: form.colorId,
           rate: form.rate,
           gst: Number(form.gst),
           category: form.categoryId,
         };
         const res = await api.post(baseUrl.MODEL_SUGGESTION, payload);
         
-        // Populate category object from local state
         const selectedCategory = categories.find(c => c._id === form.categoryId);
+        const selectedColor = colors.find(c => c._id === form.colorId);
         const newModel = {
           ...res.data.data,
-          category: selectedCategory || res.data.data.category
+          category: selectedCategory || res.data.data.category,
+          color: selectedColor || res.data.data.color
         };
         
         setModels((prev) => [newModel, ...prev]);
@@ -224,6 +246,8 @@ export default function ModelSuggestionPage() {
         <button
           onClick={() => {
             resetForm();
+            fetchCategories();
+            fetchColors();
             setOpen(true);
           }}
           className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-gray-200 transition-all duration-300 hover:ring-gray-300 hover:shadow"
@@ -302,15 +326,21 @@ export default function ModelSuggestionPage() {
 
             <label className="block text-sm text-gray-600">
               Color
-              <input
+              <select
                 required
-                value={form.color}
+                value={form.colorId}
                 onChange={(e) =>
-                  setForm((prev) => ({ ...prev, color: e.target.value }))
+                  setForm((prev) => ({ ...prev, colorId: e.target.value }))
                 }
                 className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-gray-300 focus:bg-white"
-                placeholder="Enter color"
-              />
+              >
+                <option value="">Select Color</option>
+                {colors.map((color) => (
+                  <option key={color._id} value={color._id}>
+                    {color.name}
+                  </option>
+                ))}
+              </select>
             </label>
 
             <label className="block text-sm text-gray-600">

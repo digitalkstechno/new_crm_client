@@ -32,6 +32,10 @@ export const baseUrl = {
     MODEL_SUGGESTION: `${API}model`,
     MODEL_BY_CATEGORY: (categoryId: string) => `${API}model/category/${categoryId}`,
     
+    // Color
+    COLOR: `${API}color`,
+    COLOR_DROPDOWN: `${API}color/dropdown`,
+    
     // lead
     LEAD: `${API}lead`,
     DASHBOARD_STATS: `${API}lead/dashboard/stats`,

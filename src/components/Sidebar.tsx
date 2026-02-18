@@ -43,7 +43,7 @@ export default function Sidebar({ collapsed }: SidebarProps) {
       }
       if (pathname === "/settings/customization-type" || pathname === "/settings/inquiry-category" || 
           pathname === "/settings/module-suggestion" || pathname === "/settings/client-type" || 
-          pathname === "/settings/source-from") {
+          pathname === "/settings/source-from" || pathname === "/settings/color") {
         setMasterDataOpen(true);
       }
     }
@@ -224,7 +224,8 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                     pathname === "/settings/inquiry-category" || 
                     pathname === "/settings/module-suggestion" || 
                     pathname === "/settings/client-type" || 
-                    pathname === "/settings/source-from"
+                    pathname === "/settings/source-from" ||
+                    pathname === "/settings/color"
                   )
                     ? "bg-purple-50 text-purple-700 font-semibold"
                     : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
@@ -236,7 +237,8 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                       pathname === "/settings/inquiry-category" || 
                       pathname === "/settings/module-suggestion" || 
                       pathname === "/settings/client-type" || 
-                      pathname === "/settings/source-from"
+                      pathname === "/settings/source-from" ||
+                      pathname === "/settings/color"
                     ) ? "bg-purple-600 text-white" : "bg-purple-100 text-purple-600"}`}>
                       <Package className="h-4 w-4" />
                     </div>
@@ -274,6 +276,15 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                         }`}
                     >
                       Module Suggestion
+                    </Link>
+                    <Link
+                      href="/settings/color"
+                      className={`block rounded-lg px-3 py-2 text-sm transition ${isActive("/settings/color")
+                        ? "bg-purple-50 text-purple-700 font-semibold"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                        }`}
+                    >
+                      Color
                     </Link>
                     <Link
                       href="/settings/client-type"

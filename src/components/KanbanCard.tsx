@@ -103,7 +103,7 @@ export default function KanbanCard({
                 <span className="text-gray-500">Qty: {item.qty}</span>
               </div>
               <div className="mt-0.5 flex items-center justify-between text-gray-500">
-                <span>{item.modelSuggestion?.modelNo || "-"} - {item.modelSuggestion?.color || "-"}</span>
+                <span>{item.modelSuggestion?.modelNo || "-"} - {typeof item.modelSuggestion?.color === 'object' ? item.modelSuggestion?.color?.name : item.modelSuggestion?.color || "-"}</span>
                 <span className="font-medium">₹{item.rate}</span>
               </div>
             </div>
@@ -145,7 +145,7 @@ export default function KanbanCard({
             {doneItems}/{totalItems} Done
           </span>
         )}
-        {status === "Final Payment" && isPaid && (
+        {(status === "Final Payment" || status === "Dispatch" || status === "Completed") && isPaid && (
           <span className="rounded-lg bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
             Payment Done
           </span>
@@ -155,7 +155,7 @@ export default function KanbanCard({
       <div className="mt-3 flex items-center justify-between">
         <div>
           <span className="text-sm font-bold text-green-600">₹{lead.totalAmount}</span>
-          {status === "Final Payment" && !isPaid && (
+          {(status === "Final Payment" || status === "Dispatch" || status === "Completed") && !isPaid && (
             <p className="text-xs text-red-600 font-medium">Pending: ₹{(totalAmount - paidAmount).toFixed(2)}</p>
           )}
         </div>
@@ -189,12 +189,12 @@ export default function KanbanCard({
             Items
           </button>
         )}
-        {status === "Final Payment" && (
+        {(status === "PI" || status === "Final Payment" || status === "Dispatch" || status === "Completed") && !isPaid && (
           <button
             onClick={() => onMakePayment(lead)}
             className="flex-1 rounded-xl bg-green-600 px-2 py-2 text-xs font-semibold text-white transition hover:bg-green-700"
           >
-            Make Payment
+            {status === "PI" ? "Advance Payment" : "Make Payment"}
           </button>
         )}
         {status !== "Lost" && status !== "Completed" && (
