@@ -3,6 +3,7 @@
 import DataTable, { Column } from "@/components/DataTable";
 import Dialog from "@/components/Dialog";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import TableSkeleton from "@/components/TableSkeleton";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import toast from "react-hot-toast";
@@ -18,6 +19,7 @@ type CustomizationTypeRow = {
 export default function CustomizationTypePage() {
   const [open, setOpen] = useState(false);
   const [customizationTypes, setCustomizationTypes] = useState<CustomizationTypeRow[]>([]);
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: "" });
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
   const [editMode, setEditMode] = useState<{ isEdit: boolean; id: string | null }>({ isEdit: false, id: null });
@@ -106,6 +108,7 @@ export default function CustomizationTypePage() {
 
   useEffect(() => {
     const fetchCustomizationTypes = async () => {
+      setLoading(true);
       try {
         const res = await api.get(`${baseUrl.CUSTOMIZATIONTYPE}?page=${page}&limit=10&search=${search}`);
         setCustomizationTypes(res.data.data);
@@ -113,6 +116,8 @@ export default function CustomizationTypePage() {
         setTotalRecords(res.data.pagination?.totalRecords || 0);
       } catch (err: any) {
         toast.error(err.response?.data?.message || "Failed to fetch customization types");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -156,9 +161,12 @@ export default function CustomizationTypePage() {
         </button>
       </div>
 
-      <DataTable
-        title="Customization Types"
-        data={customizationTypes}
+      {loading ? (
+        <TableSkeleton />
+      ) : (
+        <DataTable
+          title="Customization Types"
+          data={customizationTypes}
         pageSize={10}
         searchPlaceholder="Search customization type..."
         columns={columns}
@@ -168,7 +176,8 @@ export default function CustomizationTypePage() {
         onPageChange={setPage}
         onSearch={setSearch}
         initialSearch={search}
-      />
+        />
+      )}
 
       <Dialog
         open={open}

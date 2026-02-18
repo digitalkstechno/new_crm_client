@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { Eye, Calendar, CheckSquare, XCircle, MessageCircle, DollarSign } from "lucide-react";
 import DataTable, { Column } from "@/components/DataTable";
+import TableSkeleton from "@/components/TableSkeleton";
 import FollowUpDialog from "@/components/FollowUpDialog";
 import OrderExecutionDialog from "@/components/OrderExecutionDialog";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
@@ -49,6 +50,7 @@ export default function LeadsPage() {
   const router = useRouter();
   const [view, setView] = useState<"table" | "kanban">("table");
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -130,6 +132,7 @@ export default function LeadsPage() {
   };
 
   const fetchLeads = async () => {
+    setLoading(true);
     try {
       const url = statusFilter 
         ? `${baseUrl.LEAD}/status/${encodeURIComponent(statusFilter)}?page=${page}&limit=10&search=${search}`
@@ -141,6 +144,8 @@ export default function LeadsPage() {
       setTotalRecords(response.data.pagination?.totalRecords || 0);
     } catch (error) {
       toast.error("Failed to fetch leads");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -597,9 +602,12 @@ export default function LeadsPage() {
 
       {/* TABLE */}
       {view === "table" && (
-        <DataTable
-          title="Leads"
-          data={leads}
+        loading ? (
+          <TableSkeleton />
+        ) : (
+          <DataTable
+            title="Leads"
+            data={leads}
           pageSize={10}
           searchPlaceholder="Search leads..."
           columns={columns}
@@ -613,6 +621,7 @@ export default function LeadsPage() {
             return row.accountMaster?.sourcebyTypeOfClient?.isHighlight ? "bg-yellow-50 hover:bg-yellow-100" : "";
           }}
         />
+        )
       )}
 
       {/* KANBAN */}

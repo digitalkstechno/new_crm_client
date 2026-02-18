@@ -1,6 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import SummaryCard from "@/components/SummaryCard";
-import { Users, DollarSign, TrendingUp, TrendingDown, Calendar, Clock, Filter, ArrowUpRight, ChevronRight, Sparkles, Wallet, Receipt, UserCheck, UserX, Car, AlertCircle, CheckCircle2, ArrowRight, X } from "lucide-react";
+import { Users, DollarSign, TrendingUp, TrendingDown, Calendar, Clock, Filter, ArrowUpRight, ChevronRight, Sparkles, Wallet, Receipt, UserCheck, UserX, Package, AlertCircle, CheckCircle2, ArrowRight, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api } from "@/utils/axiosInstance";
 import { baseUrl } from "../../config";
@@ -670,7 +670,7 @@ export default function Home() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-purple-100 rounded-lg">
-                        <Car className="h-5 w-5 text-purple-600" />
+                        <Package className="h-5 w-5 text-purple-600" />
                       </div>
                       <h2 className="text-lg font-semibold text-gray-900">Top Models</h2>
                     </div>
