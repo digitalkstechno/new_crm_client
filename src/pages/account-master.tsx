@@ -379,6 +379,24 @@ export default function AccountMasterPage() {
     }
   };
 
+  const exportNoLeadsToExcel = async () => {
+    try {
+      const response = await api.get(`${baseUrl.ACCOUNTMASTER}/export?noLeadsOnly=true`, {
+        responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'AccountMaster_NoLeads_Export.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success('No leads data exported successfully!');
+    } catch (error) {
+      toast.error('Failed to export no leads data');
+    }
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -525,6 +543,16 @@ export default function AccountMasterPage() {
                     >
                       <Download className="h-4 w-4 text-blue-600" />
                       <span>Export Data</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        exportNoLeadsToExcel();
+                        setExcelMenuOpen(false);
+                      }}
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <Download className="h-4 w-4 text-orange-600" />
+                      <span>Export No Leads Only</span>
                     </button>
                     <button
                       onClick={() => {

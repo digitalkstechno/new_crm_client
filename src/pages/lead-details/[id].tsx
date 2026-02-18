@@ -38,7 +38,7 @@ type Lead = {
   items: Array<{
     _id: string;
     inquiryCategory: { _id: string; name: string };
-    modelSuggestion: { _id: string; modelNo: string; color: string };
+    modelSuggestion: { _id: string; modelNo: string; color: { _id: string; name: string } | string };
     customizationType: Array<{ _id: string; name: string }>;
     customizationDescription?: string;
     qty: string;
@@ -316,7 +316,7 @@ export default function LeadDetailsPage() {
                 <div className="rounded-lg bg-white p-3">
                   <label className="text-xs font-semibold text-gray-500">Model</label>
                   <p className="mt-1 text-sm font-medium text-gray-900">
-                    {item.modelSuggestion?.modelNo || "N/A"} - {item.modelSuggestion?.color || "N/A"}
+                    {item.modelSuggestion?.modelNo || "N/A"} - {typeof item.modelSuggestion?.color === 'object' ? item.modelSuggestion?.color?.name : item.modelSuggestion?.color || "N/A"}
                   </p>
                 </div>
                 <div className="rounded-lg bg-white p-3 md:col-span-2">

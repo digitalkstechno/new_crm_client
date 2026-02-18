@@ -12,6 +12,8 @@ import {
   Package,
   ChevronDown,
   ChevronRight,
+  FileText,
+  FileSpreadsheet,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getTokenData } from "@/utils/tokenHelper";
@@ -43,7 +45,7 @@ export default function Sidebar({ collapsed }: SidebarProps) {
       }
       if (pathname === "/settings/customization-type" || pathname === "/settings/inquiry-category" || 
           pathname === "/settings/module-suggestion" || pathname === "/settings/client-type" || 
-          pathname === "/settings/source-from") {
+          pathname === "/settings/source-from" || pathname === "/settings/color") {
         setMasterDataOpen(true);
       }
     }
@@ -142,6 +144,19 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                 {!collapsed && "Leads"}
               </Link>
 
+              <Link
+                href="/reports"
+                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition ${isActive("/reports")
+                  ? "bg-teal-50 text-teal-700 font-semibold"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                  }`}
+              >
+                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/reports") ? "bg-teal-600 text-white" : "bg-teal-100 text-teal-600"}`}>
+                  <FileText className="h-4 w-4" />
+                </div>
+                {!collapsed && "Reports"}
+              </Link>
+
               {tokenData.canAccessSettings && (
                 <button
                   onClick={() => setView("settings")}
@@ -224,7 +239,8 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                     pathname === "/settings/inquiry-category" || 
                     pathname === "/settings/module-suggestion" || 
                     pathname === "/settings/client-type" || 
-                    pathname === "/settings/source-from"
+                    pathname === "/settings/source-from" ||
+                    pathname === "/settings/color"
                   )
                     ? "bg-purple-50 text-purple-700 font-semibold"
                     : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
@@ -236,7 +252,8 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                       pathname === "/settings/inquiry-category" || 
                       pathname === "/settings/module-suggestion" || 
                       pathname === "/settings/client-type" || 
-                      pathname === "/settings/source-from"
+                      pathname === "/settings/source-from" ||
+                      pathname === "/settings/color"
                     ) ? "bg-purple-600 text-white" : "bg-purple-100 text-purple-600"}`}>
                       <Package className="h-4 w-4" />
                     </div>
@@ -274,6 +291,15 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                         }`}
                     >
                       Module Suggestion
+                    </Link>
+                    <Link
+                      href="/settings/color"
+                      className={`block rounded-lg px-3 py-2 text-sm transition ${isActive("/settings/color")
+                        ? "bg-purple-50 text-purple-700 font-semibold"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                        }`}
+                    >
+                      Color
                     </Link>
                     <Link
                       href="/settings/client-type"

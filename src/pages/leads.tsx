@@ -256,14 +256,7 @@ export default function LeadsPage() {
     } else if (fromStatus === "Follow Up" && toStatus === "Order Confirmation") {
       router.push(`/convert-to-lead?leadId=${leadId}`);
     } else if (toStatus === "PI") {
-      // Fetch fresh lead data for PI payment
-      try {
-        const response = await api.get(`${baseUrl.LEAD}/${leadId}`);
-        const freshLead = response.data.data;
-        setPaymentDialog({ isOpen: true, lead: freshLead, pendingStatus: toStatus });
-      } catch (error) {
-        toast.error("Failed to fetch lead data");
-      }
+      await handleStatusChange(leadId, toStatus);
     } else if (toStatus === "Final Payment") {
       // Check all items are done before moving to Final Payment
       try {
@@ -279,24 +272,7 @@ export default function LeadsPage() {
         toast.error("Failed to verify lead status");
       }
     } else if (toStatus === "Dispatch") {
-      // Check pending payment <= 1 before dispatch (tolerance for floating point and small amounts)
-      try {
-        const response = await api.get(`${baseUrl.LEAD}/${leadId}`);
-        const freshLead = response.data.data;
-        
-        const totalAmount = parseFloat(freshLead.totalAmount || 0);
-        const paidAmount = (freshLead.paymentHistory || []).reduce((sum: number, p: any) => sum + parseFloat(p.amount || 0), 0);
-        const pendingAmount = totalAmount - paidAmount;
-        
-        if (pendingAmount > 1) {
-          toast.error("Pending payment must be 0 before dispatch");
-          return;
-        }
-        
-        await handleStatusChange(leadId, toStatus);
-      } catch (error) {
-        toast.error("Failed to verify lead status");
-      }
+      await handleStatusChange(leadId, toStatus);
     } else {
       await handleStatusChange(leadId, toStatus);
     }
@@ -396,15 +372,10 @@ export default function LeadsPage() {
 
   const handlePaymentSubmit = async (amount: string) => {
     try {
-      const { lead, pendingStatus } = paymentDialog;
+      const { lead } = paymentDialog;
       if (!lead) return;
 
       await api.post(`${baseUrl.LEAD}/${lead._id}/payment`, { amount });
-      
-      // Only move to PI status if pendingStatus is set (from drag and drop)
-      if (pendingStatus === "PI") {
-        await handleStatusChange(lead._id, pendingStatus);
-      }
       
       // Refresh the lead data in kanban/table
       await refetchSingleLead(lead._id);
@@ -526,14 +497,19 @@ export default function LeadsPage() {
               Items
             </button>
           )}
-          {row.leadStatus === "Final Payment" && (
-            <button
-              onClick={() => setPaymentDialog({ isOpen: true, lead: row })}
-              className="inline-flex items-center gap-1 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-700"
-            >
-              Make Payment
-            </button>
-          )}
+          {(row.leadStatus === "PI" || row.leadStatus === "Final Payment" || row.leadStatus === "Dispatch" || row.leadStatus === "Completed") && (() => {
+            const totalAmt = parseFloat(row.totalAmount || "0");
+            const paidAmt = (row.paymentHistory || []).reduce((sum, p) => sum + parseFloat(p.amount || "0"), 0);
+            const isPaid = totalAmt - paidAmt === 0;
+            return !isPaid ? (
+              <button
+                onClick={() => setPaymentDialog({ isOpen: true, lead: row })}
+                className="inline-flex items-center gap-1 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-700"
+              >
+                {row.leadStatus === "PI" ? "Advance Payment" : "Make Payment"}
+              </button>
+            ) : null;
+          })()}
           {row.leadStatus !== "Lost" && row.leadStatus !== "Completed" && (
             <button
               onClick={() => handleMoveToLost(row._id)}
@@ -691,7 +667,7 @@ export default function LeadsPage() {
           onSubmit={handlePaymentSubmit}
           totalAmount={paymentDialog.lead.totalAmount}
           paidAmount={(paymentDialog.lead.paymentHistory || []).reduce((sum, p) => sum + parseFloat(p.amount || "0"), 0).toString()}
-          title={paymentDialog.pendingStatus === "PI" ? "Add Advance Payment" : "Make Payment"}
+          title={paymentDialog.lead.leadStatus === "PI" ? "Add Advance Payment" : "Make Payment"}
         />
       )}
     </>

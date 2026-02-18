@@ -13,7 +13,10 @@ type InquiryCategory = {
 type ModelSuggestion = {
   _id: string;
   modelNo: string;
-  color: string;
+  color: {
+    _id: string;
+    name: string;
+  };
   rate: string;
   gst: number;
 };
@@ -473,7 +476,7 @@ export default function ConvertToLeadPage() {
                     >
                       <option value="">Select</option>
                       {(allModelSuggestions[product.inquiryCategoryId] || []).map((model) => (
-                        <option key={model._id} value={model._id}>{model.modelNo} - {model.color}</option>
+                        <option key={model._id} value={model._id}>{model.modelNo} - {model.color?.name || model.color}</option>
                       ))}
                     </select>
                   </div>

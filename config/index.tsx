@@ -32,8 +32,21 @@ export const baseUrl = {
     MODEL_SUGGESTION: `${API}model`,
     MODEL_BY_CATEGORY: (categoryId: string) => `${API}model/category/${categoryId}`,
     
+    // Color
+    COLOR: `${API}color`,
+    COLOR_DROPDOWN: `${API}color/dropdown`,
+    
     // lead
     LEAD: `${API}lead`,
     DASHBOARD_STATS: `${API}lead/dashboard/stats`,
     DASHBOARD_GRAPHS: `${API}lead/dashboard/graphs`,
+
+    // Reports
+    REPORT_LEADS: `${API}report/leads`,
+    REPORT_LEAD_ITEMS: `${API}report/lead-items`,
+    REPORT_PAYMENTS: `${API}report/payments`,
+    REPORT_FOLLOW_UPS: `${API}report/follow-ups`,
+    REPORT_ACCOUNTS: `${API}report/accounts`,
+    REPORT_STAFF_PERFORMANCE: `${API}report/staff-performance`,
+    REPORT_SUMMARY: `${API}report/summary`,
 }
