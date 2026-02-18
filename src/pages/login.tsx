@@ -8,6 +8,7 @@ import { baseUrl } from "../../config";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { clearUserCache } from "@/utils/tokenHelper";
+import Link from "next/link";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -24,63 +25,63 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-const handleSubmit = async (event: React.FormEvent) => {
-  event.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
 
-  if (!emailRegex.test(email)) {
-    toast.error("Enter a valid email address.");
-    return;
-  }
-
-  if (password.trim().length < 6) {
-    toast.error("Password must be at least 6 characters.");
-    return;
-  }
-
-  try {
-    setLoading(true);
-
-    const response = await axios.post(baseUrl.LOGIN, {
-      email,
-      password,
-    });
-
-    const data = response.data;
-
-    clearUserCache();
-    localStorage.setItem("token", data.token);
-
-    toast.success("Login successful!");
-
-    // Fetch user data to determine redirect
-    const userResponse = await axios.get(baseUrl.STAFF + "/me", {
-      headers: { Authorization: `Bearer ${data.token}` }
-    });
-    
-    const userData = userResponse.data.data;
-    
-    // Determine first available route
-    let redirectPath = "/";
-    if (!userData.canAccessDashboard) {
-      if (userData.canAccessAccountMaster) {
-        redirectPath = "/account-master";
-      } else if (userData.permissions && userData.permissions.length > 0) {
-        redirectPath = "/leads";
-      } else if (userData.canAccessSettings) {
-        redirectPath = "/settings/role";
-      }
+    if (!emailRegex.test(email)) {
+      toast.error("Enter a valid email address.");
+      return;
     }
 
-    setTimeout(() => {
-      router.push(redirectPath);
-    }, 800);
+    if (password.trim().length < 6) {
+      toast.error("Password must be at least 6 characters.");
+      return;
+    }
 
-  } catch (err: any) {
-    toast.error("Invalid email or password");
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      setLoading(true);
+
+      const response = await axios.post(baseUrl.LOGIN, {
+        email,
+        password,
+      });
+
+      const data = response.data;
+
+      clearUserCache();
+      localStorage.setItem("token", data.token);
+
+      toast.success("Login successful!");
+
+      // Fetch user data to determine redirect
+      const userResponse = await axios.get(baseUrl.STAFF + "/me", {
+        headers: { Authorization: `Bearer ${data.token}` }
+      });
+
+      const userData = userResponse.data.data;
+
+      // Determine first available route
+      let redirectPath = "/";
+      if (!userData.canAccessDashboard) {
+        if (userData.canAccessAccountMaster) {
+          redirectPath = "/account-master";
+        } else if (userData.permissions && userData.permissions.length > 0) {
+          redirectPath = "/leads";
+        } else if (userData.canAccessSettings) {
+          redirectPath = "/settings/role";
+        }
+      }
+
+      setTimeout(() => {
+        router.push(redirectPath);
+      }, 800);
+
+    } catch (err: any) {
+      toast.error("Invalid email or password");
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
 
@@ -88,15 +89,18 @@ const handleSubmit = async (event: React.FormEvent) => {
     <div className={`${geistSans.className} flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 px-4 py-8`}>
       <div className="w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl">
         <div className="flex flex-col justify-center bg-white px-8 py-12 sm:px-12">
-          <div className="mb-10">
+          <div className="mb-10 text-center">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-600">
               <Lock className="h-4 w-4" />
               Secure Login
             </div>
-            <h2 className="text-3xl font-bold text-slate-900">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+              MOZU CRM
+            </h1>
+            <h2 className="text-2xl font-semibold text-slate-900 mb-3">
               Welcome Back!
             </h2>
-            <p className="mt-3 text-base text-slate-600">
+            <p className="text-sm text-slate-600">
               Sign in to access your CRM dashboard and manage your leads.
             </p>
           </div>
@@ -170,7 +174,13 @@ const handleSubmit = async (event: React.FormEvent) => {
 
           <div className="mt-8 text-center">
             <p className="text-sm text-slate-500">
-              © 2025 CRM System. All rights reserved.
+              © 2026 <Link href={"https://digitalkstechno.com"} target="_blank" style={{
+                color: "#2F55FA",
+                fontWeight: 600,
+              }}>Digitalks.</Link> All rights reserved.
+            </p>
+            <p className="text-sm text-slate-500">
+              Designed & Developed with ❤️ by Digitalks.
             </p>
           </div>
         </div>

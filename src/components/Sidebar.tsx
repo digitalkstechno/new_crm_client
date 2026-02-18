@@ -75,13 +75,13 @@ export default function Sidebar({ collapsed }: SidebarProps) {
         <div className="flex h-16 items-center border-b border-gray-200 px-4 bg-gradient-to-r from-blue-50 to-indigo-50">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-bold shadow-md">
-              C
+              M
             </div>
 
             {!collapsed && (
               <div>
                 <div className="text-gray-900 font-bold text-sm">
-                  CRM System
+                  MOZU CRM
                 </div>
                 <div className="text-xs text-gray-500">
                   Business Dashboard

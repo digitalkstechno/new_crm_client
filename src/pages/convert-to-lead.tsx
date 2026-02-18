@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Plus, Trash2, X } from "lucide-react";
 import { useRouter } from "next/router";
 import { api } from "@/utils/axiosInstance";
@@ -12,7 +12,8 @@ type InquiryCategory = {
 
 type ModelSuggestion = {
   _id: string;
-  name: string;
+  modelNo: string;
+  color: string;
   rate: string;
   gst: number;
 };
@@ -21,10 +22,10 @@ type ProductRow = {
   id: string;
   inquiryCategoryId: string;
   modelSuggestionId: string;
-  customizationTypeId: string;
+  customizationTypeIds: string[];
+  customizationDescription: string;
   personalization: "Yes" | "No";
   location?: string;
-  name?: string;
   description: string;
   qty: number;
   rate: number;
@@ -48,6 +49,7 @@ export default function ConvertToLeadPage() {
   const { accountId, leadId } = router.query;
   const [accountData, setAccountData] = useState<any>(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [openDropdowns, setOpenDropdowns] = useState<{ [key: string]: boolean }>({});
   
   const getTodayDate = () => {
     const today = new Date();
@@ -70,9 +72,9 @@ export default function ConvertToLeadPage() {
       id: Date.now().toString(),
       inquiryCategoryId: "",
       modelSuggestionId: "",
-      customizationTypeId: "",
+      customizationTypeIds: [],
+      customizationDescription: "",
       personalization: "No",
-      name: "",
       description: "",
       qty: 1,
       rate: 0,
@@ -126,10 +128,10 @@ export default function ConvertToLeadPage() {
           id: item._id,
           inquiryCategoryId: item.inquiryCategory._id,
           modelSuggestionId: item.modelSuggestion._id,
-          customizationTypeId: item.customizationType._id,
+          customizationTypeIds: Array.isArray(item.customizationType) ? item.customizationType.map((c: any) => c._id) : [item.customizationType._id],
+          customizationDescription: item.customizationDescription || "",
           personalization: item.personalization?.isPersonalized ? "Yes" : "No",
           location: item.personalization?.location || "",
-          name: item.personalization?.name || "",
           description: item.personalization?.description || "",
           qty: parseInt(item.qty),
           rate: parseFloat(item.rate),
@@ -232,9 +234,9 @@ export default function ConvertToLeadPage() {
         id: Date.now().toString(),
         inquiryCategoryId: "",
         modelSuggestionId: "",
-        customizationTypeId: "",
+        customizationTypeIds: [],
+        customizationDescription: "",
         personalization: "No",
-        name: "",
         description: "",
         qty: 1,
         rate: 0,
@@ -261,8 +263,8 @@ export default function ConvertToLeadPage() {
     products.forEach((p, index) => {
       if (!p.inquiryCategoryId) validationErrors.push(`Product ${index + 1}: Inquiry Category is required`);
       if (!p.modelSuggestionId) validationErrors.push(`Product ${index + 1}: Model Suggestion is required`);
-      if (!p.customizationTypeId) validationErrors.push(`Product ${index + 1}: Customization Type is required`);
-      if (!p.description) validationErrors.push(`Product ${index + 1}: Description is required`);
+      if (p.customizationTypeIds.length === 0) validationErrors.push(`Product ${index + 1}: At least one Customization Type is required`);
+      if (p.personalization === "Yes" && !p.description) validationErrors.push(`Product ${index + 1}: Description is required`);
       if (p.qty <= 0) validationErrors.push(`Product ${index + 1}: Quantity must be greater than 0`);
     });
     
@@ -282,12 +284,12 @@ export default function ConvertToLeadPage() {
         rate: p.rate.toString(),
         gst: p.gst.toString(),
         total: p.total.toString(),
-        customizationType: p.customizationTypeId,
+        customizationType: p.customizationTypeIds,
+        customizationDescription: p.customizationDescription,
         personalization: {
           isPersonalized: p.personalization === "Yes",
           location: p.personalization === "Yes" ? p.location : undefined,
-          name: p.personalization === "No" ? p.name : undefined,
-          description: p.description,
+          description: p.personalization === "Yes" ? p.description : undefined,
         },
       }));
       
@@ -432,9 +434,9 @@ export default function ConvertToLeadPage() {
             </button>
           </div>
 
-          <div className="max-h-[400px] space-y-3 overflow-y-auto rounded-xl border border-gray-200 bg-gray-50 p-3">
+          <div className="max-h-[400px] space-y-3 overflow-x-hidden rounded-xl border border-gray-200 bg-gray-50 p-3">
             {products.map((product, index) => (
-              <div key={product.id} className="rounded-xl border border-gray-200 bg-white p-4">
+              <div key={product.id} className="rounded-xl border border-gray-200 bg-white p-4 overflow-visible">
                 <div className="mb-3 flex items-center justify-between">
                   <span className="text-xs font-semibold text-gray-600">Product {index + 1}</span>
                   <button
@@ -446,7 +448,7 @@ export default function ConvertToLeadPage() {
                   </button>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 overflow-visible">
                   <div>
                     <label className="mb-1 block text-xs text-gray-600">Inquiry Category</label>
                     <select
@@ -471,23 +473,74 @@ export default function ConvertToLeadPage() {
                     >
                       <option value="">Select</option>
                       {(allModelSuggestions[product.inquiryCategoryId] || []).map((model) => (
-                        <option key={model._id} value={model._id}>{model.name}</option>
+                        <option key={model._id} value={model._id}>{model.modelNo} - {model.color}</option>
                       ))}
                     </select>
                   </div>
 
-                  <div>
+                  <div className="relative">
                     <label className="mb-1 block text-xs text-gray-600">Customization Type</label>
-                    <select
-                      value={product.customizationTypeId}
-                      onChange={(e) => updateProduct(product.id, "customizationTypeId", e.target.value)}
-                      className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm outline-none"
+                    <div
+                      id={`dropdown-${product.id}`}
+                      onClick={() => setOpenDropdowns(prev => ({ ...prev, [product.id]: !prev[product.id] }))}
+                      className="w-full cursor-pointer rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm outline-none min-h-[34px] flex items-center"
                     >
-                      <option value="">Select</option>
-                      {customizationTypes.map((type) => (
-                        <option key={type._id} value={type._id}>{type.name}</option>
-                      ))}
-                    </select>
+                      {product.customizationTypeIds.length === 0 ? (
+                        <span className="text-gray-400">Select</span>
+                      ) : (
+                        <span className="text-gray-900">
+                          {product.customizationTypeIds.length} selected
+                        </span>
+                      )}
+                    </div>
+                    {openDropdowns[product.id] && (
+                      <div className="fixed z-[9999] mt-1 w-64 rounded-lg border border-gray-200 bg-white shadow-lg flex flex-col"
+                        style={{
+                          top: `${document.getElementById(`dropdown-${product.id}`)?.getBoundingClientRect().bottom}px`,
+                          left: `${document.getElementById(`dropdown-${product.id}`)?.getBoundingClientRect().left}px`
+                        }}
+                      >
+                        <div className="max-h-48 overflow-y-auto">
+                          {customizationTypes.map((type) => (
+                            <label
+                              key={type._id}
+                              className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={product.customizationTypeIds.includes(type._id)}
+                                onChange={(e) => {
+                                  const newIds = e.target.checked
+                                    ? [...product.customizationTypeIds, type._id]
+                                    : product.customizationTypeIds.filter(id => id !== type._id);
+                                  updateProduct(product.id, "customizationTypeIds", newIds);
+                                }}
+                                className="h-4 w-4 rounded border-gray-300 text-slate-900"
+                              />
+                              <span className="text-sm text-gray-700">{type.name}</span>
+                            </label>
+                          ))}
+                        </div>
+                        <button
+                          onClick={() => setOpenDropdowns(prev => ({ ...prev, [product.id]: false }))}
+                          className="sticky bottom-0 w-full bg-slate-900 text-white py-2 text-sm font-medium rounded-b-lg hover:bg-slate-800"
+                        >
+                          Done
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="sm:col-span-2 lg:col-span-3">
+                    <label className="mb-1 block text-xs text-gray-600">Customization Description</label>
+                    <input
+                      type="text"
+                      value={product.customizationDescription}
+                      onChange={(e) => updateProduct(product.id, "customizationDescription", e.target.value)}
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm outline-none"
+                      placeholder="Enter customization details..."
+                    />
                   </div>
 
                   <div>
@@ -502,29 +555,29 @@ export default function ConvertToLeadPage() {
                     </select>
                   </div>
 
-                  <div>
-                    <label className="mb-1 block text-xs text-gray-600">
-                      {product.personalization === "Yes" ? "Location" : "Name"}
-                    </label>
-                    <input
-                      type="text"
-                      value={product.personalization === "Yes" ? product.location || "" : product.name || ""}
-                      onChange={(e) =>
-                        updateProduct(product.id, product.personalization === "Yes" ? "location" : "name", e.target.value)
-                      }
-                      className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm outline-none"
-                    />
-                  </div>
+                  {product.personalization === "Yes" && (
+                    <>
+                      <div>
+                        <label className="mb-1 block text-xs text-gray-600">Location</label>
+                        <input
+                          type="text"
+                          value={product.location || ""}
+                          onChange={(e) => updateProduct(product.id, "location", e.target.value)}
+                          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm outline-none"
+                        />
+                      </div>
 
-                  <div className="sm:col-span-2 lg:col-span-1">
-                    <label className="mb-1 block text-xs text-gray-600">Description</label>
-                    <input
-                      type="text"
-                      value={product.description}
-                      onChange={(e) => updateProduct(product.id, "description", e.target.value)}
-                      className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm outline-none"
-                    />
-                  </div>
+                      <div className="sm:col-span-2 lg:col-span-1">
+                        <label className="mb-1 block text-xs text-gray-600">Description</label>
+                        <input
+                          type="text"
+                          value={product.description}
+                          onChange={(e) => updateProduct(product.id, "description", e.target.value)}
+                          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm outline-none"
+                        />
+                      </div>
+                    </>
+                  )}
 
                   <div>
                     <label className="mb-1 block text-xs text-gray-600">Qty</label>

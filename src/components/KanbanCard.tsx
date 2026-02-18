@@ -98,11 +98,14 @@ export default function KanbanCard({
             <div key={index} className="rounded-lg bg-gray-50 px-2 py-1.5 text-xs">
               <div className="flex items-center justify-between">
                 <span className="font-medium text-gray-700">
-                  {item.modelSuggestion?.name || "N/A"}
+                  {item.inquiryCategory?.name || "N/A"}
                 </span>
                 <span className="text-gray-500">Qty: {item.qty}</span>
               </div>
-              <p className="mt-0.5 text-gray-500">{item.modelSuggestion?.modelNo || "-"}</p>
+              <div className="mt-0.5 flex items-center justify-between text-gray-500">
+                <span>{item.modelSuggestion?.modelNo || "-"} - {item.modelSuggestion?.color || "-"}</span>
+                <span className="font-medium">₹{item.rate}</span>
+              </div>
             </div>
           ))}
           {totalItems > 2 && (

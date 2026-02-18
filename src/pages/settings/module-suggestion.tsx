@@ -17,8 +17,8 @@ type Category = {
 
 type ModelSuggestionRow = {
   _id?: string;
-  name: string;
   modelNo: string;
+  color: string;
   rate: string;
   gst: number;
   category: Category;
@@ -38,8 +38,8 @@ export default function ModelSuggestionPage() {
   const [search, setSearch] = useState("");
 
   const [form, setForm] = useState({
-    name: "",
     modelNo: "",
+    color: "",
     rate: "",
     gst: "18",
     categoryId: "",
@@ -47,8 +47,8 @@ export default function ModelSuggestionPage() {
 
   const columns: Column<ModelSuggestionRow>[] = useMemo(
     () => [
-      { key: "name", label: "Model Name" },
       { key: "modelNo", label: "Model No." },
+      { key: "color", label: "Color" },
       {
         key: "category",
         label: "Category",
@@ -90,8 +90,8 @@ export default function ModelSuggestionPage() {
 
   const resetForm = () => {
     setForm({
-      name: "",
       modelNo: "",
+      color: "",
       rate: "",
       gst: "18",
       categoryId: "",
@@ -101,8 +101,8 @@ export default function ModelSuggestionPage() {
 
   const handleEdit = (row: ModelSuggestionRow) => {
     setForm({
-      name: row.name,
       modelNo: row.modelNo,
+      color: row.color,
       rate: row.rate,
       gst: String(row.gst || 18),
       categoryId: row.category._id,
@@ -128,8 +128,8 @@ export default function ModelSuggestionPage() {
 
     try {
       const payload = {
-        name: form.name,
         modelNo: form.modelNo,
+        color: form.color,
         rate: form.rate,
         gst: Number(form.gst),
         category: form.categoryId,
@@ -193,8 +193,8 @@ export default function ModelSuggestionPage() {
     } else {
       try {
         const payload = {
-          name: form.name,
           modelNo: form.modelNo,
+          color: form.color,
           rate: form.rate,
           gst: Number(form.gst),
           category: form.categoryId,
@@ -288,19 +288,6 @@ export default function ModelSuggestionPage() {
         >
           <div className="grid gap-4 md:grid-cols-2">
             <label className="block text-sm text-gray-600">
-              Model Name
-              <input
-                required
-                value={form.name}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, name: e.target.value }))
-                }
-                className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-gray-300 focus:bg-white"
-                placeholder="Enter model name"
-              />
-            </label>
-
-            <label className="block text-sm text-gray-600">
               Model No
               <input
                 required
@@ -310,6 +297,19 @@ export default function ModelSuggestionPage() {
                 }
                 className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-gray-300 focus:bg-white"
                 placeholder="Enter model number"
+              />
+            </label>
+
+            <label className="block text-sm text-gray-600">
+              Color
+              <input
+                required
+                value={form.color}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, color: e.target.value }))
+                }
+                className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-gray-300 focus:bg-white"
+                placeholder="Enter color"
               />
             </label>
 

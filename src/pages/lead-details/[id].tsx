@@ -38,8 +38,9 @@ type Lead = {
   items: Array<{
     _id: string;
     inquiryCategory: { _id: string; name: string };
-    modelSuggestion: { _id: string; name: string; modelNo: string };
-    customizationType: { _id: string; name: string };
+    modelSuggestion: { _id: string; modelNo: string; color: string };
+    customizationType: Array<{ _id: string; name: string }>;
+    customizationDescription?: string;
     qty: string;
     rate: string;
     gst: string;
@@ -48,7 +49,6 @@ type Lead = {
       isPersonalized: boolean;
       location?: string;
       description?: string;
-      name?: string;
     };
   }>;
   remarks?: Array<{ date: string; remark: string }>;
@@ -315,26 +315,34 @@ export default function LeadDetailsPage() {
                 </div>
                 <div className="rounded-lg bg-white p-3">
                   <label className="text-xs font-semibold text-gray-500">Model</label>
-                  <p className="mt-1 text-sm font-medium text-gray-900">{item.modelSuggestion?.name || "N/A"}</p>
-                  {item.modelSuggestion?.modelNo && (
-                    <p className="text-xs text-gray-500">Model No: {item.modelSuggestion.modelNo}</p>
+                  <p className="mt-1 text-sm font-medium text-gray-900">
+                    {item.modelSuggestion?.modelNo || "N/A"} - {item.modelSuggestion?.color || "N/A"}
+                  </p>
+                </div>
+                <div className="rounded-lg bg-white p-3 md:col-span-2">
+                  <label className="text-xs font-semibold text-gray-500">Customization Type</label>
+                  <p className="mt-1 text-sm font-medium text-gray-900">
+                    {Array.isArray(item.customizationType) 
+                      ? item.customizationType.map(c => c.name).join(", ") 
+                      : item.customizationType?.name || "N/A"}
+                  </p>
+                  {item.customizationDescription && (
+                    <p className="mt-1 text-xs text-gray-600">Remarks: {item.customizationDescription}</p>
                   )}
                 </div>
-                <div className="rounded-lg bg-white p-3">
-                  <label className="text-xs font-semibold text-gray-500">Customization Type</label>
-                  <p className="mt-1 text-sm font-medium text-gray-900">{item.customizationType?.name || "N/A"}</p>
-                </div>
-                <div className="rounded-lg bg-white p-3">
-                  <label className="text-xs font-semibold text-gray-500">Quantity</label>
-                  <p className="mt-1 text-sm font-medium text-gray-900">{item.qty}</p>
-                </div>
-                <div className="rounded-lg bg-white p-3">
-                  <label className="text-xs font-semibold text-gray-500">Rate</label>
-                  <p className="mt-1 text-sm font-medium text-gray-900">₹{item.rate}</p>
-                </div>
-                <div className="rounded-lg bg-white p-3">
-                  <label className="text-xs font-semibold text-gray-500">GST</label>
-                  <p className="mt-1 text-sm font-medium text-gray-900">{item.gst}%</p>
+                <div className="rounded-lg bg-white p-3 grid grid-cols-3 gap-4 md:col-span-2">
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500">Quantity</label>
+                    <p className="mt-1 text-sm font-medium text-gray-900">{item.qty}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500">Rate</label>
+                    <p className="mt-1 text-sm font-medium text-gray-900">₹{item.rate}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500">GST</label>
+                    <p className="mt-1 text-sm font-medium text-gray-900">{item.gst}%</p>
+                  </div>
                 </div>
               </div>
 
@@ -342,7 +350,6 @@ export default function LeadDetailsPage() {
                 <div className="mt-3 rounded-lg bg-blue-50 p-3">
                   <label className="text-xs font-semibold text-blue-700">Personalization</label>
                   <div className="mt-2 space-y-1 text-sm text-gray-700">
-                    {item.personalization.name && <p>Name: {item.personalization.name}</p>}
                     {item.personalization.location && <p>Location: {item.personalization.location}</p>}
                     {item.personalization.description && <p>Description: {item.personalization.description}</p>}
                   </div>

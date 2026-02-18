@@ -60,7 +60,7 @@ export default function Home() {
       fetchDashboardStats();
       fetchGraphData();
     };
-    
+
     checkAccess();
   }, [dateRange, customStartDate, customEndDate, topLimit]);
 
@@ -141,11 +141,11 @@ export default function Home() {
   const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newStartDate = e.target.value;
     setCustomStartDate(newStartDate);
-    
+
     // If end date exists and is before new start date, reset end date
     if (customEndDate && newStartDate > customEndDate) {
       setCustomEndDate(newStartDate);
-      toast.success("End date updated to match start date", { 
+      toast.success("End date updated to match start date", {
         icon: "📅",
         style: { borderRadius: '12px', background: '#1e1b4b', color: '#fff' }
       });
@@ -155,16 +155,16 @@ export default function Home() {
   // Handle End Date Change with Validation
   const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newEndDate = e.target.value;
-    
+
     // Prevent selecting end date before start date
     if (customStartDate && newEndDate < customStartDate) {
-      toast.error("End date cannot be before start date", { 
+      toast.error("End date cannot be before start date", {
         icon: "❌",
         style: { borderRadius: '12px', background: '#fef2f2', color: '#dc2626' }
       });
       return;
     }
-    
+
     setCustomEndDate(newEndDate);
   };
 
@@ -182,7 +182,7 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+      <div className="min-h-screen  flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
             <div className="h-16 w-16 rounded-full border-4 border-indigo-200"></div>
@@ -227,7 +227,7 @@ export default function Home() {
   };
 
   return (
-    <div className={`${geistSans.className} ${geistMono.className} min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50`}>
+    <div className={`${geistSans.className} ${geistMono.className} min-h-screen`}>
       {/* Header Section */}
       <div className="sticky top-0 z-20 backdrop-blur-xl bg-white/70 border-b border-gray-200/50">
         <div className="px-6 py-4">
@@ -238,18 +238,17 @@ export default function Home() {
               </h1>
               <p className="text-gray-500 text-sm mt-1">Welcome back! Here's what's happening today.</p>
             </div>
-            
+
             {/* Date Filter Pills */}
             <div className="flex flex-wrap items-center gap-2">
               {["today", "thisWeek", "thisMonth"].map((range) => (
                 <button
                   key={range}
                   onClick={() => setDateRange(range)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                    dateRange === range
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${dateRange === range
                       ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 scale-105"
                       : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
-                  }`}
+                    }`}
                 >
                   {range === "today" ? "Today" : range === "thisWeek" ? "This Week" : "This Month"}
                 </button>
@@ -257,11 +256,10 @@ export default function Home() {
               <div className="relative">
                 <button
                   onClick={() => setDateRange("custom")}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
-                    dateRange === "custom"
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${dateRange === "custom"
                       ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30"
                       : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
-                  }`}
+                    }`}
                 >
                   <Calendar className="h-4 w-4" />
                   Custom
@@ -269,7 +267,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-          
+
           {/* Enhanced Custom Date Range Picker */}
           {dateRange === "custom" && (
             <div className="mt-4 overflow-hidden">
@@ -277,7 +275,7 @@ export default function Home() {
                 {/* Background Decorations */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-100 rounded-full blur-3xl opacity-40 -translate-y-1/2 translate-x-1/2"></div>
                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-100 rounded-full blur-3xl opacity-40 translate-y-1/2 -translate-x-1/2"></div>
-                
+
                 <div className="relative bg-white rounded-2xl border border-indigo-100 shadow-xl shadow-indigo-500/5 p-6">
                   {/* Header */}
                   {/* <div className="flex items-center justify-between mb-6">
@@ -298,7 +296,7 @@ export default function Home() {
                       <X className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
                     </button>
                   </div> */}
-                  
+
                   {/* Date Inputs */}
                   <div className="flex flex-col lg:flex-row items-stretch lg:items-end gap-4 lg:gap-6">
                     {/* Start Date */}
@@ -339,7 +337,7 @@ export default function Home() {
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center border-2 border-white shadow-md">
                           <ArrowRight className="h-5 w-5 text-indigo-600" />
                         </div>
-                        
+
                       </div>
                     </div>
 
@@ -368,11 +366,10 @@ export default function Home() {
                           min={customStartDate || undefined}
                           max={getTodayDate()}
                           disabled={!customStartDate}
-                          className={`w-full pl-14 pr-4 py-3.5 bg-gradient-to-r from-gray-50 to-white border-2 rounded-xl text-gray-800 font-semibold focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all appearance-none cursor-pointer ${
-                            !customStartDate 
-                              ? 'border-gray-100 text-gray-300 cursor-not-allowed opacity-60' 
+                          className={`w-full pl-14 pr-4 py-3.5 bg-gradient-to-r from-gray-50 to-white border-2 rounded-xl text-gray-800 font-semibold focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all appearance-none cursor-pointer ${!customStartDate
+                              ? 'border-gray-100 text-gray-300 cursor-not-allowed opacity-60'
                               : 'border-gray-200 focus:border-indigo-500 hover:border-indigo-300'
-                          }`}
+                            }`}
                         />
                         {/* {customEndDate && customStartDate && (
                           <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
@@ -396,7 +393,7 @@ export default function Home() {
                   </div>
 
                   {/* Selected Range Summary */}
-                 
+
                 </div>
               </div>
             </div>
@@ -407,10 +404,9 @@ export default function Home() {
       <div className="p-6 space-y-6">
         {/* Payment Stats - Hero Section */}
         <section className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 rounded-3xl blur-3xl"></div>
+          <div className="absolute rounded-3xl "></div>
           <div className="relative grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Total Revenue */}
-            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-700 p-6 text-white shadow-xl shadow-indigo-500/20 hover:shadow-2xl hover:shadow-indigo-500/30 transition-all duration-500 hover:-translate-y-1">
+            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-700 p-6 text-white">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
               <div className="relative">
                 <div className="flex items-center justify-between">
@@ -429,8 +425,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Total Paid */}
-            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 p-6 text-white shadow-xl shadow-emerald-500/20 hover:shadow-2xl hover:shadow-emerald-500/30 transition-all duration-500 hover:-translate-y-1">
+            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 p-6 text-white">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
               <div className="relative">
                 <div className="flex items-center justify-between">
@@ -449,8 +444,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Total Pending */}
-            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-500 via-rose-600 to-red-700 p-6 text-white shadow-xl shadow-rose-500/20 hover:shadow-2xl hover:shadow-rose-500/30 transition-all duration-500 hover:-translate-y-1">
+            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-500 via-rose-600 to-red-700 p-6 text-white ">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
               <div className="relative">
                 <div className="flex items-center justify-between">
@@ -497,13 +491,13 @@ export default function Home() {
                     <BarChart data={paymentGraphData}>
                       <defs>
                         <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#6366f1" stopOpacity={1}/>
-                          <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.6}/>
+                          <stop offset="0%" stopColor="#6366f1" stopOpacity={1} />
+                          <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.6} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                       <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} tickFormatter={(value) => `₹${value/1000}k`} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} tickFormatter={(value) => `₹${value / 1000}k`} />
                       <Tooltip content={<CustomTooltip />} />
                       <Bar dataKey="value" radius={[8, 8, 0, 0]} fill="url(#colorGradient)">
                         {paymentGraphData.map((entry: any, index: number) => (
@@ -526,7 +520,7 @@ export default function Home() {
                     </div>
                     <h2 className="text-lg font-semibold text-gray-900">Lead Status Overview</h2>
                   </div>
-                  <button 
+                  <button
                     onClick={() => router.push('/leads')}
                     className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1 transition-colors"
                   >
@@ -539,8 +533,8 @@ export default function Home() {
                   {Object.entries(statusCounts).map(([status, count]: [string, any], index: number) => {
                     const color = getStatusColor(index);
                     return (
-                      <div 
-                        key={status} 
+                      <div
+                        key={status}
                         onClick={() => router.push(`/leads?status=${encodeURIComponent(status)}`)}
                         className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                       >
@@ -556,7 +550,7 @@ export default function Home() {
                     );
                   })}
                 </div>
-                
+
                 {/* Lead Status Pie Chart */}
                 {leadStatusGraphData.length > 0 && (
                   <div className="mt-6 pt-6 border-t border-gray-100">
@@ -576,9 +570,9 @@ export default function Home() {
                           ))}
                         </Pie>
                         <Tooltip />
-                        <Legend 
-                          layout="horizontal" 
-                          verticalAlign="bottom" 
+                        <Legend
+                          layout="horizontal"
+                          verticalAlign="bottom"
                           align="center"
                           formatter={(value: string) => <span className="text-sm text-gray-600">{value}</span>}
                         />
@@ -601,7 +595,7 @@ export default function Home() {
               </div>
               <div className="p-6">
                 <div className="grid grid-cols-2 gap-4">
-                  <div 
+                  <div
                     onClick={() => router.push('/account-master')}
                     className="group relative overflow-hidden rounded-xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-teal-50 p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                   >
@@ -618,7 +612,7 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div 
+                  <div
                     onClick={() => router.push('/account-master')}
                     className="group relative overflow-hidden rounded-xl border border-amber-100 bg-gradient-to-br from-amber-50 to-orange-50 p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                   >
@@ -689,18 +683,17 @@ export default function Home() {
                 <div className="p-4 max-h-[600px] overflow-y-auto">
                   <div className="space-y-2">
                     {topModels.map((model: any, index: number) => (
-                      <div 
-                        key={index} 
+                      <div
+                        key={index}
                         className="group flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-all duration-300 cursor-pointer"
                       >
                         <div className="flex items-center gap-4">
                           <div className="relative">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${
-                              index === 0 ? 'bg-gradient-to-br from-yellow-400 to-orange-500' :
-                              index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-400' :
-                              index === 2 ? 'bg-gradient-to-br from-amber-600 to-amber-700' :
-                              'bg-gradient-to-br from-indigo-400 to-purple-500'
-                            }`}>
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${index === 0 ? 'bg-gradient-to-br from-yellow-400 to-orange-500' :
+                                index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-400' :
+                                  index === 2 ? 'bg-gradient-to-br from-amber-600 to-amber-700' :
+                                    'bg-gradient-to-br from-indigo-400 to-purple-500'
+                              }`}>
                               {index + 1}
                             </div>
                             {index < 3 && (
@@ -751,8 +744,8 @@ export default function Home() {
               ) : (
                 <div className="space-y-3">
                   {todayFollowUps.map((followUp: any, index: number) => (
-                    <div 
-                      key={index} 
+                    <div
+                      key={index}
                       onClick={() => router.push(`/lead-details/${followUp.leadId}`)}
                       className="group p-4 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50/50 cursor-pointer transition-all duration-300"
                     >
@@ -804,8 +797,8 @@ export default function Home() {
               ) : (
                 <div className="space-y-3">
                   {pendingPaymentLeads.map((lead: any, index: number) => (
-                    <div 
-                      key={index} 
+                    <div
+                      key={index}
                       onClick={() => router.push(`/lead-details/${lead.leadId}`)}
                       className="group p-4 rounded-xl border border-rose-100 bg-rose-50/50 hover:bg-rose-100/50 cursor-pointer transition-all duration-300"
                     >
