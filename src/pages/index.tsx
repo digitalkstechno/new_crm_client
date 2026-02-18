@@ -34,6 +34,19 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
+// Custom Tooltip for Pie Charts
+const PieTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl p-3 shadow-lg">
+        <p className="text-sm font-medium text-gray-900">{payload[0].name}</p>
+        <p className="text-lg font-bold text-gray-900">{payload[0].value}</p>
+      </div>
+    );
+  }
+  return null;
+};
+
 export default function Home() {
   const router = useRouter();
   const [stats, setStats] = useState<any>(null);
@@ -204,6 +217,7 @@ export default function Home() {
   const paymentGraphData = graphData?.paymentGraph || [];
   const leadStatusGraphData = graphData?.leadStatusGraph || [];
   const accountConversionGraphData = graphData?.accountConversionGraph || [];
+  const categoryPercentages = stats?.categoryPercentages || [];
 
   const COLORS = ['#a5b4fc', '#c4b5fd', '#f9a8d4', '#fda4af', '#fdba74', '#fde047', '#86efac', '#5eead4', '#7dd3fc'];
 
@@ -450,14 +464,14 @@ export default function Home() {
                           innerRadius={60}
                           outerRadius={100}
                           paddingAngle={3}
-                          dataKey={"value"}
-                          
+                          dataKey="value"
+                          nameKey="label"
                         >
                           {leadStatusGraphData.map((entry: any, index: number) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
                         </Pie>
-                        <Tooltip />
+                        <Tooltip content={<PieTooltip />} />
                         <Legend
                           layout="horizontal"
                           verticalAlign="bottom"
@@ -530,18 +544,75 @@ export default function Home() {
                           outerRadius={80}
                           paddingAngle={5}
                           dataKey="value"
+                          nameKey="label"
                         >
                           {accountConversionGraphData.map((entry: any, index: number) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
-                        <Tooltip />
+                        <Tooltip content={<PieTooltip />} />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
                 )}
               </div>
             </div>
+
+            {/* Category Percentage Section */}
+            {categoryPercentages.length > 0 && (
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
+                <div className="p-6 border-b border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-pink-100 rounded-xl">
+                      <TrendingUp className="h-5 w-5 text-pink-600" />
+                    </div>
+                    <h2 className="text-lg font-semibold text-gray-900">Category Distribution</h2>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <ResponsiveContainer width="100%" height={Math.max(300, categoryPercentages.length * 50)}>
+                    <BarChart data={categoryPercentages} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e5e7eb" />
+                      <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} />
+                      <YAxis type="category" dataKey="category" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} width={120} />
+                      <Tooltip 
+                        content={({ active, payload }: any) => {
+                          if (active && payload && payload.length) {
+                            return (
+                              <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl p-3 shadow-lg">
+                                <p className="text-sm font-medium text-gray-900">{payload[0].payload.category}</p>
+                                <p className="text-lg font-bold text-gray-900">{payload[0].value} units</p>
+                                <p className="text-sm text-gray-600">{payload[0].payload.percentage}%</p>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                      <Bar dataKey="count" radius={[0, 8, 8, 0]}>
+                        {categoryPercentages.map((entry: any, index: number) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                  <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {categoryPercentages.map((cat: any, index: number) => (
+                      <div key={index} className="flex items-center gap-2 p-3 rounded-lg bg-gray-50">
+                        <div 
+                          className="w-3 h-3 rounded-full flex-shrink-0" 
+                          style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-gray-700 truncate">{cat.category}</p>
+                          <p className="text-sm font-bold text-gray-900">{cat.percentage}%</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right Column - Top Models */}
@@ -621,7 +692,7 @@ export default function Home() {
         </div>
 
         {/* Bottom Section - Follow-ups & Pending Payments */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Today's Follow Ups */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
             <div className="p-6 border-b border-gray-100">
@@ -675,6 +746,61 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Upcoming Deliveries */}
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
+            <div className="p-6 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-purple-100 rounded-xl">
+                    <Package className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">Upcoming Deliveries</h2>
+                    <p className="text-sm text-gray-500">{(stats?.upcomingDeliveries || []).length} in next 7 days</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="p-4 max-h-[400px] overflow-y-auto">
+              {(stats?.upcomingDeliveries || []).length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+                  <Package className="h-12 w-12 mb-3 opacity-50" />
+                  <p className="text-sm">No upcoming deliveries</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {(stats?.upcomingDeliveries || []).map((delivery: any, index: number) => (
+                    <div
+                      key={index}
+                      onClick={() => router.push(`/lead-details/${delivery.leadId}`)}
+                      className="group p-4 rounded-xl border border-gray-100 hover:border-purple-200 hover:bg-purple-50/50 cursor-pointer transition-all duration-300"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-sm font-semibold text-gray-900 group-hover:text-purple-700 transition-colors">{delivery.companyName}</h3>
+                            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                              {delivery.leadStatus}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">{delivery.clientName}</p>
+                          <div className="flex items-center justify-between mt-3">
+                            <div className="flex items-center gap-2 text-xs text-gray-600">
+                              <Calendar className="h-3 w-3" />
+                              {new Date(delivery.deliveryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            </div>
+                            <span className="text-xs font-semibold text-gray-700">₹{delivery.totalAmount}</span>
+                          </div>
+                        </div>
+                        <ArrowUpRight className="h-5 w-5 text-gray-300 group-hover:text-purple-500 transition-colors" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Pending Payments */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
             <div className="p-6 border-b border-gray-100">
@@ -706,8 +832,13 @@ export default function Home() {
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <h3 className="text-sm font-semibold text-gray-900 group-hover:text-rose-700 transition-colors">{lead.companyName}</h3>
-                          <p className="text-xs text-gray-500">{lead.clientName}</p>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-sm font-semibold text-gray-900 group-hover:text-rose-700 transition-colors">{lead.companyName}</h3>
+                            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-700">
+                              {lead.leadStatus}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">{lead.clientName}</p>
                         </div>
                         <ArrowUpRight className="h-5 w-5 text-rose-300 group-hover:text-rose-500 transition-colors" />
                       </div>

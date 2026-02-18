@@ -50,6 +50,7 @@ export default function LoginPage() {
 
       clearUserCache();
       localStorage.setItem("token", data.token);
+      localStorage.setItem("refreshToken", data.refreshToken);
 
       toast.success("Login successful!");
 

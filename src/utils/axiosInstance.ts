@@ -61,6 +61,7 @@ api.interceptors.response.use(
         const refreshToken = localStorage.getItem("refreshToken");
 
         if (!refreshToken) {
+          isRefreshing = false;
           localStorage.clear();
           window.location.href = "/login";
           return Promise.reject(error);
@@ -68,7 +69,7 @@ api.interceptors.response.use(
 
         try {
           const response = await axios.post(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}staff/refresh-token`,
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/staff/refresh-token`,
             { refreshToken }
           );
 
