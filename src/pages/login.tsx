@@ -180,7 +180,7 @@ export default function LoginPage() {
               }}>Digitalks.</Link> All rights reserved.
             </p>
             <p className="text-sm text-slate-500">
-              Designed & Developed with ❤️ by Digitalks.
+              Designed & Developed with <span className="text-red-500 animate-pulse">❤️</span> by Digitalks.
             </p>
           </div>
         </div>

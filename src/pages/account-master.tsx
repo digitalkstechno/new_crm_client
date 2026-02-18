@@ -184,7 +184,7 @@ export default function AccountMasterPage() {
           <div className="flex gap-2">
             <button
               onClick={() => router.push(`/convert-to-lead?accountId=${row._id}`)}
-              className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-3 py-3 text-xs font-semibold text-white hover:bg-slate-800"
+              className="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-3 text-xs font-semibold text-white hover:bg-indigo-700"
             >
               Convert
               <SendToBack className="h-3 w-3" />
@@ -483,7 +483,7 @@ export default function AccountMasterPage() {
               fetchStaff();
               fetchDropdowns();
             }}
-            className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 transition-all"
+            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition-all"
           >
             <Plus className="h-4 w-4" />
             Add Account

@@ -503,7 +503,7 @@ export default function LeadsPage() {
           </a>
           <button
             onClick={() => handleViewLead(row)}
-            className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800"
+            className="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
           >
             <Eye className="h-3 w-3" />
             View

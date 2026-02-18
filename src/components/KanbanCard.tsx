@@ -169,7 +169,7 @@ export default function KanbanCard({
       <div className="mt-3 flex gap-1.5">
         <button
           onClick={() => onViewLead(lead)}
-          className="flex-1 rounded-xl bg-slate-900 px-2 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"
+          className="flex-1 rounded-xl bg-indigo-600 px-2 py-2 text-xs font-semibold text-white transition hover:bg-indigo-700"
         >
           View
         </button>

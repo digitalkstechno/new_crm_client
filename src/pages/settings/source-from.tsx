@@ -154,7 +154,7 @@ export default function SourceFromPage() {
             resetForm();
             setOpen(true);
           }}
-          className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-gray-200 transition-all duration-300 hover:ring-gray-300 hover:shadow"
+          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-gray-200 transition-all duration-300 hover:ring-gray-300 hover:shadow hover:bg-indigo-700"
         >
           <Plus className="h-4 w-4" />
           Add Source From

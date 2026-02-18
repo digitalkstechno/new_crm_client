@@ -90,7 +90,7 @@ export default function PaymentDialog({
           </button>
           <button
             onClick={handleSubmit}
-            className="flex-1 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+            className="flex-1 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
           >
             Submit
           </button>

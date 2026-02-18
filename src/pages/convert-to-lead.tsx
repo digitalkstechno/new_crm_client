@@ -427,7 +427,7 @@ export default function ConvertToLeadPage() {
             <h2 className="text-sm font-semibold text-gray-900">Products</h2>
             <button
               onClick={addProduct}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
             >
               <Plus className="h-3.5 w-3.5" />
               Add
@@ -524,7 +524,7 @@ export default function ConvertToLeadPage() {
                         </div>
                         <button
                           onClick={() => setOpenDropdowns(prev => ({ ...prev, [product.id]: false }))}
-                          className="sticky bottom-0 w-full bg-slate-900 text-white py-2 text-sm font-medium rounded-b-lg hover:bg-slate-800"
+                          className="sticky bottom-0 w-full bg-indigo-600 text-white py-2 text-sm font-medium rounded-b-lg hover:bg-indigo-700"
                         >
                           Done
                         </button>
@@ -660,7 +660,7 @@ export default function ConvertToLeadPage() {
         <div className="flex justify-end">
           <button
             onClick={handleConvertLead}
-            className="rounded-lg bg-slate-900 px-6 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+            className="rounded-lg bg-indigo-600 px-6 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
           >
             {isEditMode ? "Save & Move to Order Confirmation" : "Convert Lead"}
           </button>

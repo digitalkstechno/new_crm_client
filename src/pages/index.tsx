@@ -205,7 +205,7 @@ export default function Home() {
   const leadStatusGraphData = graphData?.leadStatusGraph || [];
   const accountConversionGraphData = graphData?.accountConversionGraph || [];
 
-  const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#06b6d4'];
+  const COLORS = ['#a5b4fc', '#c4b5fd', '#f9a8d4', '#fda4af', '#fdba74', '#fde047', '#86efac', '#5eead4', '#7dd3fc'];
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(value);
@@ -227,16 +227,16 @@ export default function Home() {
   };
 
   return (
-    <div className={`${geistSans.className} ${geistMono.className} min-h-screen`}>
+    <div className={`${geistSans.className} ${geistMono.className} min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50`}>
       {/* Header Section */}
-      <div className="sticky top-0 z-20 backdrop-blur-xl bg-white/70 border-b border-gray-200/50">
-        <div className="px-6 py-4">
+      <div className="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-gray-200">
+        <div className="px-6 py-5">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 via-indigo-900 to-purple-900 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                 Dashboard Overview
               </h1>
-              <p className="text-gray-500 text-sm mt-1">Welcome back! Here's what's happening today.</p>
+              <p className="text-gray-600 text-sm mt-1">Welcome back! Here's what's happening today.</p>
             </div>
 
             {/* Date Filter Pills */}
@@ -245,155 +245,78 @@ export default function Home() {
                 <button
                   key={range}
                   onClick={() => setDateRange(range)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${dateRange === range
-                      ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 scale-105"
-                      : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
-                    }`}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    dateRange === range
+                      ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md"
+                      : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+                  }`}
                 >
                   {range === "today" ? "Today" : range === "thisWeek" ? "This Week" : "This Month"}
                 </button>
               ))}
-              <div className="relative">
-                <button
-                  onClick={() => setDateRange("custom")}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${dateRange === "custom"
-                      ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30"
-                      : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
-                    }`}
-                >
-                  <Calendar className="h-4 w-4" />
-                  Custom
-                </button>
-              </div>
+              <button
+                onClick={() => setDateRange("custom")}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
+                  dateRange === "custom"
+                    ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md"
+                    : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+                }`}
+              >
+                <Calendar className="h-4 w-4" />
+                Custom
+              </button>
             </div>
           </div>
 
           {/* Enhanced Custom Date Range Picker */}
           {dateRange === "custom" && (
-            <div className="mt-4 overflow-hidden">
-              <div className="relative">
-                {/* Background Decorations */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-100 rounded-full blur-3xl opacity-40 -translate-y-1/2 translate-x-1/2"></div>
-                <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-100 rounded-full blur-3xl opacity-40 translate-y-1/2 -translate-x-1/2"></div>
-
-                <div className="relative bg-white rounded-2xl border border-indigo-100 shadow-xl shadow-indigo-500/5 p-6">
-                  {/* Header */}
-                  {/* <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg shadow-indigo-500/30">
-                        <Calendar className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">Select Date Range</h3>
-                        <p className="text-xs text-gray-500">Choose start and end dates</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={clearCustomDates}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors group"
-                      title="Clear dates"
-                    >
-                      <X className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
-                    </button>
-                  </div> */}
-
-                  {/* Date Inputs */}
-                  <div className="flex flex-col lg:flex-row items-stretch lg:items-end gap-4 lg:gap-6">
-                    {/* Start Date */}
-                    <div className="flex-1">
-                      <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-widest">
-                        Start Date
-                      </label>
-                      <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                          <div className="p-1.5 bg-emerald-100 rounded-lg">
-                            <Calendar className="h-4 w-4 text-emerald-600" />
-                          </div>
-                        </div>
-                        <input
-                          type="date"
-                          value={customStartDate}
-                          onChange={handleStartDateChange}
-                          max={getTodayDate()}
-                          className="w-full pl-14 pr-4 py-3.5 bg-gradient-to-r from-gray-50 to-white border-2 border-gray-200 rounded-xl text-gray-800 font-semibold focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all appearance-none cursor-pointer hover:border-indigo-300"
-                        />
-                        {/* {customStartDate && (
-                          <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                            <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                          </div>
-                        )} */}
-                      </div>
-                      {/* {customStartDate && (
-                        <p className="mt-2 text-xs text-gray-500 flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                          {new Date(customStartDate).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                        </p>
-                      )} */}
-                    </div>
-
-                    {/* Arrow Connector */}
-                    <div className="hidden lg:flex items-center justify-center pb-4">
-                      <div className="relative">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center border-2 border-white shadow-md">
-                          <ArrowRight className="h-5 w-5 text-indigo-600" />
-                        </div>
-
-                      </div>
-                    </div>
-
-                    {/* Mobile Divider */}
-                    <div className="lg:hidden flex items-center gap-3 py-2">
-                      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
-                      <span className="text-xs font-semibold text-gray-400 uppercase">To</span>
-                      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
-                    </div>
-
-                    {/* End Date */}
-                    <div className="flex-1">
-                      <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-widest">
-                        End Date
-                      </label>
-                      <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                          <div className="p-1.5 bg-rose-100 rounded-lg">
-                            <Calendar className="h-4 w-4 text-rose-600" />
-                          </div>
-                        </div>
-                        <input
-                          type="date"
-                          value={customEndDate}
-                          onChange={handleEndDateChange}
-                          min={customStartDate || undefined}
-                          max={getTodayDate()}
-                          disabled={!customStartDate}
-                          className={`w-full pl-14 pr-4 py-3.5 bg-gradient-to-r from-gray-50 to-white border-2 rounded-xl text-gray-800 font-semibold focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all appearance-none cursor-pointer ${!customStartDate
-                              ? 'border-gray-100 text-gray-300 cursor-not-allowed opacity-60'
-                              : 'border-gray-200 focus:border-indigo-500 hover:border-indigo-300'
-                            }`}
-                        />
-                        {/* {customEndDate && customStartDate && (
-                          <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                            <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                          </div>
-                        )} */}
-                      </div>
-                      {/* {customEndDate && (
-                        <p className="mt-2 text-xs text-gray-500 flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                          {new Date(customEndDate).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                        </p>
-                      )} */}
-                      {/* {!customStartDate && (
-                        <p className="mt-2 text-xs text-amber-600 flex items-center gap-1">
-                          <AlertCircle className="h-3 w-3" />
-                          Please select start date first
-                        </p>
-                      )} */}
+            <div className="mt-4">
+              <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                <div className="flex flex-col lg:flex-row items-stretch lg:items-end gap-4">
+                  {/* Start Date */}
+                  <div className="flex-1">
+                    <label className="block text-xs font-medium text-gray-600 mb-2">
+                      Start Date
+                    </label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
+                      <input
+                        type="date"
+                        value={customStartDate}
+                        onChange={handleStartDateChange}
+                        max={getTodayDate()}
+                        className="w-full pl-10 pr-4 py-2.5 bg-blue-50 border border-blue-200 rounded-lg text-gray-700 focus:outline-none focus:border-blue-400 focus:bg-white transition-all"
+                      />
                     </div>
                   </div>
 
-                  {/* Selected Range Summary */}
+                  {/* Arrow */}
+                  <div className="hidden lg:flex items-center justify-center pb-2">
+                    <ArrowRight className="h-5 w-5 text-purple-400" />
+                  </div>
 
+                  {/* End Date */}
+                  <div className="flex-1">
+                    <label className="block text-xs font-medium text-gray-600 mb-2">
+                      End Date
+                    </label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-purple-500" />
+                      <input
+                        type="date"
+                        value={customEndDate}
+                        onChange={handleEndDateChange}
+                        min={customStartDate || undefined}
+                        max={getTodayDate()}
+                        disabled={!customStartDate}
+                        className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none transition-all ${
+                          !customStartDate
+                            ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
+                            : 'bg-purple-50 border-purple-200 text-gray-700 focus:border-purple-400 focus:bg-white'
+                        }`}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -403,64 +326,39 @@ export default function Home() {
 
       <div className="p-6 space-y-6">
         {/* Payment Stats - Hero Section */}
-        <section className="relative overflow-hidden">
-          <div className="absolute rounded-3xl "></div>
-          <div className="relative grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-700 p-6 text-white">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
-              <div className="relative">
-                <div className="flex items-center justify-between">
-                  <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                    <Wallet className="h-6 w-6" />
-                  </div>
-                  <div className="flex items-center gap-1 text-white/80 text-sm">
-                    <TrendingUp className="h-4 w-4" />
-                    <span>Revenue</span>
-                  </div>
+        <section>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 p-5 hover:shadow-lg transition-all">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-2.5 bg-white rounded-lg shadow-sm">
+                  <Wallet className="h-5 w-5 text-blue-600" />
                 </div>
-                <div className="mt-6">
-                  <p className="text-white/70 text-sm font-medium">Total Revenue</p>
-                  <p className="text-3xl font-bold mt-1">{formatCurrency(paymentStats.totalRevenue)}</p>
-                </div>
+                <TrendingUp className="h-4 w-4 text-blue-500" />
               </div>
+              <p className="text-blue-700 text-xs font-medium">Total Revenue</p>
+              <p className="text-2xl font-bold text-blue-900 mt-1">{formatCurrency(paymentStats.totalRevenue)}</p>
             </div>
 
-            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 p-6 text-white">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
-              <div className="relative">
-                <div className="flex items-center justify-between">
-                  <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                    <CheckCircle2 className="h-6 w-6" />
-                  </div>
-                  <div className="flex items-center gap-1 text-white/80 text-sm">
-                    <TrendingUp className="h-4 w-4" />
-                    <span>Collected</span>
-                  </div>
+            <div className="rounded-xl bg-gradient-to-br from-green-50 to-emerald-100 border border-green-200 p-5 hover:shadow-lg transition-all">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-2.5 bg-white rounded-lg shadow-sm">
+                  <CheckCircle2 className="h-5 w-5 text-green-600" />
                 </div>
-                <div className="mt-6">
-                  <p className="text-white/70 text-sm font-medium">Total Paid</p>
-                  <p className="text-3xl font-bold mt-1">{formatCurrency(paymentStats.totalPaid)}</p>
-                </div>
+                <TrendingUp className="h-4 w-4 text-green-500" />
               </div>
+              <p className="text-green-700 text-xs font-medium">Total Paid</p>
+              <p className="text-2xl font-bold text-green-900 mt-1">{formatCurrency(paymentStats.totalPaid)}</p>
             </div>
 
-            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-500 via-rose-600 to-red-700 p-6 text-white ">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
-              <div className="relative">
-                <div className="flex items-center justify-between">
-                  <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                    <Receipt className="h-6 w-6" />
-                  </div>
-                  <div className="flex items-center gap-1 text-white/80 text-sm">
-                    <TrendingDown className="h-4 w-4" />
-                    <span>Pending</span>
-                  </div>
+            <div className="rounded-xl bg-gradient-to-br from-orange-50 to-red-100 border border-orange-200 p-5 hover:shadow-lg transition-all">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-2.5 bg-white rounded-lg shadow-sm">
+                  <Receipt className="h-5 w-5 text-orange-600" />
                 </div>
-                <div className="mt-6">
-                  <p className="text-white/70 text-sm font-medium">Total Pending</p>
-                  <p className="text-3xl font-bold mt-1">{formatCurrency(paymentStats.totalPending)}</p>
-                </div>
+                <TrendingDown className="h-4 w-4 text-orange-500" />
               </div>
+              <p className="text-orange-700 text-xs font-medium">Total Pending</p>
+              <p className="text-2xl font-bold text-orange-900 mt-1">{formatCurrency(paymentStats.totalPending)}</p>
             </div>
           </div>
         </section>
@@ -471,38 +369,27 @@ export default function Home() {
           <div className="lg:col-span-8 space-y-6">
             {/* Payment Chart */}
             {paymentGraphData.length > 0 && (
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-gray-100">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-indigo-100 rounded-lg">
-                        <DollarSign className="h-5 w-5 text-indigo-600" />
-                      </div>
-                      <h2 className="text-lg font-semibold text-gray-900">Revenue Analytics</h2>
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+                <div className="p-5 border-b border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg">
+                      <DollarSign className="h-5 w-5 text-blue-600" />
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <span className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>
-                      Live
-                    </div>
+                    <h2 className="text-base font-semibold text-gray-800">Revenue Analytics</h2>
                   </div>
                 </div>
                 <div className="p-6">
                   <ResponsiveContainer width="100%" height={280}>
                     <BarChart data={paymentGraphData}>
-                      <defs>
-                        <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#6366f1" stopOpacity={1} />
-                          <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.6} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} tickFormatter={(value) => `₹${value / 1000}k`} />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                      <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} tickFormatter={(value) => `₹${value / 1000}k`} />
                       <Tooltip content={<CustomTooltip />} />
-                      <Bar dataKey="value" radius={[8, 8, 0, 0]} fill="url(#colorGradient)">
-                        {paymentGraphData.map((entry: any, index: number) => (
-                          <Cell key={`cell-${index}`} fill={entry.color || COLORS[index % COLORS.length]} />
-                        ))}
+                      <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                        {paymentGraphData.map((entry: any, index: number) => {
+                          const colors = ['#93c5fd', '#6ee7b7', '#fdba74'];
+                          return <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />;
+                        })}
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
@@ -511,18 +398,18 @@ export default function Home() {
             )}
 
             {/* Lead Status Section */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="p-6 border-b border-gray-100">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+              <div className="p-5 border-b border-gray-100">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-violet-100 rounded-lg">
-                      <Users className="h-5 w-5 text-violet-600" />
+                    <div className="p-2 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg">
+                      <Users className="h-5 w-5 text-purple-600" />
                     </div>
-                    <h2 className="text-lg font-semibold text-gray-900">Lead Status Overview</h2>
+                    <h2 className="text-base font-semibold text-gray-800">Lead Status Overview</h2>
                   </div>
                   <button
                     onClick={() => router.push('/leads')}
-                    className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1 transition-colors"
+                    className="text-sm text-purple-600 hover:text-purple-700 font-medium flex items-center gap-1"
                   >
                     View All <ChevronRight className="h-4 w-4" />
                   </button>
@@ -563,7 +450,8 @@ export default function Home() {
                           innerRadius={60}
                           outerRadius={100}
                           paddingAngle={3}
-                          dataKey="value"
+                          dataKey={"value"}
+                          
                         >
                           {leadStatusGraphData.map((entry: any, index: number) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -584,11 +472,11 @@ export default function Home() {
             </div>
 
             {/* Account Conversion Section */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
               <div className="p-6 border-b border-gray-100">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-emerald-100 rounded-lg">
-                    <TrendingUp className="h-5 w-5 text-emerald-600" />
+                  <div className="p-2.5 bg-green-100 rounded-xl">
+                    <TrendingUp className="h-5 w-5 text-green-600" />
                   </div>
                   <h2 className="text-lg font-semibold text-gray-900">Account Conversion</h2>
                 </div>
@@ -659,12 +547,12 @@ export default function Home() {
           {/* Right Column - Top Models */}
           <div className="lg:col-span-4 space-y-6">
             {topModels.length > 0 && (
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden sticky top-28">
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm sticky top-28">
                 <div className="p-6 border-b border-gray-100">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-purple-100 rounded-lg">
-                        <Package className="h-5 w-5 text-purple-600" />
+                      <div className="p-2.5 bg-indigo-100 rounded-xl">
+                        <Package className="h-5 w-5 text-indigo-600" />
                       </div>
                       <h2 className="text-lg font-semibold text-gray-900">Top Models</h2>
                     </div>
@@ -685,29 +573,49 @@ export default function Home() {
                     {topModels.map((model: any, index: number) => (
                       <div
                         key={index}
-                        className="group flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-all duration-300 cursor-pointer"
+                        className="group p-4 rounded-xl bg-gray-50 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-all duration-300 cursor-pointer border border-gray-100"
                       >
-                        <div className="flex items-center gap-4">
-                          <div className="relative">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${index === 0 ? 'bg-gradient-to-br from-yellow-400 to-orange-500' :
-                                index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-400' :
-                                  index === 2 ? 'bg-gradient-to-br from-amber-600 to-amber-700' :
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start gap-3 flex-1">
+                            <div className="relative flex-shrink-0">
+                              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${index === 0 ? 'bg-gradient-to-br from-yellow-400 to-orange-500' :
+                                  index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-400' :
+                                    index === 2 ? 'bg-gradient-to-br from-amber-600 to-amber-700' :
                                     'bg-gradient-to-br from-indigo-400 to-purple-500'
-                              }`}>
-                              {index + 1}
+                                }`}>
+                                {index + 1}
+                              </div>
+                              {index < 3 && (
+                                <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-yellow-500" />
+                              )}
                             </div>
-                            {index < 3 && (
-                              <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-yellow-500" />
-                            )}
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-sm font-semibold text-gray-900 group-hover:text-indigo-700 transition-colors">{model?.inquiryCategory}</h3>
+                              <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-100 text-blue-700 text-xs font-medium">
+                                  <Package className="h-3 w-3" />
+                                  {model.modelNo}
+                                </span>
+                                {}
+                                
+                                {model.category && (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-teal-100 text-teal-700 text-xs font-medium">
+                                    {model.category}
+                                  </span>
+                                )}
+                                {model.color && (
+                                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-gray-100 text-gray-700 text-xs font-medium">
+                                    <span className="w-3 h-3 rounded-full border border-gray-300" style={{ backgroundColor: model.color }}></span>
+                                    {model.color}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <h3 className="text-sm font-semibold text-gray-900 group-hover:text-indigo-700 transition-colors">{model.name}</h3>
-                            <p className="text-xs text-gray-500">{model.modelNo}</p>
+                          <div className="text-right flex-shrink-0 ml-3">
+                            <p className="text-xl font-bold text-indigo-600">{model.count}</p>
+                            <p className="text-xs text-gray-400">units</p>
                           </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xl font-bold text-indigo-600">{model.count}</p>
-                          <p className="text-xs text-gray-400">units</p>
                         </div>
                       </div>
                     ))}
@@ -721,11 +629,11 @@ export default function Home() {
         {/* Bottom Section - Follow-ups & Pending Payments */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Today's Follow Ups */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
             <div className="p-6 border-b border-gray-100">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
+                  <div className="p-2.5 bg-blue-100 rounded-xl">
                     <Calendar className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
@@ -774,12 +682,12 @@ export default function Home() {
           </div>
 
           {/* Pending Payments */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
             <div className="p-6 border-b border-gray-100">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-rose-100 rounded-lg">
-                    <AlertCircle className="h-5 w-5 text-rose-600" />
+                  <div className="p-2.5 bg-orange-100 rounded-xl">
+                    <AlertCircle className="h-5 w-5 text-orange-600" />
                   </div>
                   <div>
                     <h2 className="text-lg font-semibold text-gray-900">Final Payment Pending</h2>
