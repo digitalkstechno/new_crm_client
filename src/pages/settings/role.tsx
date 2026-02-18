@@ -14,6 +14,7 @@ type RoleRow = {
   _id?: string;
   roleName: string;
   allowedStatuses: string[];
+  canAccessDashboard: boolean;
   canAccessSettings: boolean;
   canAccessAccountMaster: boolean;
   accountMasterViewType: "view_all" | "view_own";
@@ -35,6 +36,7 @@ export default function RolePage() {
   const [form, setForm] = useState({
     roleName: "",
     allowedStatuses: [] as string[],
+    canAccessDashboard: true,
     canAccessSettings: false,
     canAccessAccountMaster: false,
     accountMasterViewType: "view_own" as "view_all" | "view_own",
@@ -70,6 +72,7 @@ export default function RolePage() {
     setForm({
       roleName: row.roleName,
       allowedStatuses: row.allowedStatuses,
+      canAccessDashboard: row.canAccessDashboard ?? true,
       canAccessSettings: row.canAccessSettings,
       canAccessAccountMaster: row.canAccessAccountMaster,
       accountMasterViewType: row.accountMasterViewType || "view_own",
@@ -140,6 +143,7 @@ export default function RolePage() {
     setForm({
       roleName: "",
       allowedStatuses: [],
+      canAccessDashboard: true,
       canAccessSettings: false,
       canAccessAccountMaster: false,
       accountMasterViewType: "view_own",
@@ -326,6 +330,22 @@ export default function RolePage() {
                 <label className="text-sm font-semibold text-gray-900 block mb-2">Permissions</label>
                 
                 <div className="space-y-2">
+                  <label className={`flex items-center gap-2 p-2.5 rounded-lg cursor-pointer transition border-2 ${
+                    form.canAccessDashboard ? 'bg-blue-50 border-blue-400' : 'bg-gray-50 border-gray-200 hover:border-gray-300'
+                  }`}>
+                    <input
+                      type="checkbox"
+                      checked={form.canAccessDashboard}
+                      onChange={(e) =>
+                        setForm((prev) => ({ ...prev, canAccessDashboard: e.target.checked }))
+                      }
+                      className="h-4 w-4 rounded border-2 border-gray-300 text-blue-600 focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                    />
+                    <span className={`text-xs font-semibold ${
+                      form.canAccessDashboard ? 'text-blue-900' : 'text-gray-700'
+                    }`}>Access Dashboard</span>
+                  </label>
+
                   <label className={`flex items-center gap-2 p-2.5 rounded-lg cursor-pointer transition border-2 ${
                     form.canAccessSettings ? 'bg-green-50 border-green-400' : 'bg-gray-50 border-gray-200 hover:border-gray-300'
                   }`}>

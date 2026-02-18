@@ -7,6 +7,7 @@ import { baseUrl } from "../../config";
 import toast from "react-hot-toast";
 import { useRouter } from "next/router";
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from "recharts";
+import { getUserData } from "@/utils/tokenHelper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,8 +45,23 @@ export default function Home() {
   const [topLimit, setTopLimit] = useState(5);
 
   useEffect(() => {
-    fetchDashboardStats();
-    fetchGraphData();
+    const checkAccess = async () => {
+      const userData = await getUserData();
+      if (!userData?.canAccessDashboard) {
+        if (userData?.canAccessAccountMaster) {
+          router.replace("/account-master");
+        } else if (userData?.permissions && userData.permissions.length > 0) {
+          router.replace("/leads");
+        } else if (userData?.canAccessSettings) {
+          router.replace("/settings/role");
+        }
+        return;
+      }
+      fetchDashboardStats();
+      fetchGraphData();
+    };
+    
+    checkAccess();
   }, [dateRange, customStartDate, customEndDate, topLimit]);
 
   const getDateRange = () => {

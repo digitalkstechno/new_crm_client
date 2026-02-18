@@ -13,6 +13,7 @@ import { api } from "@/utils/axiosInstance";
 import { baseUrl } from "../../config";
 import toast from "react-hot-toast";
 import { LEAD_STATUSES, STATUS_COLORS, KANBAN_COLORS, LeadStatus } from "@/constants/leadStatus";
+import { getTokenData } from "@/utils/tokenHelper";
 
 /* ================= TYPES ================= */
 
@@ -67,10 +68,47 @@ export default function LeadsPage() {
   const [paymentDialog, setPaymentDialog] = useState<{ isOpen: boolean; lead: Lead | null; pendingStatus?: LeadStatus }>({ isOpen: false, lead: null });
 
   useEffect(() => {
-    const permissions = localStorage.getItem("permissions");
-    if (permissions) {
-      setAllowedStatuses(JSON.parse(permissions));
-    }
+    const fetchUserData = async () => {
+      const tokenData = await getTokenData();
+      if (tokenData?.permissions) {
+        const newPermissions = tokenData.permissions;
+        
+        // Check if permissions changed
+        if (JSON.stringify(newPermissions) !== JSON.stringify(allowedStatuses)) {
+          setAllowedStatuses(newPermissions);
+          
+          // If in kanban view, reinitialize kanban with new statuses
+          if (view === "kanban") {
+            const initialPages: any = {};
+            const initialHasMore: any = {};
+            const initialLoading: any = {};
+            const initialLeads: any = {};
+            const initialCounts: any = {};
+            
+            newPermissions.forEach((status: LeadStatus) => {
+              initialPages[status] = 1;
+              initialHasMore[status] = true;
+              initialLoading[status] = false;
+              initialLeads[status] = [];
+              initialCounts[status] = 0;
+            });
+            
+            setKanbanPages(initialPages);
+            setKanbanHasMore(initialHasMore);
+            setKanbanLoading(initialLoading);
+            setKanbanLeads(initialLeads);
+            setKanbanTotalCounts(initialCounts);
+            
+            // Fetch data for new statuses
+            newPermissions.forEach((status: LeadStatus) => {
+              fetchKanbanLeadsByStatus(status, 1);
+            });
+          }
+        }
+      }
+    };
+    
+    fetchUserData();
     fetchClientTypes();
     
     if (router.query.status && typeof router.query.status === 'string') {
@@ -98,20 +136,7 @@ export default function LeadsPage() {
         : `${baseUrl.LEAD}?page=${page}&limit=10&search=${search}`;
       const response = await api.get(url);
       
-      let filteredLeads = response.data.data || [];
-      
-      // Get current user's role and staff ID
-      const staffId = localStorage.getItem("staffId");
-      const accountMasterViewType = localStorage.getItem("accountMasterViewType");
-      
-      // If view type is "view_own", filter only assigned leads
-      if (accountMasterViewType === "view_own" && staffId) {
-        filteredLeads = filteredLeads.filter((lead: Lead) => 
-          lead.accountMaster?.assignBy?._id === staffId
-        );
-      }
-      
-      setLeads(filteredLeads);
+      setLeads(response.data.data || []);
       setTotalPages(response.data.pagination?.totalPages || 1);
       setTotalRecords(response.data.pagination?.totalRecords || 0);
     } catch (error) {
@@ -124,18 +149,7 @@ export default function LeadsPage() {
     setKanbanLoading(prev => ({ ...prev, [status]: true }));
     try {
       const response = await api.get(`${baseUrl.LEAD}/status/${encodeURIComponent(status)}?page=${pageNum}&limit=10`);
-      let newLeads = response.data.data || [];
-      
-      // Get current user's role and staff ID
-      const staffId = localStorage.getItem("staffId");
-      const accountMasterViewType = localStorage.getItem("accountMasterViewType");
-      
-      // If view type is "view_own", filter only assigned leads
-      if (accountMasterViewType === "view_own" && staffId) {
-        newLeads = newLeads.filter((lead: Lead) => 
-          lead.accountMaster?.assignBy?._id === staffId
-        );
-      }
+      const newLeads = response.data.data || [];
       
       setKanbanLeads(prev => ({
         ...prev,
