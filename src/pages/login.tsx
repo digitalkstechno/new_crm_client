@@ -22,19 +22,42 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  const validateEmail = (value: string) => {
+    if (!value) {
+      setEmailError("Email is required");
+      return false;
+    }
+    if (!emailRegex.test(value)) {
+      setEmailError("Please enter a valid email address");
+      return false;
+    }
+    setEmailError("");
+    return true;
+  };
+
+  const validatePassword = (value: string) => {
+    if (!value) {
+      setPasswordError("Password is required");
+      return false;
+    }
+    if (value.length < 6) {
+      setPasswordError("Password must be at least 6 characters");
+      return false;
+    }
+    setPasswordError("");
+    return true;
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!emailRegex.test(email)) {
-      toast.error("Enter a valid email address.");
-      return;
-    }
+    const isEmailValid = validateEmail(email);
+    const isPasswordValid = validatePassword(password);
 
-    if (password.trim().length < 6) {
-      toast.error("Password must be at least 6 characters.");
+    if (!isEmailValid || !isPasswordValid) {
       return;
     }
 
@@ -116,13 +139,25 @@ export default function LoginPage() {
                 <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-indigo-600" />
                 <input
                   type="email"
-                  className="w-full rounded-xl border-2 border-slate-200 bg-slate-50 py-3.5 pl-12 pr-4 text-slate-900 transition-all placeholder:text-slate-400 focus:border-indigo-600 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                  className={`w-full rounded-xl border-2 ${emailError ? 'border-red-500' : 'border-slate-200'} bg-slate-50 py-3.5 pl-12 pr-4 text-slate-900 transition-all placeholder:text-slate-400 focus:border-indigo-600 focus:bg-white focus:outline-none focus:ring-4 ${emailError ? 'focus:ring-red-100' : 'focus:ring-indigo-100'}`}
                   placeholder="you@company.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (emailError) validateEmail(e.target.value);
+                  }}
+                  onBlur={(e) => validateEmail(e.target.value)}
                   required
                 />
               </div>
+              {emailError && (
+                <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  {emailError}
+                </p>
+              )}
             </div>
 
             {/* Password Field */}
@@ -134,10 +169,14 @@ export default function LoginPage() {
                 <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-indigo-600" />
                 <input
                   type={showPassword ? "text" : "password"}
-                  className="w-full rounded-xl border-2 border-slate-200 bg-slate-50 py-3.5 pl-12 pr-12 text-slate-900 transition-all placeholder:text-slate-400 focus:border-indigo-600 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                  className={`w-full rounded-xl border-2 ${passwordError ? 'border-red-500' : 'border-slate-200'} bg-slate-50 py-3.5 pl-12 pr-12 text-slate-900 transition-all placeholder:text-slate-400 focus:border-indigo-600 focus:bg-white focus:outline-none focus:ring-4 ${passwordError ? 'focus:ring-red-100' : 'focus:ring-indigo-100'}`}
                   placeholder="Enter your password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (passwordError) validatePassword(e.target.value);
+                  }}
+                  onBlur={(e) => validatePassword(e.target.value)}
                   required
                 />
                 <button
@@ -148,6 +187,14 @@ export default function LoginPage() {
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
+              {passwordError && (
+                <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  {passwordError}
+                </p>
+              )}
             </div>
 
             {/* Submit Button */}
