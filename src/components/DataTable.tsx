@@ -5,7 +5,7 @@ export type Column<T, K extends keyof T = keyof T> = {
   key: K;
   label: string;
   className?: string;
-  render?: (value: T[K], row: T) => React.ReactNode;
+  render?: (value: T[K], row: T, index?: number) => React.ReactNode;
 };
 
 type DataTableProps<T> = {
@@ -115,7 +115,7 @@ export default function DataTable<T extends Record<string, unknown>>({
                           key={String(column.key)}
                           className={`px-4 py-3 text-gray-700 ${column.className ?? ""}`}
                         >
-                          {column.render ? column.render(value, row) : String(value ?? '')}
+                          {column.render ? column.render(value, row, rowIndex) : String(value ?? '')}
                         </td>
                       );
                     })}
@@ -183,7 +183,7 @@ export default function DataTable<T extends Record<string, unknown>>({
               pages.push(
                 <button
                   key={currentPage}
-                  className="h-8 w-8 rounded-lg bg-gray-900 text-xs font-semibold text-white"
+                  className="h-8 w-8 rounded-lg bg-indigo-600 text-xs font-semibold text-white"
                 >
                   {currentPage}
                 </button>

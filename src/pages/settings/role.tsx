@@ -18,6 +18,7 @@ type RoleRow = {
   canAccessSettings: boolean;
   canAccessAccountMaster: boolean;
   accountMasterViewType: "view_all" | "view_own";
+  canAccessProduction: boolean;
 };
 
 export default function RolePage() {
@@ -40,6 +41,7 @@ export default function RolePage() {
     canAccessSettings: false,
     canAccessAccountMaster: false,
     accountMasterViewType: "view_own" as "view_all" | "view_own",
+    canAccessProduction: false,
   });
 
   const fetchStatuses = async () => {
@@ -76,6 +78,7 @@ export default function RolePage() {
       canAccessSettings: row.canAccessSettings,
       canAccessAccountMaster: row.canAccessAccountMaster,
       accountMasterViewType: row.accountMasterViewType || "view_own",
+      canAccessProduction: row.canAccessProduction ?? false,
     });
     setEditMode({ isEdit: true, id: row._id! });
     setOpen(true);
@@ -147,6 +150,7 @@ export default function RolePage() {
       canAccessSettings: false,
       canAccessAccountMaster: false,
       accountMasterViewType: "view_own",
+      canAccessProduction: false,
     });
     setEditMode({ isEdit: false, id: null });
   };
@@ -376,6 +380,22 @@ export default function RolePage() {
                     <span className={`text-xs font-semibold ${
                       form.canAccessAccountMaster ? 'text-purple-900' : 'text-gray-700'
                     }`}>Access Account Master</span>
+                  </label>
+
+                  <label className={`flex items-center gap-2 p-2.5 rounded-lg cursor-pointer transition border-2 ${
+                    form.canAccessProduction ? 'bg-indigo-50 border-indigo-400' : 'bg-gray-50 border-gray-200 hover:border-gray-300'
+                  }`}>
+                    <input
+                      type="checkbox"
+                      checked={form.canAccessProduction}
+                      onChange={(e) =>
+                        setForm((prev) => ({ ...prev, canAccessProduction: e.target.checked }))
+                      }
+                      className="h-4 w-4 rounded border-2 border-gray-300 text-indigo-600 focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                    />
+                    <span className={`text-xs font-semibold ${
+                      form.canAccessProduction ? 'text-indigo-900' : 'text-gray-700'
+                    }`}>Access Production</span>
                   </label>
                 </div>
               </div>

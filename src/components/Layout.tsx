@@ -21,18 +21,18 @@ export default function Layout({ children }: Props) {
         </div>
         <main className="flex-1 overflow-y-auto p-4">
           {children}
-          <footer className="mt-8 bg-gradient-to-r from-gray-50 via-gray-100 to-gray-50 border-t border-gray-200 py-3 px-4 shadow-sm rounded-lg">
-            <div className="flex items-center justify-center gap-6 text-xs">
-              <p className="text-gray-600">
-                © 2026 <Link href="https://digitalkstechno.com" target="_blank" className="font-semibold text-indigo-600 hover:text-indigo-700 transition-colors">Digitalks</Link>. All rights reserved.
-              </p>
-              <span className="text-gray-400">•</span>
-              <p className="text-gray-600">
-                Designed &amp; Developed with <span className="text-red-500 animate-pulse">❤️</span> by <span className="font-semibold text-gray-800">Digitalks</span>
-              </p>
-            </div>
-          </footer>
         </main>
+        <footer className="flex-shrink-0 bg-gradient-to-r from-gray-50 via-gray-100 to-gray-50 border-t border-gray-200 py-3 px-4 shadow-sm">
+          <div className="flex items-center justify-center gap-6 text-xs">
+            <p className="text-gray-600">
+              © 2026 <Link href="https://digitalkstechno.com" target="_blank" className="font-semibold text-indigo-600 hover:text-indigo-700 transition-colors">Digitalks</Link>. All rights reserved.
+            </p>
+            <span className="text-gray-400">•</span>
+            <p className="text-gray-600">
+              Designed &amp; Developed with <span className="text-red-500 animate-pulse">❤️</span> by <span className="font-semibold text-gray-800">Digitalks</span>
+            </p>
+          </div>
+        </footer>
       </div>
        <Toaster
         position="top-right"

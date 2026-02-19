@@ -9,6 +9,7 @@ import { Plus, Trash2, Edit } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { baseUrl } from "../../../config";
+import { validateEmail, validatePhone, validatePassword, sanitizePhoneInput } from "@/utils/validation";
 
 type StaffRow = {
   _id?: string;
@@ -161,6 +162,28 @@ export default function StaffPage() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    
+    // Validation
+    if (!validateEmail(form.email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    
+    if (!validatePhone(form.phone)) {
+      toast.error("Phone number must be exactly 10 digits");
+      return;
+    }
+    
+    if (!editMode.isEdit && !validatePassword(form.password)) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    
+    if (editMode.isEdit && form.password && !validatePassword(form.password)) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    
     setConfirmDialog(true);
   };
 
@@ -266,28 +289,30 @@ export default function StaffPage() {
                 required
                 value={form.email}
                 onChange={(e) =>
-                  setForm((prev) => ({ ...prev, email: e.target.value }))
+                  setForm((prev) => ({ ...prev, email: e.target.value.toLowerCase().trim() }))
                 }
                 className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-gray-300 focus:bg-white"
-                placeholder="Enter email"
+                placeholder="user@example.com"
               />
             </label>
 
             <label className="block text-sm text-gray-600">
               Phone Number
               <input
+                type="tel"
                 required
                 value={form.phone}
                 onChange={(e) =>
-                  setForm((prev) => ({ ...prev, phone: e.target.value }))
+                  setForm((prev) => ({ ...prev, phone: sanitizePhoneInput(e.target.value) }))
                 }
+                maxLength={10}
                 className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-gray-300 focus:bg-white"
-                placeholder="Enter phone number"
+                placeholder="10 digit phone number"
               />
             </label>
 
             <label className="block text-sm text-gray-600">
-              Password
+              Password {!editMode.isEdit && <span className="text-red-500">*</span>}
               <input
                 type="password"
                 required={!editMode.isEdit}
@@ -295,8 +320,9 @@ export default function StaffPage() {
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, password: e.target.value }))
                 }
+                minLength={6}
                 className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-gray-300 focus:bg-white"
-                placeholder={editMode.isEdit ? "Leave blank to keep current" : "Enter password"}
+                placeholder={editMode.isEdit ? "Leave blank to keep current" : "Minimum 6 characters"}
               />
             </label>
 

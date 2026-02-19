@@ -513,7 +513,7 @@ export default function LeadsPage() {
           {row.leadStatus !== "Lost" && row.leadStatus !== "Completed" && (
             <button
               onClick={() => handleMoveToLost(row._id)}
-              className="inline-flex items-center gap-1 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700"
+              className="inline-flex items-center gap-1 rounded-lg bg-rose-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-600"
             >
               <XCircle className="h-3 w-3" />
               Lost

@@ -45,49 +45,56 @@ export default function Reports() {
       title: "Leads Report",
       description: "Complete leads data with status, amounts, and client details",
       url: baseUrl.REPORT_LEADS,
-      color: "bg-blue-500",
+      color: "bg-gradient-to-br from-blue-400 to-indigo-400",
+      borderColor: "border-blue-200",
     },
     {
       id: "lead-items",
       title: "Lead Items Report",
       description: "Detailed breakdown of all items in leads",
       url: baseUrl.REPORT_LEAD_ITEMS,
-      color: "bg-green-500",
+      color: "bg-gradient-to-br from-emerald-400 to-teal-400",
+      borderColor: "border-emerald-200",
     },
     {
       id: "payments",
       title: "Payment Report",
       description: "Payment history with pending and paid amounts",
       url: baseUrl.REPORT_PAYMENTS,
-      color: "bg-yellow-500",
+      color: "bg-gradient-to-br from-amber-400 to-orange-400",
+      borderColor: "border-amber-200",
     },
     {
       id: "follow-ups",
       title: "Follow Up Report",
       description: "All scheduled follow-ups with dates and descriptions",
       url: baseUrl.REPORT_FOLLOW_UPS,
-      color: "bg-purple-500",
+      color: "bg-gradient-to-br from-purple-400 to-pink-400",
+      borderColor: "border-purple-200",
     },
     {
       id: "accounts",
       title: "Account Master Report",
       description: "Complete client/customer database",
       url: baseUrl.REPORT_ACCOUNTS,
-      color: "bg-indigo-500",
+      color: "bg-gradient-to-br from-indigo-400 to-violet-400",
+      borderColor: "border-indigo-200",
     },
     {
       id: "staff-performance",
       title: "Staff Performance Report",
       description: "Staff-wise leads, accounts, and revenue analysis",
       url: baseUrl.REPORT_STAFF_PERFORMANCE,
-      color: "bg-orange-500",
+      color: "bg-gradient-to-br from-orange-400 to-rose-400",
+      borderColor: "border-orange-200",
     },
     {
       id: "summary",
       title: "Summary Report",
       description: "Overall CRM statistics and metrics",
       url: baseUrl.REPORT_SUMMARY,
-      color: "bg-pink-500",
+      color: "bg-gradient-to-br from-pink-400 to-rose-400",
+      borderColor: "border-pink-200",
     },
   ];
 
@@ -154,7 +161,7 @@ export default function Reports() {
           {reports.map((report) => (
             <div
               key={report.id}
-              className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden"
+              className={`bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border ${report.borderColor}`}
             >
               <div className={`${report.color} h-2`}></div>
               <div className="p-6">

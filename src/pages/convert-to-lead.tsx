@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { api } from "@/utils/axiosInstance";
 import { baseUrl } from "../../config";
 import toast from "react-hot-toast";
+import { validatePositiveNumber, sanitizeNumberInput } from "@/utils/validation";
 
 type InquiryCategory = {
   _id: string;
@@ -263,12 +264,30 @@ export default function ConvertToLeadPage() {
     if (!clientType) validationErrors.push("Client Type is required");
     if (!deliveryDate) validationErrors.push("Delivery Date is required");
     
+    if (shippingCharges && !validatePositiveNumber(shippingCharges)) {
+      validationErrors.push("Shipping charges must be a valid positive number");
+    }
+    
+    if (budgetFrom && !validatePositiveNumber(budgetFrom)) {
+      validationErrors.push("Budget From must be a valid positive number");
+    }
+    
+    if (budgetTo && !validatePositiveNumber(budgetTo)) {
+      validationErrors.push("Budget To must be a valid positive number");
+    }
+    
+    if (budgetFrom && budgetTo && parseFloat(budgetFrom) > parseFloat(budgetTo)) {
+      validationErrors.push("Budget From cannot be greater than Budget To");
+    }
+    
     products.forEach((p, index) => {
       if (!p.inquiryCategoryId) validationErrors.push(`Product ${index + 1}: Inquiry Category is required`);
       if (!p.modelSuggestionId) validationErrors.push(`Product ${index + 1}: Model Suggestion is required`);
       if (p.customizationTypeIds.length === 0) validationErrors.push(`Product ${index + 1}: At least one Customization Type is required`);
       if (p.personalization === "Yes" && !p.description) validationErrors.push(`Product ${index + 1}: Description is required`);
-      if (p.qty <= 0) validationErrors.push(`Product ${index + 1}: Quantity must be greater than 0`);
+      if (!validatePositiveNumber(p.qty)) validationErrors.push(`Product ${index + 1}: Quantity must be a positive number`);
+      if (!validatePositiveNumber(p.rate)) validationErrors.push(`Product ${index + 1}: Rate must be a positive number`);
+      if (p.gst < 0 || p.gst > 100) validationErrors.push(`Product ${index + 1}: GST must be between 0 and 100`);
     });
     
     if (validationErrors.length > 0) {
@@ -382,8 +401,10 @@ export default function ConvertToLeadPage() {
             <label className="mb-1 block text-xs font-medium text-gray-700">Shipping Charges (₹)</label>
             <input
               type="number"
+              min="0"
+              step="0.01"
               value={shippingCharges}
-              onChange={(e) => setShippingCharges(e.target.value)}
+              onChange={(e) => setShippingCharges(sanitizeNumberInput(e.target.value))}
               className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none focus:border-gray-300 focus:bg-white"
               placeholder="0"
             />
@@ -392,8 +413,10 @@ export default function ConvertToLeadPage() {
             <label className="mb-1 block text-xs font-medium text-gray-700">Budget From (₹)</label>
             <input
               type="number"
+              min="0"
+              step="0.01"
               value={budgetFrom}
-              onChange={(e) => setBudgetFrom(e.target.value)}
+              onChange={(e) => setBudgetFrom(sanitizeNumberInput(e.target.value))}
               className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none focus:border-gray-300 focus:bg-white"
               placeholder="0"
             />
@@ -402,8 +425,10 @@ export default function ConvertToLeadPage() {
             <label className="mb-1 block text-xs font-medium text-gray-700">Budget To (₹)</label>
             <input
               type="number"
+              min="0"
+              step="0.01"
               value={budgetTo}
-              onChange={(e) => setBudgetTo(e.target.value)}
+              onChange={(e) => setBudgetTo(sanitizeNumberInput(e.target.value))}
               className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none focus:border-gray-300 focus:bg-white"
               placeholder="0"
             />
@@ -586,9 +611,11 @@ export default function ConvertToLeadPage() {
                     <label className="mb-1 block text-xs text-gray-600">Qty</label>
                     <input
                       type="number"
+                      min="1"
+                      step="1"
                       value={product.qty}
                       onChange={(e) => {
-                        const value = e.target.value === '' ? 1 : parseInt(e.target.value) || 1;
+                        const value = e.target.value === '' ? 1 : parseInt(sanitizeNumberInput(e.target.value)) || 1;
                         updateProduct(product.id, "qty", value);
                       }}
                       onFocus={(e) => e.target.select()}
@@ -600,8 +627,10 @@ export default function ConvertToLeadPage() {
                     <label className="mb-1 block text-xs text-gray-600">Rate (₹)</label>
                     <input
                       type="number"
+                      min="0"
+                      step="0.01"
                       value={product.rate}
-                      onChange={(e) => updateProduct(product.id, "rate", Number(e.target.value))}
+                      onChange={(e) => updateProduct(product.id, "rate", Number(sanitizeNumberInput(e.target.value)))}
                       onFocus={(e) => e.target.select()}
                       className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm outline-none"
                     />
@@ -611,10 +640,13 @@ export default function ConvertToLeadPage() {
                     <label className="mb-1 block text-xs text-gray-600">GST %</label>
                     <input
                       type="number"
+                      min="0"
+                      max="100"
+                      step="0.01"
                       value={product.gst}
                       onChange={(e) => {
-                        const value = e.target.value === '' ? 0 : parseFloat(e.target.value) || 0;
-                        updateProduct(product.id, "gst", value);
+                        const value = e.target.value === '' ? 0 : parseFloat(sanitizeNumberInput(e.target.value)) || 0;
+                        updateProduct(product.id, "gst", Math.min(100, Math.max(0, value)));
                       }}
                       onFocus={(e) => e.target.select()}
                       className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm outline-none"

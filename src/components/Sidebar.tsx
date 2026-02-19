@@ -14,6 +14,7 @@ import {
   ChevronRight,
   FileText,
   FileSpreadsheet,
+  Factory,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getTokenData } from "@/utils/tokenHelper";
@@ -143,6 +144,21 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                 </div>
                 {!collapsed && "Leads"}
               </Link>
+
+              {tokenData.canAccessProduction && (
+                <Link
+                  href="/production"
+                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition ${(isActive("/production") || isActive("/add-production"))
+                    ? "bg-indigo-50 text-indigo-700 font-semibold"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    }`}
+                >
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${(isActive("/production") || isActive("/add-production")) ? "bg-indigo-600 text-white" : "bg-indigo-100 text-indigo-600"}`}>
+                    <Factory className="h-4 w-4" />
+                  </div>
+                  {!collapsed && "Production"}
+                </Link>
+              )}
 
               <Link
                 href="/reports"

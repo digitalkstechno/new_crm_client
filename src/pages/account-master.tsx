@@ -9,6 +9,7 @@ import { baseUrl } from "../../config";
 import toast from "react-hot-toast";
 import { api } from "@/utils/axiosInstance";
 import { useRouter } from "next/router";
+import { validateEmail, validatePhone, validateWebsite, sanitizePhoneInput } from "@/utils/validation";
 type Staff = {
   _id: string;
   fullName: string;
@@ -298,6 +299,23 @@ export default function AccountMasterPage() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    
+    // Validation
+    if (!validateEmail(form.email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    
+    if (!validatePhone(form.mobile)) {
+      toast.error("Mobile number must be exactly 10 digits");
+      return;
+    }
+    
+    if (form.website && !validateWebsite(form.website)) {
+      toast.error("Please enter a valid website URL");
+      return;
+    }
+    
     setConfirmDialog(true);
   };
 
@@ -674,12 +692,14 @@ export default function AccountMasterPage() {
                 <label className="text-sm text-gray-600">Mobile</label>
                 <input
                   required
+                  type="tel"
                   value={form.mobile}
                   onChange={(e) =>
-                    setForm({ ...form, mobile: e.target.value })
+                    setForm({ ...form, mobile: sanitizePhoneInput(e.target.value) })
                   }
+                  maxLength={10}
                   className="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-gray-300 focus:bg-white outline-none"
-                  placeholder="Enter mobile number"
+                  placeholder="Enter 10 digit mobile number"
                 />
               </div>
 
@@ -690,23 +710,22 @@ export default function AccountMasterPage() {
                   type="email"
                   value={form.email}
                   onChange={(e) =>
-                    setForm({ ...form, email: e.target.value })
+                    setForm({ ...form, email: e.target.value.toLowerCase().trim() })
                   }
                   className="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-gray-300 focus:bg-white outline-none"
-                  placeholder="Enter email"
+                  placeholder="Enter email address"
                 />
               </div>
 
               <div className="md:col-span-2">
                 <label className="text-sm text-gray-600">Website</label>
                 <input
-                  required
                   value={form.website}
                   onChange={(e) =>
-                    setForm({ ...form, website: e.target.value })
+                    setForm({ ...form, website: e.target.value.trim() })
                   }
                   className="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-gray-300 focus:bg-white outline-none"
-                  placeholder="Enter website URL"
+                  placeholder="https://example.com"
                 />
               </div>
             </div>
