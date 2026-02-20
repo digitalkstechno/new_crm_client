@@ -581,15 +581,15 @@ export default function Home() {
                             return (
                               <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl p-3 shadow-lg">
                                 <p className="text-sm font-medium text-gray-900">{payload[0].payload.category}</p>
-                                <p className="text-lg font-bold text-gray-900">{payload[0].value} units</p>
-                                <p className="text-sm text-gray-600">{payload[0].payload.percentage}%</p>
+                                <p className="text-sm text-gray-600 mt-1">Total Units: {payload[0].payload.count}</p>
+                                <p className="text-lg font-bold text-green-600 mt-1">Avg Rate: ₹{payload[0].value}</p>
                               </div>
                             );
                           }
                           return null;
                         }}
                       />
-                      <Bar dataKey="count" radius={[0, 8, 8, 0]}>
+                      <Bar dataKey="avgRate" radius={[0, 8, 8, 0]}>
                         {categoryPercentages.map((entry: any, index: number) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
@@ -605,7 +605,7 @@ export default function Home() {
                         />
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium text-gray-700 truncate">{cat.category}</p>
-                          <p className="text-sm font-bold text-gray-900">{cat.percentage}%</p>
+                          <p className="text-sm font-bold text-green-600">₹{cat.avgRate}</p>
                         </div>
                       </div>
                     ))}

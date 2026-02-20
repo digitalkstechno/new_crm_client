@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { Eye, Calendar, CheckSquare, XCircle, MessageCircle, DollarSign } from "lucide-react";
+import { Eye, Calendar, CheckSquare, XCircle, MessageCircle, DollarSign, Edit } from "lucide-react";
 import DataTable, { Column } from "@/components/DataTable";
 import TableSkeleton from "@/components/TableSkeleton";
 import FollowUpDialog from "@/components/FollowUpDialog";
@@ -479,6 +479,15 @@ export default function LeadsPage() {
             <Eye className="h-3 w-3" />
             View
           </button>
+          {(row.leadStatus === "New Lead" || row.leadStatus === "Quotation Given") && (
+            <button
+              onClick={() => router.push(`/convert-to-lead?leadId=${row._id}`)}
+              className="inline-flex items-center gap-1 rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-purple-700"
+            >
+              <Edit className="h-3 w-3" />
+              Edit
+            </button>
+          )}
           {row.leadStatus === "Follow Up" && (
             <button
               onClick={() => handleFollowUpClick(row._id)}
@@ -615,6 +624,7 @@ export default function LeadsPage() {
               onOrderExecutionClick={handleOrderExecutionClick}
               onMoveToLost={handleMoveToLost}
               onMakePayment={(lead) => setPaymentDialog({ isOpen: true, lead })}
+              onEditLead={(leadId) => router.push(`/convert-to-lead?leadId=${leadId}`)}
               onScroll={handleKanbanScroll(status)}
               onDragStart={handleDragStart}
               onDragOver={handleDragOver}
@@ -686,6 +696,7 @@ function KanbanColumn({
   onOrderExecutionClick,
   onMoveToLost,
   onMakePayment,
+  onEditLead,
   onScroll,
   onDragStart,
   onDragOver,
@@ -703,6 +714,7 @@ function KanbanColumn({
   onOrderExecutionClick: (lead: Lead) => void;
   onMoveToLost: (leadId: string) => void;
   onMakePayment: (lead: Lead) => void;
+  onEditLead: (leadId: string) => void;
   onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   onDragStart: (e: React.DragEvent, leadId: string, fromStatus: LeadStatus) => void;
   onDragOver: (e: React.DragEvent) => void;
@@ -738,6 +750,7 @@ function KanbanColumn({
             onOrderExecutionClick={onOrderExecutionClick}
             onMoveToLost={onMoveToLost}
             onMakePayment={onMakePayment}
+            onEditLead={onEditLead}
           />
         ))}
         {loading && hasMore && (

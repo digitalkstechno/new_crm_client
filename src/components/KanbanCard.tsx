@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Edit } from "lucide-react";
 import { LeadStatus } from "@/constants/leadStatus";
 
 type Lead = {
@@ -38,6 +38,7 @@ export default function KanbanCard({
   onOrderExecutionClick,
   onMoveToLost,
   onMakePayment,
+  onEditLead,
 }: {
   lead: Lead;
   status: LeadStatus;
@@ -47,6 +48,7 @@ export default function KanbanCard({
   onOrderExecutionClick: (lead: Lead) => void;
   onMoveToLost: (leadId: string) => void;
   onMakePayment: (lead: Lead) => void;
+  onEditLead?: (leadId: string) => void;
 }) {
   const [showAllItems, setShowAllItems] = useState(false);
   const isHighlighted = lead.accountMaster?.sourcebyTypeOfClient?.isHighlight || false;
@@ -173,6 +175,15 @@ export default function KanbanCard({
         >
           View
         </button>
+        {(status === "New Lead" || status === "Quotation Given") && onEditLead && (
+          <button
+            onClick={() => onEditLead(lead._id)}
+            className="flex-1 rounded-xl bg-purple-600 px-2 py-2 text-xs font-semibold text-white transition hover:bg-purple-700 inline-flex items-center justify-center gap-1"
+          >
+            <Edit className="h-3 w-3" />
+            Edit
+          </button>
+        )}
         {status === "Follow Up" && (
           <button
             onClick={() => onFollowUpClick(lead._id)}

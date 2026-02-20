@@ -53,6 +53,7 @@ export default function ConvertToLeadPage() {
   const { accountId, leadId } = router.query;
   const [accountData, setAccountData] = useState<any>(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [currentLeadStatus, setCurrentLeadStatus] = useState<string>("");
   const [openDropdowns, setOpenDropdowns] = useState<{ [key: string]: boolean }>({});
   
   const getTodayDate = () => {
@@ -115,6 +116,7 @@ export default function ConvertToLeadPage() {
       const lead = response.data.data;
       
       setAccountData(lead.accountMaster);
+      setCurrentLeadStatus(lead.leadStatus);
       setLeadDate(lead.leadDate.split('T')[0]);
       setClientType(lead.clientType);
       setDeliveryDate(lead.deliveryDate.split('T')[0]);
@@ -329,7 +331,7 @@ export default function ConvertToLeadPage() {
         accountMaster: isEditMode ? accountData._id : accountId,
         items,
         totalAmount: totalAmount.toString(),
-        leadStatus: isEditMode ? "Order Confirmation" : "New Lead",
+        leadStatus: isEditMode && (currentLeadStatus === "New Lead" || currentLeadStatus === "Quotation Given") ? currentLeadStatus : (isEditMode ? "Order Confirmation" : "New Lead"),
         confirmationRemark: isEditMode ? confirmationRemark : undefined,
       };
       
@@ -697,7 +699,7 @@ export default function ConvertToLeadPage() {
             onClick={handleConvertLead}
             className="rounded-lg bg-indigo-600 px-6 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
           >
-            {isEditMode ? "Save & Move to Order Confirmation" : "Convert Lead"}
+            {isEditMode && (currentLeadStatus === "New Lead" || currentLeadStatus === "Quotation Given") ? "Update Lead" : (isEditMode ? "Save & Move to Order Confirmation" : "Convert Lead")}
           </button>
         </div>
       </div>
