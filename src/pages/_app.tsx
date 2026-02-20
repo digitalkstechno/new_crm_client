@@ -11,13 +11,13 @@ export default function App({ Component, pageProps }: AppProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isNavigating, setIsNavigating] = useState(false);
-  const noLayoutRoutes = ["/login"];
+  const noLayoutRoutes = ["/login", "/public-form"];
   const shouldUseLayout = !noLayoutRoutes.includes(router.pathname);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     
-    if (!token && router.pathname !== "/login") {
+    if (!token && router.pathname !== "/login" && router.pathname !== "/public-form") {
       router.push("/login");
       setIsLoading(false);
     } else if (token) {
@@ -47,7 +47,7 @@ export default function App({ Component, pageProps }: AppProps) {
     return <Loader />;
   }
 
-  if (!isAuthenticated && router.pathname !== "/login") {
+  if (!isAuthenticated && router.pathname !== "/login" && router.pathname !== "/public-form") {
     return null;
   }
 
