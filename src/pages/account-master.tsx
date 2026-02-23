@@ -74,6 +74,7 @@ export default function AccountMasterPage() {
   const [importResults, setImportResults] = useState<any>(null);
   const [excelMenuOpen, setExcelMenuOpen] = useState(false);
   const [noLeadsFilter, setNoLeadsFilter] = useState(false);
+  const [importProgress, setImportProgress] = useState(false);
 
   useEffect(() => {
     fetchAccounts(page === 1 && search === "" && !noLeadsFilter);
@@ -440,6 +441,9 @@ export default function AccountMasterPage() {
     if (!selectedFile) return;
 
     setImporting(true);
+    setImportProgress(true);
+    setImportConfirmDialog(false);
+    
     const formData = new FormData();
     formData.append('file', selectedFile);
 
@@ -461,8 +465,8 @@ export default function AccountMasterPage() {
       toast.error(error.response?.data?.message || 'Failed to import data');
     } finally {
       setImporting(false);
+      setImportProgress(false);
       setSelectedFile(null);
-      setImportConfirmDialog(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
@@ -926,6 +930,17 @@ export default function AccountMasterPage() {
         message={`Are you sure you want to import "${selectedFile?.name}"? This will add all records from the file.`}
         confirmText="Upload"
       />
+
+      {importProgress && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="rounded-lg bg-white p-6 shadow-xl">
+            <div className="flex flex-col items-center gap-4">
+              <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-indigo-600"></div>
+              <p className="text-sm font-medium text-gray-700">Importing data, please wait...</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Dialog
         open={importResultDialog}
