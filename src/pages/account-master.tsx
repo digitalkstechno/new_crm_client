@@ -314,14 +314,15 @@ export default function AccountMasterPage() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     
-    // Validation
-    if (!validateEmail(form.email)) {
-      toast.error("Please enter a valid email address");
+    // Validation - Only Mobile is required (Company Name is already HTML required)
+    if (!validatePhone(form.mobile)) {
+      toast.error("Mobile number must be exactly 10 digits");
       return;
     }
     
-    if (!validatePhone(form.mobile)) {
-      toast.error("Mobile number must be exactly 10 digits");
+    // Optional field validations
+    if (form.email && !validateEmail(form.email)) {
+      toast.error("Please enter a valid email address");
       return;
     }
     
@@ -695,7 +696,6 @@ export default function AccountMasterPage() {
               <div>
                 <label className="text-sm text-gray-600">Client Name</label>
                 <input
-                  required
                   value={form.clientName}
                   onChange={(e) =>
                     setForm({ ...form, clientName: e.target.value })
@@ -723,7 +723,6 @@ export default function AccountMasterPage() {
               <div>
                 <label className="text-sm text-gray-600">Email</label>
                 <input
-                  required
                   type="email"
                   value={form.email}
                   onChange={(e) =>
@@ -814,7 +813,6 @@ export default function AccountMasterPage() {
                   Type of Client
                 </label>
                 <select
-                  required
                   value={form.sourcebyTypeOfClient}
                   onChange={(e) =>
                     setForm({
