@@ -33,7 +33,7 @@ export default function Sidebar({ collapsed }: SidebarProps) {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const data = await getTokenData();
+      const data = await getTokenData(true); // Force refresh on mount
       setTokenData(data);
     };
     

@@ -5,11 +5,11 @@ let cachedUserData: any = null;
 let cacheTimestamp: number = 0;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-export const getUserData = async () => {
+export const getUserData = async (forceRefresh = false) => {
   const now = Date.now();
   
-  // Return cached data if still valid
-  if (cachedUserData && (now - cacheTimestamp) < CACHE_DURATION) {
+  // Return cached data if still valid and not forcing refresh
+  if (!forceRefresh && cachedUserData && (now - cacheTimestamp) < CACHE_DURATION) {
     return cachedUserData;
   }
   

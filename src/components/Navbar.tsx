@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { api } from "@/utils/axiosInstance";
 import { baseUrl } from "../../config";
+import { clearUserCache } from "@/utils/tokenHelper";
 
 function titleFromPath(pathname: string, leadName?: string) {
   if (pathname === "/") return "Dashboard";
@@ -47,6 +48,7 @@ export default function Navbar() {
   const title = titleFromPath(router.pathname, leadName);
 
   const handleLogout = () => {
+    clearUserCache();
     localStorage.removeItem("token");
     localStorage.removeItem("crm:rememberEmail");
     localStorage.clear();
