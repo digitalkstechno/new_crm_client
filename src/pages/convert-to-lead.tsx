@@ -266,10 +266,6 @@ export default function ConvertToLeadPage() {
     if (!clientType) validationErrors.push("Client Type is required");
     if (!deliveryDate) validationErrors.push("Delivery Date is required");
     
-    if (shippingCharges && !validatePositiveNumber(shippingCharges)) {
-      validationErrors.push("Shipping charges must be a valid positive number");
-    }
-    
     if (budgetFrom && !validatePositiveNumber(budgetFrom)) {
       validationErrors.push("Budget From must be a valid positive number");
     }

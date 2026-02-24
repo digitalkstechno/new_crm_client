@@ -6,7 +6,7 @@ export const validateEmail = (email: string): boolean => {
 };
 
 export const validatePhone = (phone: string): boolean => {
-  const phoneRegex = /^[0-9]{10}$/;
+  const phoneRegex = /^[0-9]{12}$/;
   return phoneRegex.test(phone.replace(/\s/g, ''));
 };
 
@@ -30,7 +30,7 @@ export const validatePositiveNumber = (value: string | number): boolean => {
 };
 
 export const sanitizePhoneInput = (value: string): string => {
-  return value.replace(/[^0-9]/g, '').slice(0, 10);
+  return value.replace(/[^0-9]/g, '').slice(0, 12);
 };
 
 export const sanitizeNumberInput = (value: string): string => {

@@ -714,7 +714,7 @@ export default function AccountMasterPage() {
                   onChange={(e) =>
                     setForm({ ...form, mobile: sanitizePhoneInput(e.target.value) })
                   }
-                  maxLength={10}
+                  maxLength={12}
                   className="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-gray-300 focus:bg-white outline-none"
                   placeholder="Enter 10 digit mobile number"
                 />
