@@ -45,7 +45,7 @@ export default function Sidebar({ collapsed }: SidebarProps) {
         setUserRoleOpen(true);
       }
       if (pathname === "/settings/customization-type" || pathname === "/settings/inquiry-category" || 
-          pathname === "/settings/module-suggestion" || pathname === "/settings/client-type" || 
+          pathname === "/settings/model-suggestion" || pathname === "/settings/client-type" || 
           pathname === "/settings/source-from" || pathname === "/settings/color") {
         setMasterDataOpen(true);
       }
@@ -132,18 +132,20 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                 </Link>
               )}
 
-              <Link
-                href="/leads"
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition ${isActive("/leads")
-                  ? "bg-purple-50 text-purple-700 font-semibold"
-                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                  }`}
-              >
-                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/leads") ? "bg-purple-600 text-white" : "bg-purple-100 text-purple-600"}`}>
-                  <User2 className="h-4 w-4" />
-                </div>
-                {!collapsed && "Leads"}
-              </Link>
+              {tokenData.canAccessLeads && (
+                <Link
+                  href="/leads"
+                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition ${isActive("/leads")
+                    ? "bg-purple-50 text-purple-700 font-semibold"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    }`}
+                >
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/leads") ? "bg-purple-600 text-white" : "bg-purple-100 text-purple-600"}`}>
+                    <User2 className="h-4 w-4" />
+                  </div>
+                  {!collapsed && "Leads"}
+                </Link>
+              )}
 
               {tokenData.canAccessProduction && (
                 <Link
@@ -160,18 +162,20 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                 </Link>
               )}
 
-              <Link
-                href="/reports"
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition ${isActive("/reports")
-                  ? "bg-teal-50 text-teal-700 font-semibold"
-                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                  }`}
-              >
-                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/reports") ? "bg-teal-600 text-white" : "bg-teal-100 text-teal-600"}`}>
-                  <FileText className="h-4 w-4" />
-                </div>
-                {!collapsed && "Reports"}
-              </Link>
+              {tokenData.canAccessReports && (
+                <Link
+                  href="/reports"
+                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition ${isActive("/reports")
+                    ? "bg-teal-50 text-teal-700 font-semibold"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    }`}
+                >
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive("/reports") ? "bg-teal-600 text-white" : "bg-teal-100 text-teal-600"}`}>
+                    <FileText className="h-4 w-4" />
+                  </div>
+                  {!collapsed && "Reports"}
+                </Link>
+              )}
 
               {tokenData.canAccessSettings && (
                 <button
@@ -253,7 +257,7 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                   className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 transition ${(
                     pathname === "/settings/customization-type" || 
                     pathname === "/settings/inquiry-category" || 
-                    pathname === "/settings/module-suggestion" || 
+                    pathname === "/settings/model-suggestion" || 
                     pathname === "/settings/client-type" || 
                     pathname === "/settings/source-from" ||
                     pathname === "/settings/color"
@@ -266,7 +270,7 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                     <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${(
                       pathname === "/settings/customization-type" || 
                       pathname === "/settings/inquiry-category" || 
-                      pathname === "/settings/module-suggestion" || 
+                      pathname === "/settings/model-suggestion" || 
                       pathname === "/settings/client-type" || 
                       pathname === "/settings/source-from" ||
                       pathname === "/settings/color"
@@ -300,13 +304,13 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                       Inquiry Category
                     </Link>
                     <Link
-                      href="/settings/module-suggestion"
-                      className={`block rounded-lg px-3 py-2 text-sm transition ${isActive("/settings/module-suggestion")
+                      href="/settings/model-suggestion"
+                      className={`block rounded-lg px-3 py-2 text-sm transition ${isActive("/settings/model-suggestion")
                         ? "bg-purple-50 text-purple-700 font-semibold"
                         : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                         }`}
                     >
-                      Module Suggestion
+                      Model Suggestion
                     </Link>
                     <Link
                       href="/settings/color"

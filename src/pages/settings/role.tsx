@@ -19,6 +19,8 @@ type RoleRow = {
   canAccessAccountMaster: boolean;
   accountMasterViewType: "view_all" | "view_own";
   canAccessProduction: boolean;
+  canAccessLeads: boolean;
+  canAccessReports: boolean;
 };
 
 export default function RolePage() {
@@ -37,11 +39,13 @@ export default function RolePage() {
   const [form, setForm] = useState({
     roleName: "",
     allowedStatuses: [] as string[],
-    canAccessDashboard: true,
+    canAccessDashboard: false,
     canAccessSettings: false,
     canAccessAccountMaster: false,
     accountMasterViewType: "view_own" as "view_all" | "view_own",
     canAccessProduction: false,
+    canAccessLeads: false,
+    canAccessReports: false,
   });
 
   const fetchStatuses = async () => {
@@ -79,6 +83,8 @@ export default function RolePage() {
       canAccessAccountMaster: row.canAccessAccountMaster,
       accountMasterViewType: row.accountMasterViewType || "view_own",
       canAccessProduction: row.canAccessProduction ?? false,
+      canAccessLeads: row.canAccessLeads ?? false,
+      canAccessReports: row.canAccessReports ?? false,
     });
     setEditMode({ isEdit: true, id: row._id! });
     setOpen(true);
@@ -151,6 +157,8 @@ export default function RolePage() {
       canAccessAccountMaster: false,
       accountMasterViewType: "view_own",
       canAccessProduction: false,
+      canAccessLeads: false,
+      canAccessReports: false,
     });
     setEditMode({ isEdit: false, id: null });
   };
@@ -287,56 +295,60 @@ export default function RolePage() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="text-sm font-semibold text-gray-900">
-                  Lead Statuses <span className="text-red-500">*</span>
+                  Lead Statuses {form.canAccessLeads && <span className="text-red-500">*</span>}
                 </label>
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => setForm(prev => ({ ...prev, allowedStatuses: allStatuses }))}
-                    className="text-xs font-bold text-blue-600 hover:text-blue-700"
+                    disabled={!form.canAccessLeads}
+                    className="text-xs font-bold text-blue-600 hover:text-blue-700 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     All
                   </button>
                   <button
                     type="button"
                     onClick={() => setForm(prev => ({ ...prev, allowedStatuses: [] }))}
-                    className="text-xs font-bold text-gray-500 hover:text-gray-700"
+                    disabled={!form.canAccessLeads}
+                    className="text-xs font-bold text-gray-500 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     Clear
                   </button>
                 </div>
               </div>
-              <div className="border-2 border-gray-200 rounded-lg overflow-hidden bg-white max-h-64 overflow-y-auto">
+              <div className={`border-2 border-gray-200 rounded-lg overflow-hidden bg-white max-h-64 overflow-y-auto ${!form.canAccessLeads ? 'opacity-50' : ''}`}>
                 {allStatuses.map((status) => (
                   <label
                     key={status}
-                    className={`flex items-center gap-2 px-3 py-2 cursor-pointer transition border-b border-gray-100 last:border-0 ${
-                      form.allowedStatuses.includes(status)
+                    className={`flex items-center gap-2 px-3 py-2 transition border-b border-gray-100 last:border-0 ${!form.canAccessLeads ? 'cursor-not-allowed' : 'cursor-pointer'} ${form.allowedStatuses.includes(status)
                         ? 'bg-blue-50 font-semibold text-blue-900'
                         : 'hover:bg-gray-50 text-gray-700'
-                    }`}
+                      }`}
                   >
                     <input
                       type="checkbox"
                       checked={form.allowedStatuses.includes(status)}
                       onChange={() => toggleStatus(status)}
-                      className="h-4 w-4 rounded border-2 border-gray-300 text-blue-600 focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                      disabled={!form.canAccessLeads}
+                      className="h-4 w-4 rounded border-2 border-gray-300 text-blue-600 focus:ring-1 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed"
                     />
                     <span className="text-xs">{status}</span>
                   </label>
                 ))}
               </div>
               <p className="text-xs text-gray-500 mt-1.5">{form.allowedStatuses.length} selected</p>
+              {!form.canAccessLeads && (
+                <p className="text-xs text-amber-600 mt-1.5 font-medium">Enable "Access Leads" to select statuses</p>
+              )}
             </div>
 
             <div className="space-y-3">
               <div>
                 <label className="text-sm font-semibold text-gray-900 block mb-2">Permissions</label>
-                
+
                 <div className="space-y-2">
-                  <label className={`flex items-center gap-2 p-2.5 rounded-lg cursor-pointer transition border-2 ${
-                    form.canAccessDashboard ? 'bg-blue-50 border-blue-400' : 'bg-gray-50 border-gray-200 hover:border-gray-300'
-                  }`}>
+                  <label className={`flex items-center gap-2 p-2.5 rounded-lg cursor-pointer transition border-2 ${form.canAccessDashboard ? 'bg-blue-50 border-blue-400' : 'bg-gray-50 border-gray-200 hover:border-gray-300'
+                    }`}>
                     <input
                       type="checkbox"
                       checked={form.canAccessDashboard}
@@ -345,14 +357,12 @@ export default function RolePage() {
                       }
                       className="h-4 w-4 rounded border-2 border-gray-300 text-blue-600 focus:ring-1 focus:ring-blue-500 cursor-pointer"
                     />
-                    <span className={`text-xs font-semibold ${
-                      form.canAccessDashboard ? 'text-blue-900' : 'text-gray-700'
-                    }`}>Access Dashboard</span>
+                    <span className={`text-xs font-semibold ${form.canAccessDashboard ? 'text-blue-900' : 'text-gray-700'
+                      }`}>Access Dashboard</span>
                   </label>
 
-                  <label className={`flex items-center gap-2 p-2.5 rounded-lg cursor-pointer transition border-2 ${
-                    form.canAccessSettings ? 'bg-green-50 border-green-400' : 'bg-gray-50 border-gray-200 hover:border-gray-300'
-                  }`}>
+                  <label className={`flex items-center gap-2 p-2.5 rounded-lg cursor-pointer transition border-2 ${form.canAccessSettings ? 'bg-green-50 border-green-400' : 'bg-gray-50 border-gray-200 hover:border-gray-300'
+                    }`}>
                     <input
                       type="checkbox"
                       checked={form.canAccessSettings}
@@ -361,14 +371,12 @@ export default function RolePage() {
                       }
                       className="h-4 w-4 rounded border-2 border-gray-300 text-green-600 focus:ring-1 focus:ring-green-500 cursor-pointer"
                     />
-                    <span className={`text-xs font-semibold ${
-                      form.canAccessSettings ? 'text-green-900' : 'text-gray-700'
-                    }`}>Access Settings</span>
+                    <span className={`text-xs font-semibold ${form.canAccessSettings ? 'text-green-900' : 'text-gray-700'
+                      }`}>Access Settings</span>
                   </label>
 
-                  <label className={`flex items-center gap-2 p-2.5 rounded-lg cursor-pointer transition border-2 ${
-                    form.canAccessAccountMaster ? 'bg-purple-50 border-purple-400' : 'bg-gray-50 border-gray-200 hover:border-gray-300'
-                  }`}>
+                  <label className={`flex items-center gap-2 p-2.5 rounded-lg cursor-pointer transition border-2 ${form.canAccessAccountMaster ? 'bg-purple-50 border-purple-400' : 'bg-gray-50 border-gray-200 hover:border-gray-300'
+                    }`}>
                     <input
                       type="checkbox"
                       checked={form.canAccessAccountMaster}
@@ -377,14 +385,12 @@ export default function RolePage() {
                       }
                       className="h-4 w-4 rounded border-2 border-gray-300 text-purple-600 focus:ring-1 focus:ring-purple-500 cursor-pointer"
                     />
-                    <span className={`text-xs font-semibold ${
-                      form.canAccessAccountMaster ? 'text-purple-900' : 'text-gray-700'
-                    }`}>Access Account Master</span>
+                    <span className={`text-xs font-semibold ${form.canAccessAccountMaster ? 'text-purple-900' : 'text-gray-700'
+                      }`}>Access Account Master</span>
                   </label>
 
-                  <label className={`flex items-center gap-2 p-2.5 rounded-lg cursor-pointer transition border-2 ${
-                    form.canAccessProduction ? 'bg-indigo-50 border-indigo-400' : 'bg-gray-50 border-gray-200 hover:border-gray-300'
-                  }`}>
+                  <label className={`flex items-center gap-2 p-2.5 rounded-lg cursor-pointer transition border-2 ${form.canAccessProduction ? 'bg-indigo-50 border-indigo-400' : 'bg-gray-50 border-gray-200 hover:border-gray-300'
+                    }`}>
                     <input
                       type="checkbox"
                       checked={form.canAccessProduction}
@@ -393,9 +399,41 @@ export default function RolePage() {
                       }
                       className="h-4 w-4 rounded border-2 border-gray-300 text-indigo-600 focus:ring-1 focus:ring-indigo-500 cursor-pointer"
                     />
-                    <span className={`text-xs font-semibold ${
-                      form.canAccessProduction ? 'text-indigo-900' : 'text-gray-700'
-                    }`}>Access Production</span>
+                    <span className={`text-xs font-semibold ${form.canAccessProduction ? 'text-indigo-900' : 'text-gray-700'
+                      }`}>Access Production</span>
+                  </label>
+
+                  <label className={`flex items-center gap-2 p-2.5 rounded-lg cursor-pointer transition border-2 ${form.canAccessLeads ? 'bg-pink-50 border-pink-400' : 'bg-gray-50 border-gray-200 hover:border-gray-300'
+                    }`}>
+                    <input
+                      type="checkbox"
+                      checked={form.canAccessLeads}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setForm((prev) => ({ 
+                          ...prev, 
+                          canAccessLeads: checked,
+                          allowedStatuses: checked ? prev.allowedStatuses : []
+                        }));
+                      }}
+                      className="h-4 w-4 rounded border-2 border-gray-300 text-pink-600 focus:ring-1 focus:ring-pink-500 cursor-pointer"
+                    />
+                    <span className={`text-xs font-semibold ${form.canAccessLeads ? 'text-pink-900' : 'text-gray-700'
+                      }`}>Access Leads</span>
+                  </label>
+
+                  <label className={`flex items-center gap-2 p-2.5 rounded-lg cursor-pointer transition border-2 ${form.canAccessReports ? 'bg-teal-50 border-teal-400' : 'bg-gray-50 border-gray-200 hover:border-gray-300'
+                    }`}>
+                    <input
+                      type="checkbox"
+                      checked={form.canAccessReports}
+                      onChange={(e) =>
+                        setForm((prev) => ({ ...prev, canAccessReports: e.target.checked }))
+                      }
+                      className="h-4 w-4 rounded border-2 border-gray-300 text-teal-600 focus:ring-1 focus:ring-teal-500 cursor-pointer"
+                    />
+                    <span className={`text-xs font-semibold ${form.canAccessReports ? 'text-teal-900' : 'text-gray-700'
+                      }`}>Access Reports</span>
                   </label>
                 </div>
               </div>
@@ -404,9 +442,8 @@ export default function RolePage() {
                 <div className="p-3 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg border-2 border-purple-200">
                   <p className="text-xs font-bold text-purple-900 mb-2">View Type</p>
                   <div className="space-y-1.5">
-                    <label className={`flex items-center gap-2 p-2 rounded-md cursor-pointer transition ${
-                      form.accountMasterViewType === "view_all" ? 'bg-white shadow-sm' : 'hover:bg-white/50'
-                    }`}>
+                    <label className={`flex items-center gap-2 p-2 rounded-md cursor-pointer transition ${form.accountMasterViewType === "view_all" ? 'bg-white shadow-sm' : 'hover:bg-white/50'
+                      }`}>
                       <input
                         type="radio"
                         name="accountMasterViewType"
@@ -419,9 +456,8 @@ export default function RolePage() {
                       />
                       <span className="text-xs font-medium text-gray-700">View All</span>
                     </label>
-                    <label className={`flex items-center gap-2 p-2 rounded-md cursor-pointer transition ${
-                      form.accountMasterViewType === "view_own" ? 'bg-white shadow-sm' : 'hover:bg-white/50'
-                    }`}>
+                    <label className={`flex items-center gap-2 p-2 rounded-md cursor-pointer transition ${form.accountMasterViewType === "view_own" ? 'bg-white shadow-sm' : 'hover:bg-white/50'
+                      }`}>
                       <input
                         type="radio"
                         name="accountMasterViewType"

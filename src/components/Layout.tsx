@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import { Toaster } from "react-hot-toast";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { getTokenData } from "@/utils/tokenHelper";
 
 type Props = {
   children: React.ReactNode;
@@ -10,6 +12,30 @@ type Props = {
 
 export default function Layout({ children }: Props) {
   const [collapsed, setCollapsed] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkPermissionsAndRedirect = async () => {
+      if (router.pathname === "/") {
+        const tokenData = await getTokenData();
+        if (tokenData) {
+          const hasOnlySettings = tokenData.canAccessSettings && 
+            !tokenData.canAccessDashboard && 
+            !tokenData.canAccessAccountMaster && 
+            !tokenData.canAccessLeads && 
+            !tokenData.canAccessReports && 
+            !tokenData.canAccessProduction;
+          
+          if (hasOnlySettings) {
+            router.replace("/settings/staff");
+          }
+        }
+      }
+    };
+
+    checkPermissionsAndRedirect();
+  }, [router.pathname]);
+
   return (
     <div className="flex h-screen overflow-hidden bg-white">
       <div className="flex-shrink-0">
