@@ -264,7 +264,6 @@ export default function ConvertToLeadPage() {
     if (!isEditMode && (!accountId || accountId === 'undefined')) validationErrors.push("Account ID is required");
     if (!leadDate) validationErrors.push("Lead Date is required");
     if (!clientType) validationErrors.push("Client Type is required");
-    if (!deliveryDate) validationErrors.push("Delivery Date is required");
     
     if (budgetFrom && !validatePositiveNumber(budgetFrom)) {
       validationErrors.push("Budget From must be a valid positive number");

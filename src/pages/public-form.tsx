@@ -38,7 +38,7 @@ export default function PublicForm() {
       await api.post(`${baseUrl.ACCOUNTMASTER}/public`, {
         companyName: form.companyName,
         clientName: form.clientName,
-        mobile: form.mobile,
+        mobile: `91${form.mobile}`,
         email: form.email,
         website: form.website,
         address: {
