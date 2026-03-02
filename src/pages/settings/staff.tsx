@@ -170,7 +170,7 @@ export default function StaffPage() {
     }
     
     if (!validatePhone(form.phone)) {
-      toast.error("Phone number must be exactly 10 digits");
+      toast.error("Phone number must be exactly 12 digits (91 + 10 digits)");
       return;
     }
     
@@ -305,9 +305,9 @@ export default function StaffPage() {
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, phone: sanitizePhoneInput(e.target.value) }))
                 }
-                maxLength={10}
+                maxLength={12}
                 className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-gray-300 focus:bg-white"
-                placeholder="10 digit phone number"
+                placeholder="91XXXXXXXXXX (12 digits)"
               />
             </label>
 

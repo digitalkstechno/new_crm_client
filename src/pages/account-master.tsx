@@ -325,7 +325,7 @@ export default function AccountMasterPage() {
     
     // Validation - Only Mobile is required (Company Name is already HTML required)
     if (!validatePhone(form.mobile)) {
-      toast.error("Mobile number must be exactly 10 digits");
+      toast.error("Mobile number must be exactly 12 digits (91 + 10 digits)");
       return;
     }
     
@@ -725,7 +725,7 @@ export default function AccountMasterPage() {
                   }
                   maxLength={12}
                   className="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-gray-300 focus:bg-white outline-none"
-                  placeholder="Enter 10 digit mobile number"
+                  placeholder="91XXXXXXXXXX (12 digits)"
                 />
               </div>
 
