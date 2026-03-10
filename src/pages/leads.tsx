@@ -74,11 +74,11 @@ export default function LeadsPage() {
       const tokenData = await getTokenData();
       if (tokenData?.permissions) {
         const newPermissions = tokenData.permissions;
-        
+
         // Check if permissions changed
         if (JSON.stringify(newPermissions) !== JSON.stringify(allowedStatuses)) {
           setAllowedStatuses(newPermissions);
-          
+
           // If in kanban view, reinitialize kanban with new statuses
           if (view === "kanban") {
             const initialPages: any = {};
@@ -86,7 +86,7 @@ export default function LeadsPage() {
             const initialLoading: any = {};
             const initialLeads: any = {};
             const initialCounts: any = {};
-            
+
             newPermissions.forEach((status: LeadStatus) => {
               initialPages[status] = 1;
               initialHasMore[status] = true;
@@ -94,13 +94,13 @@ export default function LeadsPage() {
               initialLeads[status] = [];
               initialCounts[status] = 0;
             });
-            
+
             setKanbanPages(initialPages);
             setKanbanHasMore(initialHasMore);
             setKanbanLoading(initialLoading);
             setKanbanLeads(initialLeads);
             setKanbanTotalCounts(initialCounts);
-            
+
             // Fetch data for new statuses
             newPermissions.forEach((status: LeadStatus) => {
               fetchKanbanLeadsByStatus(status, 1);
@@ -109,14 +109,14 @@ export default function LeadsPage() {
         }
       }
     };
-    
+
     fetchUserData();
     fetchClientTypes();
-    
+
     if (router.query.status && typeof router.query.status === 'string') {
       setStatusFilter(router.query.status);
     }
-    
+
     if (router.query.kanban === 'true') {
       setView('kanban');
     }
@@ -134,11 +134,11 @@ export default function LeadsPage() {
   const fetchLeads = async () => {
     setLoading(true);
     try {
-      const url = statusFilter 
-        ? `${baseUrl.LEAD}/status/${encodeURIComponent(statusFilter)}?page=${page}&limit=10&search=${search}`
-        : `${baseUrl.LEAD}?page=${page}&limit=10&search=${search}`;
+      const url = statusFilter
+        ? `${baseUrl.LEAD}/status/${encodeURIComponent(statusFilter)}?page=${page}&limit=20&search=${search}`
+        : `${baseUrl.LEAD}?page=${page}&limit=20&search=${search}`;
       const response = await api.get(url);
-      
+
       setLeads(response.data.data || []);
       setTotalPages(response.data.pagination?.totalPages || 1);
       setTotalRecords(response.data.pagination?.totalRecords || 0);
@@ -153,9 +153,9 @@ export default function LeadsPage() {
     if (kanbanLoading[status]) return;
     setKanbanLoading(prev => ({ ...prev, [status]: true }));
     try {
-      const response = await api.get(`${baseUrl.LEAD}/status/${encodeURIComponent(status)}?page=${pageNum}&limit=10`);
+      const response = await api.get(`${baseUrl.LEAD}/status/${encodeURIComponent(status)}?page=${pageNum}&limit=20`);
       const newLeads = response.data.data || [];
-      
+
       setKanbanLeads(prev => ({
         ...prev,
         [status]: [...(prev[status] || []), ...newLeads]
@@ -164,7 +164,7 @@ export default function LeadsPage() {
         ...prev,
         [status]: pageNum < (response.data.pagination?.totalPages || 1)
       }));
-      
+
       // Store total count
       if (pageNum === 1) {
         setKanbanTotalCounts(prev => ({
@@ -181,7 +181,7 @@ export default function LeadsPage() {
 
   useEffect(() => {
     if (allowedStatuses.length === 0) return;
-    
+
     if (view === "table") {
       fetchLeads();
     } else {
@@ -231,22 +231,22 @@ export default function LeadsPage() {
     e.preventDefault();
     const leadId = e.dataTransfer.getData("leadId");
     const fromStatus = e.dataTransfer.getData("fromStatus") as LeadStatus;
-    
+
     if (fromStatus === toStatus) return;
-    
+
     // Check backward movement - allow only 1 step back
     const lead = [...leads, ...Object.values(kanbanLeads).flat()].find(l => l._id === leadId);
     if (lead) {
       const LEAD_STATUSES_ORDER = ["New Lead", "Quotation Given", "Follow Up", "Order Confirmation", "PI", "Order Execution", "Final Payment", "Dispatch", "Completed"];
       const currentIndex = LEAD_STATUSES_ORDER.indexOf(lead.leadStatus);
       const newIndex = LEAD_STATUSES_ORDER.indexOf(toStatus);
-      
+
       if (newIndex < currentIndex - 1 && toStatus !== "Lost") {
         toast.error("Can only move 1 step backward");
         return;
       }
     }
-    
+
     if (toStatus === "Follow Up") {
       setFollowUpDialog({ isOpen: true, leadId, pendingStatus: toStatus });
     } else if (toStatus === "Lost") {
@@ -281,7 +281,7 @@ export default function LeadsPage() {
   const handleStatusChange = async (leadId: string, newStatus: LeadStatus) => {
     try {
       await api.put(`${baseUrl.LEAD}/${leadId}`, { leadStatus: newStatus });
-      
+
       // Update counts
       if (view === "kanban") {
         const lead = Object.values(kanbanLeads).flat().find(l => l._id === leadId);
@@ -294,7 +294,7 @@ export default function LeadsPage() {
           }));
         }
       }
-      
+
       if (view === "table") {
         setLeads(prev => prev.map(l => l._id === leadId ? { ...l, leadStatus: newStatus } : l));
       } else {
@@ -355,14 +355,14 @@ export default function LeadsPage() {
       if (!leadId) return;
 
       await api.post(`${baseUrl.LEAD}/${leadId}/followup`, { date, description });
-      
+
       if (pendingStatus) {
         await handleStatusChange(leadId, pendingStatus);
       }
-      
+
       // Refetch the lead to update followUps in UI
       await refetchSingleLead(leadId);
-      
+
       toast.success("Follow up added successfully");
       setFollowUpDialog({ isOpen: false, leadId: null });
     } catch (error) {
@@ -376,10 +376,10 @@ export default function LeadsPage() {
       if (!lead) return;
 
       await api.post(`${baseUrl.LEAD}/${lead._id}/payment`, { amount });
-      
+
       // Refresh the lead data in kanban/table
       await refetchSingleLead(lead._id);
-      
+
       toast.success("Payment added successfully");
       setPaymentDialog({ isOpen: false, lead: null });
     } catch (error: any) {
@@ -403,14 +403,14 @@ export default function LeadsPage() {
     try {
       const response = await api.get(`${baseUrl.LEAD}/${leadId}`);
       const updatedLead = response.data.data;
-      
+
       if (view === "table") {
         setLeads(prev => prev.map(l => l._id === leadId ? updatedLead : l));
       } else {
         setKanbanLeads(prev => {
           const updated = { ...prev };
           for (const status in updated) {
-            updated[status] = updated[status].map(l => 
+            updated[status] = updated[status].map(l =>
               l._id === leadId ? updatedLead : l
             );
           }
@@ -427,24 +427,24 @@ export default function LeadsPage() {
   };
 
   const columns: Column<Lead>[] = [
-    { 
-      key: "accountMaster", 
+    {
+      key: "accountMaster",
       label: "Company",
       render: (value: any) => value?.companyName || "-"
     },
-    { 
-      key: "accountMaster", 
+    {
+      key: "accountMaster",
       label: "Client",
       render: (value: any) => value?.clientName || "-"
     },
-    { 
-      key: "leadDate", 
+    {
+      key: "leadDate",
       label: "Lead Date",
       render: (value: any) => new Date(value).toLocaleDateString()
     },
     { key: "clientType", label: "Client Type" },
-    { 
-      key: "leadStatus", 
+    {
+      key: "leadStatus",
       label: "Status",
       render: (value: any) => (
         <span className={`rounded-full px-2 py-1 text-xs font-medium ${STATUS_COLORS[value as LeadStatus]}`}>
@@ -452,13 +452,13 @@ export default function LeadsPage() {
         </span>
       )
     },
-    { 
-      key: "totalAmount", 
+    {
+      key: "totalAmount",
       label: "Total Amount",
       render: (value: any) => `₹${value}`
     },
-    { 
-      key: "_id", 
+    {
+      key: "_id",
       label: "Action",
       render: (value: any, row: Lead) => (
         <div className="flex gap-2">
@@ -469,7 +469,7 @@ export default function LeadsPage() {
             className="inline-flex items-center gap-1 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-700"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" className="h-5 w-5" fill="currentColor">
-              <path d="M476.9 161.1C435 119.1 379.2 96 319.9 96C197.5 96 97.9 195.6 97.9 318C97.9 357.1 108.1 395.3 127.5 429L96 544L213.7 513.1C246.1 530.8 282.6 540.1 319.8 540.1L319.9 540.1C442.2 540.1 544 440.5 544 318.1C544 258.8 518.8 203.1 476.9 161.1zM319.9 502.7C286.7 502.7 254.2 493.8 225.9 477L219.2 473L149.4 491.3L168 423.2L163.6 416.2C145.1 386.8 135.4 352.9 135.4 318C135.4 216.3 218.2 133.5 320 133.5C369.3 133.5 415.6 152.7 450.4 187.6C485.2 222.5 506.6 268.8 506.5 318.1C506.5 419.9 421.6 502.7 319.9 502.7zM421.1 364.5C415.6 361.7 388.3 348.3 383.2 346.5C378.1 344.6 374.4 343.7 370.7 349.3C367 354.9 356.4 367.3 353.1 371.1C349.9 374.8 346.6 375.3 341.1 372.5C308.5 356.2 287.1 343.4 265.6 306.5C259.9 296.7 271.3 297.4 281.9 276.2C283.7 272.5 282.8 269.3 281.4 266.5C280 263.7 268.9 236.4 264.3 225.3C259.8 214.5 255.2 216 251.8 215.8C248.6 215.6 244.9 215.6 241.2 215.6C237.5 215.6 231.5 217 226.4 222.5C221.3 228.1 207 241.5 207 268.8C207 296.1 226.9 322.5 229.6 326.2C232.4 329.9 268.7 385.9 324.4 410C359.6 425.2 373.4 426.5 391 423.9C401.7 422.3 423.8 410.5 428.4 397.5C433 384.5 433 373.4 431.6 371.1C430.3 368.6 426.6 367.2 421.1 364.5z"/>
+              <path d="M476.9 161.1C435 119.1 379.2 96 319.9 96C197.5 96 97.9 195.6 97.9 318C97.9 357.1 108.1 395.3 127.5 429L96 544L213.7 513.1C246.1 530.8 282.6 540.1 319.8 540.1L319.9 540.1C442.2 540.1 544 440.5 544 318.1C544 258.8 518.8 203.1 476.9 161.1zM319.9 502.7C286.7 502.7 254.2 493.8 225.9 477L219.2 473L149.4 491.3L168 423.2L163.6 416.2C145.1 386.8 135.4 352.9 135.4 318C135.4 216.3 218.2 133.5 320 133.5C369.3 133.5 415.6 152.7 450.4 187.6C485.2 222.5 506.6 268.8 506.5 318.1C506.5 419.9 421.6 502.7 319.9 502.7zM421.1 364.5C415.6 361.7 388.3 348.3 383.2 346.5C378.1 344.6 374.4 343.7 370.7 349.3C367 354.9 356.4 367.3 353.1 371.1C349.9 374.8 346.6 375.3 341.1 372.5C308.5 356.2 287.1 343.4 265.6 306.5C259.9 296.7 271.3 297.4 281.9 276.2C283.7 272.5 282.8 269.3 281.4 266.5C280 263.7 268.9 236.4 264.3 225.3C259.8 214.5 255.2 216 251.8 215.8C248.6 215.6 244.9 215.6 241.2 215.6C237.5 215.6 231.5 217 226.4 222.5C221.3 228.1 207 241.5 207 268.8C207 296.1 226.9 322.5 229.6 326.2C232.4 329.9 268.7 385.9 324.4 410C359.6 425.2 373.4 426.5 391 423.9C401.7 422.3 423.8 410.5 428.4 397.5C433 384.5 433 373.4 431.6 371.1C430.3 368.6 426.6 367.2 421.1 364.5z" />
             </svg>
           </a>
           <button
@@ -542,18 +542,17 @@ export default function LeadsPage() {
             {view === "kanban" ? "Kanban Board" : "Leads"}
           </h1>
         </div>
-        
+
         <div className="flex gap-2">
           <button
             onClick={() => {
               setView("table");
               router.push("/leads", undefined, { shallow: true });
             }}
-            className={`rounded-lg px-4 py-2 text-sm font-medium ${
-              view === "table"
+            className={`rounded-lg px-4 py-2 text-sm font-medium ${view === "table"
                 ? "bg-blue-600 text-white"
                 : "border border-gray-200 text-gray-700 hover:bg-gray-50"
-            }`}
+              }`}
           >
             Table View
           </button>
@@ -562,11 +561,10 @@ export default function LeadsPage() {
               setView("kanban");
               router.push("/leads?kanban=true", undefined, { shallow: true });
             }}
-            className={`rounded-lg px-4 py-2 text-sm font-medium ${
-              view === "kanban"
+            className={`rounded-lg px-4 py-2 text-sm font-medium ${view === "kanban"
                 ? "bg-blue-600 text-white"
                 : "border border-gray-200 text-gray-700 hover:bg-gray-50"
-            }`}
+              }`}
           >
             Kanban View
           </button>
@@ -593,19 +591,19 @@ export default function LeadsPage() {
           <DataTable
             title="Leads"
             data={leads}
-          pageSize={10}
-          searchPlaceholder="Search leads..."
-          columns={columns}
-          currentPage={page}
-          totalPages={totalPages}
-          totalRecords={totalRecords}
-          onPageChange={setPage}
-          onSearch={setSearch}
-          initialSearch={search}
-          rowClassName={(row) => {
-            return row.accountMaster?.sourcebyTypeOfClient?.isHighlight ? "bg-yellow-50 hover:bg-yellow-100" : "";
-          }}
-        />
+            pageSize={20}
+            searchPlaceholder="Search leads..."
+            columns={columns}
+            currentPage={page}
+            totalPages={totalPages}
+            totalRecords={totalRecords}
+            onPageChange={setPage}
+            onSearch={setSearch}
+            initialSearch={search}
+            rowClassName={(row) => {
+              return row.accountMaster?.sourcebyTypeOfClient?.isHighlight ? "bg-yellow-50 hover:bg-yellow-100" : "";
+            }}
+          />
         )
       )}
 
@@ -724,7 +722,7 @@ function KanbanColumn({
   allowedStatuses: LeadStatus[];
 }) {
   return (
-    <div 
+    <div
       className={`w-80 flex-shrink-0 rounded-2xl h-full flex flex-col ${KANBAN_COLORS[status]}`}
       onDragOver={onDragOver}
       onDrop={(e) => onDrop(e, status)}

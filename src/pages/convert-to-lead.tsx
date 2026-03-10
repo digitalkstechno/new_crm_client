@@ -55,12 +55,12 @@ export default function ConvertToLeadPage() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentLeadStatus, setCurrentLeadStatus] = useState<string>("");
   const [openDropdowns, setOpenDropdowns] = useState<{ [key: string]: boolean }>({});
-  
+
   const getTodayDate = () => {
     const today = new Date();
     return today.toISOString().split('T')[0];
   };
-  
+
   const [leadDate, setLeadDate] = useState(getTodayDate());
   const [clientType, setClientType] = useState("");
   const [deliveryDate, setDeliveryDate] = useState("");
@@ -114,7 +114,7 @@ export default function ConvertToLeadPage() {
     try {
       const response = await api.get(`${baseUrl.LEAD}/${leadId}`);
       const lead = response.data.data;
-      
+
       setAccountData(lead.accountMaster);
       setCurrentLeadStatus(lead.leadStatus);
       setLeadDate(lead.leadDate.split('T')[0]);
@@ -124,7 +124,7 @@ export default function ConvertToLeadPage() {
       setBudgetFrom(lead.budget?.from || "");
       setBudgetTo(lead.budget?.to || "");
       setConfirmationRemark(lead.confirmationRemark || "");
-      
+
       const loadedProducts = lead.items.map((item: any) => {
         const categoryId = item.inquiryCategory._id;
         if (!allModelSuggestions[categoryId]) {
@@ -198,14 +198,14 @@ export default function ConvertToLeadPage() {
       prev.map((p) => {
         if (p.id !== id) return p;
         const updated = { ...p, [field]: value };
-        
+
         if (field === "inquiryCategoryId" && value) {
           updated.modelSuggestionId = "";
           updated.rate = 0;
           updated.gst = 0;
           fetchModelsByCategory(value, id);
         }
-        
+
         if (field === "modelSuggestionId" && value) {
           const models = allModelSuggestions[p.inquiryCategoryId] || [];
           const selectedModel = models.find(m => m._id === value);
@@ -215,7 +215,7 @@ export default function ConvertToLeadPage() {
             updated.total = calculateTotal(updated);
           }
         }
-        
+
         if (["qty", "rate", "gst"].includes(field)) {
           updated.total = calculateTotal(updated);
         }
@@ -260,41 +260,41 @@ export default function ConvertToLeadPage() {
 
   const handleConvertLead = async () => {
     const validationErrors: string[] = [];
-    
+
     if (!isEditMode && (!accountId || accountId === 'undefined')) validationErrors.push("Account ID is required");
     if (!leadDate) validationErrors.push("Lead Date is required");
-    if (!clientType) validationErrors.push("Client Type is required");
-    
+    // if (!clientType) validationErrors.push("Client Type is required");
+
     if (budgetFrom && !validatePositiveNumber(budgetFrom)) {
       validationErrors.push("Budget From must be a valid positive number");
     }
-    
+
     if (budgetTo && !validatePositiveNumber(budgetTo)) {
       validationErrors.push("Budget To must be a valid positive number");
     }
-    
+
     if (budgetFrom && budgetTo && parseFloat(budgetFrom) > parseFloat(budgetTo)) {
       validationErrors.push("Budget From cannot be greater than Budget To");
     }
-    
+
     products.forEach((p, index) => {
       if (!p.inquiryCategoryId) validationErrors.push(`Product ${index + 1}: Inquiry Category is required`);
-      if (!p.modelSuggestionId) validationErrors.push(`Product ${index + 1}: Model Suggestion is required`);
-      if (p.customizationTypeIds.length === 0) validationErrors.push(`Product ${index + 1}: At least one Customization Type is required`);
-      if (p.personalization === "Yes" && !p.description) validationErrors.push(`Product ${index + 1}: Description is required`);
-      if (!validatePositiveNumber(p.qty)) validationErrors.push(`Product ${index + 1}: Quantity must be a positive number`);
-      if (!validatePositiveNumber(p.rate)) validationErrors.push(`Product ${index + 1}: Rate must be a positive number`);
+      // if (!p.modelSuggestionId) validationErrors.push(`Product ${index + 1}: Model Suggestion is required`);
+      // if (p.customizationTypeIds.length === 0) validationErrors.push(`Product ${index + 1}: At least one Customization Type is required`);
+      // if (p.personalization === "Yes" && !p.description) validationErrors.push(`Product ${index + 1}: Description is required`);
+      if (p.qty !== undefined && p.qty !== null && !validatePositiveNumber(p.qty)) validationErrors.push(`Product ${index + 1}: Quantity must be a positive number`);
+      // if (p.rate !== undefined && p.rate !== null && !validatePositiveNumber(p.rate)) validationErrors.push(`Product ${index + 1}: Rate must be a positive number`);
       if (p.gst < 0 || p.gst > 100) validationErrors.push(`Product ${index + 1}: GST must be between 0 and 100`);
     });
-    
+
     if (validationErrors.length > 0) {
       setErrors(validationErrors);
       toast.error("Please fill all required fields");
       return;
     }
-    
+
     setErrors([]);
-    
+
     try {
       const items = products.map(p => ({
         inquiryCategory: p.inquiryCategoryId,
@@ -311,9 +311,9 @@ export default function ConvertToLeadPage() {
           description: p.personalization === "Yes" ? p.description : undefined,
         },
       }));
-      
+
       const totalAmount = calculateGrandTotal();
-      
+
       const payload = {
         leadDate,
         clientType,
@@ -329,7 +329,7 @@ export default function ConvertToLeadPage() {
         leadStatus: isEditMode && (currentLeadStatus === "New Lead" || currentLeadStatus === "Quotation Given") ? currentLeadStatus : (isEditMode ? "Order Confirmation" : "New Lead"),
         confirmationRemark: isEditMode ? confirmationRemark : undefined,
       };
-      
+
       if (isEditMode) {
         await api.put(`${baseUrl.LEAD}/${leadId}`, payload);
         toast.success("Lead updated successfully!");
