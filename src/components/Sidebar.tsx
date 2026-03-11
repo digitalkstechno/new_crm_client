@@ -134,7 +134,7 @@ export default function Sidebar({ collapsed }: SidebarProps) {
 
               {tokenData.canAccessLeads && (
                 <Link
-                  href="/leads"
+                  href="/leads?kanban=true"
                   className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition ${isActive("/leads")
                     ? "bg-purple-50 text-purple-700 font-semibold"
                     : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"

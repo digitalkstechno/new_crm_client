@@ -9,6 +9,8 @@ import FollowUpDialog from "@/components/FollowUpDialog";
 import OrderExecutionDialog from "@/components/OrderExecutionDialog";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import PaymentDialog from "@/components/PaymentDialog";
+import LostDescriptionDialog from "@/components/LostDescriptionDialog";
+import DispatchDescriptionDialog from "@/components/DispatchDescriptionDialog";
 import KanbanCard from "@/components/KanbanCard";
 import { api } from "@/utils/axiosInstance";
 import { baseUrl } from "../../config";
@@ -42,6 +44,7 @@ type Lead = {
   maxStatusReached?: LeadStatus;
   paymentHistory?: { amount: string; date: string }[];
   followUps?: { date: string; description: string; createdAt: string }[];
+  lostDescription?: string;
 };
 
 /* ================= PAGE ================= */
@@ -65,7 +68,8 @@ export default function LeadsPage() {
   const [kanbanTotalCounts, setKanbanTotalCounts] = useState<Record<LeadStatus, number>>({} as any);
   const [followUpDialog, setFollowUpDialog] = useState<{ isOpen: boolean; leadId: string | null; pendingStatus?: LeadStatus }>({ isOpen: false, leadId: null });
   const [orderExecutionDialog, setOrderExecutionDialog] = useState<{ isOpen: boolean; lead: Lead | null }>({ isOpen: false, lead: null });
-  const [lostConfirmDialog, setLostConfirmDialog] = useState<{ isOpen: boolean; leadId: string | null }>({ isOpen: false, leadId: null });
+  const [lostDescriptionDialog, setLostDescriptionDialog] = useState<{ isOpen: boolean; leadId: string | null }>({ isOpen: false, leadId: null });
+  const [dispatchDescriptionDialog, setDispatchDescriptionDialog] = useState<{ isOpen: boolean; leadId: string | null }>({ isOpen: false, leadId: null });
   const [completedConfirmDialog, setCompletedConfirmDialog] = useState<{ isOpen: boolean; leadId: string | null }>({ isOpen: false, leadId: null });
   const [paymentDialog, setPaymentDialog] = useState<{ isOpen: boolean; lead: Lead | null; pendingStatus?: LeadStatus }>({ isOpen: false, lead: null });
 
@@ -250,7 +254,7 @@ export default function LeadsPage() {
     if (toStatus === "Follow Up") {
       setFollowUpDialog({ isOpen: true, leadId, pendingStatus: toStatus });
     } else if (toStatus === "Lost") {
-      setLostConfirmDialog({ isOpen: true, leadId });
+      setLostDescriptionDialog({ isOpen: true, leadId });
     } else if (toStatus === "Completed") {
       setCompletedConfirmDialog({ isOpen: true, leadId });
     } else if (fromStatus === "Follow Up" && toStatus === "Order Confirmation") {
@@ -272,15 +276,22 @@ export default function LeadsPage() {
         toast.error("Failed to verify lead status");
       }
     } else if (toStatus === "Dispatch") {
-      await handleStatusChange(leadId, toStatus);
+      setDispatchDescriptionDialog({ isOpen: true, leadId });
     } else {
       await handleStatusChange(leadId, toStatus);
     }
   };
 
-  const handleStatusChange = async (leadId: string, newStatus: LeadStatus) => {
+  const handleStatusChange = async (leadId: string, newStatus: LeadStatus, description?: string) => {
     try {
-      await api.put(`${baseUrl.LEAD}/${leadId}`, { leadStatus: newStatus });
+      const updateData: any = { leadStatus: newStatus };
+      if (newStatus === "Lost" && description) {
+        updateData.lostDescription = description;
+      }
+      if (newStatus === "Dispatch" && description) {
+        updateData.dispatchDescription = description;
+      }
+      await api.put(`${baseUrl.LEAD}/${leadId}`, updateData);
 
       // Update counts
       if (view === "kanban") {
@@ -332,7 +343,7 @@ export default function LeadsPage() {
   };
 
   const handleMoveToLost = async (leadId: string) => {
-    setLostConfirmDialog({ isOpen: true, leadId });
+    setLostDescriptionDialog({ isOpen: true, leadId });
   };
 
   const confirmMoveToCompleted = async () => {
@@ -342,10 +353,17 @@ export default function LeadsPage() {
     }
   };
 
-  const confirmMoveToLost = async () => {
-    if (lostConfirmDialog.leadId) {
-      await handleStatusChange(lostConfirmDialog.leadId, "Lost");
-      setLostConfirmDialog({ isOpen: false, leadId: null });
+  const confirmMoveToLost = async (description: string) => {
+    if (lostDescriptionDialog.leadId) {
+      await handleStatusChange(lostDescriptionDialog.leadId, "Lost", description);
+      setLostDescriptionDialog({ isOpen: false, leadId: null });
+    }
+  };
+
+  const confirmMoveToDispatch = async (description: string) => {
+    if (dispatchDescriptionDialog.leadId) {
+      await handleStatusChange(dispatchDescriptionDialog.leadId, "Dispatch", description);
+      setDispatchDescriptionDialog({ isOpen: false, leadId: null });
     }
   };
 
@@ -651,12 +669,16 @@ export default function LeadsPage() {
         />
       )}
 
-      <ConfirmationDialog
-        isOpen={lostConfirmDialog.isOpen}
-        onClose={() => setLostConfirmDialog({ isOpen: false, leadId: null })}
-        onConfirm={confirmMoveToLost}
-        title="Mark Lead as Lost?"
-        message="Are you sure you want to mark this lead as Lost? This action will move the lead to Lost status and it cannot be recovered to previous statuses."
+      <LostDescriptionDialog
+        isOpen={lostDescriptionDialog.isOpen}
+        onClose={() => setLostDescriptionDialog({ isOpen: false, leadId: null })}
+        onSubmit={confirmMoveToLost}
+      />
+
+      <DispatchDescriptionDialog
+        isOpen={dispatchDescriptionDialog.isOpen}
+        onClose={() => setDispatchDescriptionDialog({ isOpen: false, leadId: null })}
+        onSubmit={confirmMoveToDispatch}
       />
 
       <ConfirmationDialog

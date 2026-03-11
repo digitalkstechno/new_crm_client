@@ -118,31 +118,31 @@ export default function ConvertToLeadPage() {
       setAccountData(lead.accountMaster);
       setCurrentLeadStatus(lead.leadStatus);
       setLeadDate(lead.leadDate.split('T')[0]);
-      setClientType(lead.clientType);
-      setDeliveryDate(lead.deliveryDate.split('T')[0]);
+      setClientType(lead.clientType || "");
+      setDeliveryDate(lead.deliveryDate ? lead.deliveryDate.split('T')[0] : "");
       setShippingCharges(lead.shippingCharges || "");
       setBudgetFrom(lead.budget?.from || "");
       setBudgetTo(lead.budget?.to || "");
       setConfirmationRemark(lead.confirmationRemark || "");
 
+      // Fetch models for all categories first
+      const categoryIds = [...new Set(lead.items.map((item: any) => item.inquiryCategory._id))];
+      await Promise.all(categoryIds.map(categoryId => fetchModelsByCategory(categoryId, '')));
+
       const loadedProducts = lead.items.map((item: any) => {
-        const categoryId = item.inquiryCategory._id;
-        if (!allModelSuggestions[categoryId]) {
-          fetchModelsByCategory(categoryId, item._id);
-        }
         return {
           id: item._id,
           inquiryCategoryId: item.inquiryCategory._id,
-          modelSuggestionId: item.modelSuggestion._id,
-          customizationTypeIds: Array.isArray(item.customizationType) ? item.customizationType.map((c: any) => c._id) : [item.customizationType._id],
+          modelSuggestionId: item.modelSuggestion?._id || "",
+          customizationTypeIds: Array.isArray(item.customizationType) ? item.customizationType.map((c: any) => c._id) : (item.customizationType?._id ? [item.customizationType._id] : []),
           customizationDescription: item.customizationDescription || "",
           personalization: item.personalization?.isPersonalized ? "Yes" : "No",
           location: item.personalization?.location || "",
           description: item.personalization?.description || "",
-          qty: parseInt(item.qty),
-          rate: parseFloat(item.rate),
-          gst: parseFloat(item.gst),
-          total: parseFloat(item.total),
+          qty: parseInt(item.qty) || 1,
+          rate: parseFloat(item.rate) || 0,
+          gst: parseFloat(item.gst) || 0,
+          total: parseFloat(item.total) || 0,
         };
       });
       setProducts(loadedProducts);
@@ -176,8 +176,10 @@ export default function ConvertToLeadPage() {
       }
       const response = await api.get(baseUrl.MODEL_BY_CATEGORY(categoryId));
       setAllModelSuggestions(prev => ({ ...prev, [categoryId]: response.data.data || [] }));
+      return response.data.data || [];
     } catch (error) {
       toast.error("Failed to fetch models");
+      return [];
     }
   };
 
