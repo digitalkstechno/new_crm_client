@@ -85,6 +85,7 @@ export default function ConvertToLeadPage() {
       rate: 0,
       gst: 0,
       total: 0,
+      
     },
   ]);
 
@@ -384,7 +385,7 @@ export default function ConvertToLeadPage() {
             >
               <option value="">Select Lead Type</option>
               <option value="New">New</option>
-              <option value="Existing">Existing</option>
+              <option value="Client">Client</option>
             </select>
           </div>
           <div>
