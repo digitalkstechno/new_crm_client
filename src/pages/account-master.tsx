@@ -1,4 +1,5 @@
 import DataTable, { Column } from "@/components/DataTable";
+import LocationSelect from "@/components/LocationSelect";
 import Dialog from "@/components/Dialog";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import TableSkeleton from "@/components/TableSkeleton";
@@ -141,9 +142,12 @@ export default function AccountMasterPage() {
     clientName: "",
     line1: "",
     line2: "",
-    cityName: "",
-    stateName: "",
+    countryId: "",
     countryName: "",
+    stateId: "",
+    stateName: "",
+    cityId: "",
+    cityName: "",
     mobile: "",
     email: "",
     website: "",
@@ -238,9 +242,12 @@ export default function AccountMasterPage() {
       clientName: "",
       line1: "",
       line2: "",
-      cityName: "",
-      stateName: "",
+      countryId: "",
       countryName: "",
+      stateId: "",
+      stateName: "",
+      cityId: "",
+      cityName: "",
       mobile: "",
       email: "",
       website: "",
@@ -258,9 +265,12 @@ export default function AccountMasterPage() {
       clientName: row.clientName,
       line1: row.address?.line1 || "",
       line2: row.address?.line2 || "",
-      cityName: row.address?.cityName || "",
-      stateName: row.address?.stateName || "",
+      countryId: (row.address as any)?.countryId || "",
       countryName: row.address?.countryName || "",
+      stateId: (row.address as any)?.stateId || "",
+      stateName: row.address?.stateName || "",
+      cityId: (row.address as any)?.cityId || "",
+      cityName: row.address?.cityName || "",
       mobile: row.mobile,
       email: row.email,
       website: row.website,
@@ -287,19 +297,33 @@ export default function AccountMasterPage() {
     }
   };
 
+  const resolveLocation = async () => {
+    if (!form.countryName) return { countryId: "", countryName: "", stateId: "", stateName: "", cityId: "", cityName: "" };
+    const r = await api.post(baseUrl.LOCATION_UPSERT, {
+      countryName: form.countryName,
+      stateName: form.stateName,
+      cityName: form.cityName,
+    });
+    return r.data.data;
+  };
+
   const handleUpdate = async () => {
     if (!editMode.id) return;
 
     try {
+      const loc = await resolveLocation();
       const payload = {
         companyName: form.companyName,
         clientName: form.clientName,
         address: {
           line1: form.line1,
           line2: form.line2,
-          cityName: form.cityName,
-          stateName: form.stateName,
-          countryName: form.countryName,
+          countryId: loc.countryId || form.countryId,
+          countryName: loc.countryName || form.countryName,
+          stateId: loc.stateId || form.stateId,
+          stateName: loc.stateName || form.stateName,
+          cityId: loc.cityId || form.cityId,
+          cityName: loc.cityName || form.cityName,
         },
         mobile: form.mobile,
         email: form.email,
@@ -348,15 +372,19 @@ export default function AccountMasterPage() {
       await handleUpdate();
     } else {
       try {
+        const loc = await resolveLocation();
         const payload = {
           companyName: form.companyName,
           clientName: form.clientName,
           address: {
             line1: form.line1,
             line2: form.line2,
-            cityName: form.cityName,
-            stateName: form.stateName,
-            countryName: form.countryName,
+            countryId: loc.countryId || form.countryId,
+            countryName: loc.countryName || form.countryName,
+            stateId: loc.stateId || form.stateId,
+            stateName: loc.stateName || form.stateName,
+            cityId: loc.cityId || form.cityId,
+            cityName: loc.cityName || form.cityName,
           },
           mobile: form.mobile,
           email: form.email,
@@ -766,48 +794,26 @@ export default function AccountMasterPage() {
               <input
                 placeholder="Address Line 1"
                 value={form.line1}
-                onChange={(e) =>
-                  setForm({ ...form, line1: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, line1: e.target.value })}
                 className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-gray-300 focus:bg-white outline-none"
               />
-
               <input
                 placeholder="Address Line 2"
                 value={form.line2}
-                onChange={(e) =>
-                  setForm({ ...form, line2: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, line2: e.target.value })}
                 className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-gray-300 focus:bg-white outline-none"
-              />
-
-              <input
-                placeholder="City"
-                value={form.cityName}
-                onChange={(e) =>
-                  setForm({ ...form, cityName: e.target.value })
-                }
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-gray-300 focus:bg-white outline-none"
-              />
-
-              <input
-                placeholder="State"
-                value={form.stateName}
-                onChange={(e) =>
-                  setForm({ ...form, stateName: e.target.value })
-                }
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-gray-300 focus:bg-white outline-none"
-              />
-
-              <input
-                placeholder="Country"
-                value={form.countryName}
-                onChange={(e) =>
-                  setForm({ ...form, countryName: e.target.value })
-                }
-                className="md:col-span-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-gray-300 focus:bg-white outline-none"
               />
             </div>
+
+            <LocationSelect
+              countryId={form.countryId}
+              stateId={form.stateId}
+              cityId={form.cityId}
+              countryName={form.countryName}
+              stateName={form.stateName}
+              cityName={form.cityName}
+              onChange={(field, value) => setForm((prev) => ({ ...prev, [field]: value }))}
+            />
           </div>
 
           {/* Source */}
