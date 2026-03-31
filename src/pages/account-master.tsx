@@ -76,6 +76,7 @@ export default function AccountMasterPage() {
   const [excelMenuOpen, setExcelMenuOpen] = useState(false);
   const [noLeadsFilter, setNoLeadsFilter] = useState(false);
   const [importProgress, setImportProgress] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     fetchAccounts(page === 1 && search === "" && !noLeadsFilter);
@@ -294,6 +295,8 @@ export default function AccountMasterPage() {
       toast.success("Account deleted successfully!");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to delete account");
+    } finally {
+      setDeleteDialog({ open: false, id: null });
     }
   };
 
@@ -310,6 +313,7 @@ export default function AccountMasterPage() {
   const handleUpdate = async () => {
     if (!editMode.id) return;
 
+    setActionLoading(true);
     try {
       const loc = await resolveLocation();
       const payload = {
@@ -341,6 +345,8 @@ export default function AccountMasterPage() {
       resetForm();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to update account");
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -371,6 +377,7 @@ export default function AccountMasterPage() {
     if (editMode.isEdit) {
       await handleUpdate();
     } else {
+      setActionLoading(true);
       try {
         const loc = await resolveLocation();
         const payload = {
@@ -409,11 +416,14 @@ export default function AccountMasterPage() {
         toast.error(
           err.response?.data?.message || "Failed to create account"
         );
+      } finally {
+        setActionLoading(false);
       }
     }
   };
 
   const downloadSampleExcel = async () => {
+    setActionLoading(true);
     try {
       const response = await api.get(`${baseUrl.ACCOUNTMASTER}/sample-excel`, {
         responseType: 'blob'
@@ -428,10 +438,13 @@ export default function AccountMasterPage() {
       toast.success('Sample Excel downloaded!');
     } catch (error) {
       toast.error('Failed to download sample');
+    } finally {
+      setActionLoading(false);
     }
   };
 
   const exportToExcel = async () => {
+    setActionLoading(true);
     try {
       const response = await api.get(`${baseUrl.ACCOUNTMASTER}/export`, {
         responseType: 'blob'
@@ -446,10 +459,13 @@ export default function AccountMasterPage() {
       toast.success('Data exported successfully!');
     } catch (error) {
       toast.error('Failed to export data');
+    } finally {
+      setActionLoading(false);
     }
   };
 
   const exportNoLeadsToExcel = async () => {
+    setActionLoading(true);
     try {
       const response = await api.get(`${baseUrl.ACCOUNTMASTER}/export?noLeadsOnly=true`, {
         responseType: 'blob'
@@ -464,6 +480,8 @@ export default function AccountMasterPage() {
       toast.success('No leads data exported successfully!');
     } catch (error) {
       toast.error('Failed to export no leads data');
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -698,9 +716,15 @@ export default function AccountMasterPage() {
             <button
               type="submit"
               form="account-form"
-              className="bg-black text-white px-4 py-2 rounded-lg"
+              disabled={actionLoading}
+              className="bg-black text-white px-4 py-2 rounded-lg disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {editMode.isEdit ? "Update" : "Save"}
+              {actionLoading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                  Saving...
+                </span>
+              ) : (editMode.isEdit ? "Update" : "Save")}
             </button>
           </div>
         }
