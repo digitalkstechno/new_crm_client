@@ -17,7 +17,7 @@ export default function FollowUpDialog({ isOpen, onClose, onSubmit }: FollowUpDi
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (date && description) {
+    if (date) {
       onSubmit(date, description);
       setDate("");
       setDescription("");
@@ -59,7 +59,6 @@ export default function FollowUpDialog({ isOpen, onClose, onSubmit }: FollowUpDi
               rows={4}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-black"
               placeholder="Enter follow up details..."
-              required
             />
           </div>
 

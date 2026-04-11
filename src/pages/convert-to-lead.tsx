@@ -348,6 +348,11 @@ export default function ConvertToLeadPage() {
       <div className="rounded-2xl bg-white p-6 shadow-sm">
         <h1 className="mb-6 text-xl font-semibold text-gray-900">
           {isEditMode ? "Edit Lead" : "Convert to Lead"}
+          {accountData?.clientName && (
+            <span className="ml-2 text-indigo-600">
+              - {accountData.clientName}
+            </span>
+          )}
         </h1>
 
         {/* Validation Errors */}
