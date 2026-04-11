@@ -22,7 +22,6 @@ export default function ColorPage() {
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
   const [editMode, setEditMode] = useState<{ isEdit: boolean; id: string | null }>({ isEdit: false, id: null });
   const [confirmDialog, setConfirmDialog] = useState(false);
-  const [submitLoading, setSubmitLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -85,7 +84,6 @@ export default function ColorPage() {
   const handleUpdate = async () => {
     if (!editMode.id) return;
 
-    setSubmitLoading(true);
     try {
       const res = await api.put(`${baseUrl.COLOR}/${editMode.id}`, { name: form.name });
       setColors((prev) => prev.map((c) => (c._id === editMode.id ? res.data.data : c)));
@@ -94,8 +92,6 @@ export default function ColorPage() {
       resetForm();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to update color");
-    } finally {
-      setSubmitLoading(false);
     }
   };
 
@@ -126,7 +122,6 @@ export default function ColorPage() {
     if (editMode.isEdit) {
       await handleUpdate();
     } else {
-      setSubmitLoading(true);
       try {
         const res = await api.post(baseUrl.COLOR, { name: form.name });
         setColors((prev) => [res.data.data, ...prev]);
@@ -135,8 +130,6 @@ export default function ColorPage() {
         resetForm();
       } catch (err: any) {
         toast.error(err.response?.data?.message || "Failed to add color");
-      } finally {
-        setSubmitLoading(false);
       }
     }
   };
@@ -195,17 +188,11 @@ export default function ColorPage() {
               Cancel
             </button>
             <button
-              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800"
               type="submit"
               form="color-form"
-              disabled={submitLoading}
             >
-              {submitLoading ? (
-                <span className="flex items-center gap-2">
-                  <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                  Saving...
-                </span>
-              ) : (editMode.isEdit ? "Update Color" : "Save Color")}
+              {editMode.isEdit ? "Update Color" : "Save Color"}
             </button>
           </div>
         }

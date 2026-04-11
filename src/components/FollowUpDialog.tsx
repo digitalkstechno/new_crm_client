@@ -4,29 +4,23 @@ import { X } from "lucide-react";
 type FollowUpDialogProps = {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (date: string, description: string) => void | Promise<void>;
+  onSubmit: (date: string, description: string) => void;
 };
 
 export default function FollowUpDialog({ isOpen, onClose, onSubmit }: FollowUpDialogProps) {
   const [date, setDate] = useState("");
   const [description, setDescription] = useState("");
-  const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
 
   const today = new Date().toISOString().slice(0, 16);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (date && description) {
-      setLoading(true);
-      try {
-        await onSubmit(date, description);
-      } finally {
-        setLoading(false);
-        setDate("");
-        setDescription("");
-      }
+      onSubmit(date, description);
+      setDate("");
+      setDescription("");
     }
   };
 
@@ -78,15 +72,9 @@ export default function FollowUpDialog({ isOpen, onClose, onSubmit }: FollowUpDi
             </button>
             <button
               type="submit"
-              disabled={loading}
-              className="flex-1 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="flex-1 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
             >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                  Saving...
-                </span>
-              ) : "Add Follow Up"}
+              Add Follow Up
             </button>
           </div>
         </form>

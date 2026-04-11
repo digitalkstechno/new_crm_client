@@ -17,7 +17,6 @@ export default function Production() {
     limit: 10,
   });
   const [tokenData, setTokenData] = useState<any>(null);
-  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -52,27 +51,21 @@ export default function Production() {
   };
 
   const handleMarkDone = async (id: string) => {
-    setActionLoadingId(id);
     try {
       await api.put(`/production/${id}/mark-done`);
       fetchProductions();
     } catch (error) {
       console.error("Error marking entry as done:", error);
-    } finally {
-      setActionLoadingId(null);
     }
   };
 
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this production entry?")) {
-      setActionLoadingId(id);
       try {
         await api.delete(`/production/${id}`);
         fetchProductions();
       } catch (error) {
         console.error("Error deleting production:", error);
-      } finally {
-        setActionLoadingId(null);
       }
     }
   };
@@ -130,7 +123,7 @@ export default function Production() {
         <div className="flex gap-2">
           <button
             onClick={() => router.push(`/edit-production/${row._id}`)}
-            disabled={row.isEntryDone || actionLoadingId === row._id}
+            disabled={row.isEntryDone}
             className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
               row.isEntryDone
                 ? "bg-gray-100 text-gray-400 cursor-not-allowed"
@@ -141,22 +134,21 @@ export default function Production() {
           </button>
           <button
             onClick={() => handleDelete(row._id)}
-            disabled={row.isEntryDone || actionLoadingId === row._id}
+            disabled={row.isEntryDone}
             className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
               row.isEntryDone
                 ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                 : "bg-red-50 text-red-600 hover:bg-red-100"
             }`}
           >
-            {actionLoadingId === row._id ? <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> : <Trash2 className="h-4 w-4" />}
+            <Trash2 className="h-4 w-4" />
           </button>
           {!row.isEntryDone && (
             <button
               onClick={() => handleMarkDone(row._id)}
-              disabled={actionLoadingId === row._id}
-              className="inline-flex items-center gap-1 rounded-lg bg-green-50 px-3 py-1.5 text-sm font-medium text-green-600 transition hover:bg-green-100 disabled:opacity-50"
+              className="inline-flex items-center gap-1 rounded-lg bg-green-50 px-3 py-1.5 text-sm font-medium text-green-600 transition hover:bg-green-100"
             >
-              {actionLoadingId === row._id ? <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> : <CheckCircle className="h-4 w-4" />}
+              <CheckCircle className="h-4 w-4" />
             </button>
           )}
         </div>
