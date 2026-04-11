@@ -18,7 +18,7 @@ export default function FollowUpDialog({ isOpen, onClose, onSubmit }: FollowUpDi
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (date && description) {
+    if (date) {
       setLoading(true);
       try {
         await onSubmit(date, description);
