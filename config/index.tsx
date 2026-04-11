@@ -41,6 +41,12 @@ export const baseUrl = {
     DASHBOARD_STATS: `${API}lead/dashboard/stats`,
     DASHBOARD_GRAPHS: `${API}lead/dashboard/graphs`,
 
+    // Location
+    LOCATION_COUNTRIES: `${API}location/countries`,
+    LOCATION_STATES: (countryId: string) => `${API}location/countries/${countryId}/states`,
+    LOCATION_CITIES: (stateId: string) => `${API}location/states/${stateId}/cities`,
+    LOCATION_UPSERT: `${API}location/upsert`,
+
     // Reports
     REPORT_LEADS: `${API}report/leads`,
     REPORT_LEAD_ITEMS: `${API}report/lead-items`,

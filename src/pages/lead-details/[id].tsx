@@ -54,6 +54,8 @@ type Lead = {
   remarks?: Array<{ date: string; remark: string }>;
   paymentHistory?: Array<{ date: string; amount: string; modeOfPayment: string; remark?: string }>;
   followUps?: Array<{ date: string; description: string; createdAt: string }>;
+  lostDescription?: string;
+  dispatchDescription?: string;
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -387,6 +389,26 @@ export default function LeadDetailsPage() {
                 <p className="mt-1 text-xs text-gray-500">Added on: {new Date(followUp.createdAt).toLocaleString()}</p>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* LOST DESCRIPTION */}
+      {lead.leadStatus === "Lost" && lead.lostDescription && (
+        <div className="rounded-xl border border-red-200 bg-white p-6 shadow-sm">
+          <h2 className="mb-4 text-lg font-semibold text-red-700">Lost Reason</h2>
+          <div className="rounded-lg border-l-4 border-red-500 bg-red-50 p-4">
+            <p className="text-sm text-gray-900">{lead.lostDescription}</p>
+          </div>
+        </div>
+      )}
+
+      {/* DISPATCH DESCRIPTION */}
+      {(lead.leadStatus === "Dispatch" || lead.leadStatus === "Completed") && lead.dispatchDescription && (
+        <div className="rounded-xl border border-cyan-200 bg-white p-6 shadow-sm">
+          <h2 className="mb-4 text-lg font-semibold text-cyan-700">Dispatch Details</h2>
+          <div className="rounded-lg border-l-4 border-cyan-500 bg-cyan-50 p-4">
+            <p className="text-sm text-gray-900">{lead.dispatchDescription}</p>
           </div>
         </div>
       )}

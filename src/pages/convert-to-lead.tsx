@@ -55,6 +55,7 @@ export default function ConvertToLeadPage() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentLeadStatus, setCurrentLeadStatus] = useState<string>("");
   const [openDropdowns, setOpenDropdowns] = useState<{ [key: string]: boolean }>({});
+  const [submitLoading, setSubmitLoading] = useState(false);
 
   const getTodayDate = () => {
     const today = new Date();
@@ -85,6 +86,7 @@ export default function ConvertToLeadPage() {
       rate: 0,
       gst: 0,
       total: 0,
+      
     },
   ]);
 
@@ -118,31 +120,31 @@ export default function ConvertToLeadPage() {
       setAccountData(lead.accountMaster);
       setCurrentLeadStatus(lead.leadStatus);
       setLeadDate(lead.leadDate.split('T')[0]);
-      setClientType(lead.clientType);
-      setDeliveryDate(lead.deliveryDate.split('T')[0]);
+      setClientType(lead.clientType || "");
+      setDeliveryDate(lead.deliveryDate ? lead.deliveryDate.split('T')[0] : "");
       setShippingCharges(lead.shippingCharges || "");
       setBudgetFrom(lead.budget?.from || "");
       setBudgetTo(lead.budget?.to || "");
       setConfirmationRemark(lead.confirmationRemark || "");
 
+      // Fetch models for all categories first
+      const categoryIds = [...new Set(lead.items.map((item: any) => item.inquiryCategory._id))];
+      await Promise.all(categoryIds.map(categoryId => fetchModelsByCategory(categoryId, '')));
+
       const loadedProducts = lead.items.map((item: any) => {
-        const categoryId = item.inquiryCategory._id;
-        if (!allModelSuggestions[categoryId]) {
-          fetchModelsByCategory(categoryId, item._id);
-        }
         return {
           id: item._id,
           inquiryCategoryId: item.inquiryCategory._id,
-          modelSuggestionId: item.modelSuggestion._id,
-          customizationTypeIds: Array.isArray(item.customizationType) ? item.customizationType.map((c: any) => c._id) : [item.customizationType._id],
+          modelSuggestionId: item.modelSuggestion?._id || "",
+          customizationTypeIds: Array.isArray(item.customizationType) ? item.customizationType.map((c: any) => c._id) : (item.customizationType?._id ? [item.customizationType._id] : []),
           customizationDescription: item.customizationDescription || "",
           personalization: item.personalization?.isPersonalized ? "Yes" : "No",
           location: item.personalization?.location || "",
           description: item.personalization?.description || "",
-          qty: parseInt(item.qty),
-          rate: parseFloat(item.rate),
-          gst: parseFloat(item.gst),
-          total: parseFloat(item.total),
+          qty: parseInt(item.qty) || 1,
+          rate: parseFloat(item.rate) || 0,
+          gst: parseFloat(item.gst) || 0,
+          total: parseFloat(item.total) || 0,
         };
       });
       setProducts(loadedProducts);
@@ -176,8 +178,10 @@ export default function ConvertToLeadPage() {
       }
       const response = await api.get(baseUrl.MODEL_BY_CATEGORY(categoryId));
       setAllModelSuggestions(prev => ({ ...prev, [categoryId]: response.data.data || [] }));
+      return response.data.data || [];
     } catch (error) {
       toast.error("Failed to fetch models");
+      return [];
     }
   };
 
@@ -295,6 +299,7 @@ export default function ConvertToLeadPage() {
 
     setErrors([]);
 
+    setSubmitLoading(true);
     try {
       const items = products.map(p => ({
         inquiryCategory: p.inquiryCategoryId,
@@ -340,6 +345,8 @@ export default function ConvertToLeadPage() {
       router.push("/leads?kanban=true");
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to save lead");
+    } finally {
+      setSubmitLoading(false);
     }
   };
 
@@ -387,7 +394,7 @@ export default function ConvertToLeadPage() {
             >
               <option value="">Select Lead Type</option>
               <option value="New">New</option>
-              <option value="Existing">Existing</option>
+              <option value="Client">Client</option>
             </select>
           </div>
           <div>
@@ -697,9 +704,15 @@ export default function ConvertToLeadPage() {
         <div className="flex justify-end">
           <button
             onClick={handleConvertLead}
-            className="rounded-lg bg-indigo-600 px-6 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+            disabled={submitLoading}
+            className="rounded-lg bg-indigo-600 px-6 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {isEditMode && (currentLeadStatus === "New Lead" || currentLeadStatus === "Quotation Given") ? "Update Lead" : (isEditMode ? "Save & Move to Order Confirmation" : "Convert Lead")}
+            {submitLoading ? (
+              <span className="flex items-center gap-2">
+                <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                Saving...
+              </span>
+            ) : (isEditMode && (currentLeadStatus === "New Lead" || currentLeadStatus === "Quotation Given") ? "Update Lead" : (isEditMode ? "Save & Move to Order Confirmation" : "Convert Lead"))}
           </button>
         </div>
       </div>

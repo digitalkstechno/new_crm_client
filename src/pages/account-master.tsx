@@ -1,4 +1,5 @@
 import DataTable, { Column } from "@/components/DataTable";
+import LocationSelect from "@/components/LocationSelect";
 import Dialog from "@/components/Dialog";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import TableSkeleton from "@/components/TableSkeleton";
@@ -75,6 +76,7 @@ export default function AccountMasterPage() {
   const [excelMenuOpen, setExcelMenuOpen] = useState(false);
   const [noLeadsFilter, setNoLeadsFilter] = useState(false);
   const [importProgress, setImportProgress] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     fetchAccounts(page === 1 && search === "" && !noLeadsFilter);
@@ -141,9 +143,12 @@ export default function AccountMasterPage() {
     clientName: "",
     line1: "",
     line2: "",
-    cityName: "",
-    stateName: "",
+    countryId: "",
     countryName: "",
+    stateId: "",
+    stateName: "",
+    cityId: "",
+    cityName: "",
     mobile: "",
     email: "",
     website: "",
@@ -238,9 +243,12 @@ export default function AccountMasterPage() {
       clientName: "",
       line1: "",
       line2: "",
-      cityName: "",
-      stateName: "",
+      countryId: "",
       countryName: "",
+      stateId: "",
+      stateName: "",
+      cityId: "",
+      cityName: "",
       mobile: "",
       email: "",
       website: "",
@@ -258,9 +266,12 @@ export default function AccountMasterPage() {
       clientName: row.clientName,
       line1: row.address?.line1 || "",
       line2: row.address?.line2 || "",
-      cityName: row.address?.cityName || "",
-      stateName: row.address?.stateName || "",
+      countryId: (row.address as any)?.countryId || "",
       countryName: row.address?.countryName || "",
+      stateId: (row.address as any)?.stateId || "",
+      stateName: row.address?.stateName || "",
+      cityId: (row.address as any)?.cityId || "",
+      cityName: row.address?.cityName || "",
       mobile: row.mobile,
       email: row.email,
       website: row.website,
@@ -284,22 +295,39 @@ export default function AccountMasterPage() {
       toast.success("Account deleted successfully!");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to delete account");
+    } finally {
+      setDeleteDialog({ open: false, id: null });
     }
+  };
+
+  const resolveLocation = async () => {
+    if (!form.countryName) return { countryId: "", countryName: "", stateId: "", stateName: "", cityId: "", cityName: "" };
+    const r = await api.post(baseUrl.LOCATION_UPSERT, {
+      countryName: form.countryName,
+      stateName: form.stateName,
+      cityName: form.cityName,
+    });
+    return r.data.data;
   };
 
   const handleUpdate = async () => {
     if (!editMode.id) return;
 
+    setActionLoading(true);
     try {
+      const loc = await resolveLocation();
       const payload = {
         companyName: form.companyName,
         clientName: form.clientName,
         address: {
           line1: form.line1,
           line2: form.line2,
-          cityName: form.cityName,
-          stateName: form.stateName,
-          countryName: form.countryName,
+          countryId: loc.countryId || form.countryId,
+          countryName: loc.countryName || form.countryName,
+          stateId: loc.stateId || form.stateId,
+          stateName: loc.stateName || form.stateName,
+          cityId: loc.cityId || form.cityId,
+          cityName: loc.cityName || form.cityName,
         },
         mobile: form.mobile,
         email: form.email,
@@ -317,6 +345,8 @@ export default function AccountMasterPage() {
       resetForm();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to update account");
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -347,16 +377,21 @@ export default function AccountMasterPage() {
     if (editMode.isEdit) {
       await handleUpdate();
     } else {
+      setActionLoading(true);
       try {
+        const loc = await resolveLocation();
         const payload = {
           companyName: form.companyName,
           clientName: form.clientName,
           address: {
             line1: form.line1,
             line2: form.line2,
-            cityName: form.cityName,
-            stateName: form.stateName,
-            countryName: form.countryName,
+            countryId: loc.countryId || form.countryId,
+            countryName: loc.countryName || form.countryName,
+            stateId: loc.stateId || form.stateId,
+            stateName: loc.stateName || form.stateName,
+            cityId: loc.cityId || form.cityId,
+            cityName: loc.cityName || form.cityName,
           },
           mobile: form.mobile,
           email: form.email,
@@ -381,11 +416,14 @@ export default function AccountMasterPage() {
         toast.error(
           err.response?.data?.message || "Failed to create account"
         );
+      } finally {
+        setActionLoading(false);
       }
     }
   };
 
   const downloadSampleExcel = async () => {
+    setActionLoading(true);
     try {
       const response = await api.get(`${baseUrl.ACCOUNTMASTER}/sample-excel`, {
         responseType: 'blob'
@@ -400,10 +438,13 @@ export default function AccountMasterPage() {
       toast.success('Sample Excel downloaded!');
     } catch (error) {
       toast.error('Failed to download sample');
+    } finally {
+      setActionLoading(false);
     }
   };
 
   const exportToExcel = async () => {
+    setActionLoading(true);
     try {
       const response = await api.get(`${baseUrl.ACCOUNTMASTER}/export`, {
         responseType: 'blob'
@@ -418,10 +459,13 @@ export default function AccountMasterPage() {
       toast.success('Data exported successfully!');
     } catch (error) {
       toast.error('Failed to export data');
+    } finally {
+      setActionLoading(false);
     }
   };
 
   const exportNoLeadsToExcel = async () => {
+    setActionLoading(true);
     try {
       const response = await api.get(`${baseUrl.ACCOUNTMASTER}/export?noLeadsOnly=true`, {
         responseType: 'blob'
@@ -436,6 +480,8 @@ export default function AccountMasterPage() {
       toast.success('No leads data exported successfully!');
     } catch (error) {
       toast.error('Failed to export no leads data');
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -670,9 +716,15 @@ export default function AccountMasterPage() {
             <button
               type="submit"
               form="account-form"
-              className="bg-black text-white px-4 py-2 rounded-lg"
+              disabled={actionLoading}
+              className="bg-black text-white px-4 py-2 rounded-lg disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {editMode.isEdit ? "Update" : "Save"}
+              {actionLoading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                  Saving...
+                </span>
+              ) : (editMode.isEdit ? "Update" : "Save")}
             </button>
           </div>
         }
@@ -766,48 +818,26 @@ export default function AccountMasterPage() {
               <input
                 placeholder="Address Line 1"
                 value={form.line1}
-                onChange={(e) =>
-                  setForm({ ...form, line1: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, line1: e.target.value })}
                 className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-gray-300 focus:bg-white outline-none"
               />
-
               <input
                 placeholder="Address Line 2"
                 value={form.line2}
-                onChange={(e) =>
-                  setForm({ ...form, line2: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, line2: e.target.value })}
                 className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-gray-300 focus:bg-white outline-none"
-              />
-
-              <input
-                placeholder="City"
-                value={form.cityName}
-                onChange={(e) =>
-                  setForm({ ...form, cityName: e.target.value })
-                }
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-gray-300 focus:bg-white outline-none"
-              />
-
-              <input
-                placeholder="State"
-                value={form.stateName}
-                onChange={(e) =>
-                  setForm({ ...form, stateName: e.target.value })
-                }
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-gray-300 focus:bg-white outline-none"
-              />
-
-              <input
-                placeholder="Country"
-                value={form.countryName}
-                onChange={(e) =>
-                  setForm({ ...form, countryName: e.target.value })
-                }
-                className="md:col-span-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-gray-300 focus:bg-white outline-none"
               />
             </div>
+
+            <LocationSelect
+              countryId={form.countryId}
+              stateId={form.stateId}
+              cityId={form.cityId}
+              countryName={form.countryName}
+              stateName={form.stateName}
+              cityName={form.cityName}
+              onChange={(field, value) => setForm((prev) => ({ ...prev, [field]: value }))}
+            />
           </div>
 
           {/* Source */}
