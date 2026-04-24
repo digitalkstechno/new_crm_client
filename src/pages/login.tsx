@@ -9,6 +9,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { clearUserCache } from "@/utils/tokenHelper";
 import Link from "next/link";
+import Image from "next/image";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -119,7 +120,7 @@ export default function LoginPage() {
               Secure Login
             </div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
-              MOZU CRM
+              <Image src={"/E-Link_Logo-Final.png"} alt="Logo" width={150} height={50} className="mx-auto" />
             </h1>
             <h2 className="text-2xl font-semibold text-slate-900 mb-3">
               Welcome Back!

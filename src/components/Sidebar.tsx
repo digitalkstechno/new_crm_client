@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getTokenData } from "@/utils/tokenHelper";
+import Image from "next/image";
 
 type SidebarProps = {
   collapsed: boolean;
@@ -78,16 +79,13 @@ export default function Sidebar({ collapsed }: SidebarProps) {
         <div className="flex h-16 items-center border-b border-gray-200 px-4 bg-gradient-to-r from-blue-50 to-indigo-50">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-bold shadow-md">
-              M
+              EL
             </div>
 
             {!collapsed && (
               <div>
                 <div className="text-gray-900 font-bold text-sm">
-                  MOZU CRM
-                </div>
-                <div className="text-xs text-gray-500">
-                  Business Dashboard
+                 <Image src={"/E-Link_Logo-Final.png"} alt="Logo" width={80} height={30} className="mx-auto" />
                 </div>
               </div>
             )}
