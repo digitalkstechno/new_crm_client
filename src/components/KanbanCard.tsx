@@ -32,6 +32,7 @@ type Lead = {
 export default function KanbanCard({
   lead,
   status,
+  compact = false,
   onDragStart,
   onViewLead,
   onFollowUpClick,
@@ -42,6 +43,7 @@ export default function KanbanCard({
 }: {
   lead: Lead;
   status: LeadStatus;
+  compact?: boolean;
   onDragStart: (e: React.DragEvent, leadId: string, fromStatus: LeadStatus) => void;
   onViewLead: (lead: Lead) => void;
   onFollowUpClick: (leadId: string) => void;
@@ -60,6 +62,102 @@ export default function KanbanCard({
   const paidAmount = (lead.paymentHistory || []).reduce((sum, p) => sum + parseFloat(p.amount || "0"), 0);
   const isPaid = totalAmount - paidAmount === 0;
 
+  // ── COMPACT (small) mode ──
+  if (compact) {
+    return (
+      <div
+        draggable={status !== "Completed" && status !== "Lost"}
+        onDragStart={(e) => onDragStart(e, lead._id, status)}
+        className={`group rounded-xl px-3 py-2 shadow-sm transition-all duration-300 hover:shadow-lg ${
+          status !== "Completed" && status !== "Lost" ? "cursor-grab active:cursor-grabbing" : "cursor-default"
+        } ${
+          isHighlighted ? "bg-yellow-50 ring-2 ring-yellow-400" : "bg-white"
+        }`}
+      >
+        {/* Always visible row */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-gray-900 truncate">{lead.accountMaster?.companyName || "N/A"}</p>
+            <p className="text-xs text-green-600 font-semibold">₹{lead.totalAmount}</p>
+          </div>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <button
+              onClick={() => onViewLead(lead)}
+              className="rounded-lg bg-indigo-600 px-2 py-1 text-[10px] font-semibold text-white hover:bg-indigo-700"
+            >
+              View
+            </button>
+            {status !== "Lost" && status !== "Completed" && (
+              <button
+                onClick={() => onMoveToLost(lead._id)}
+                className="rounded-lg bg-rose-500 px-2 py-1 text-[10px] font-semibold text-white hover:bg-rose-600"
+              >
+                Lost
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Hover-expanded details */}
+        <div className="max-h-0 overflow-hidden opacity-0 group-hover:max-h-96 group-hover:opacity-100 transition-all duration-300 ease-in-out">
+          <div className="pt-2 space-y-1.5">
+            <p className="text-xs text-gray-500">{lead.accountMaster?.clientName}</p>
+
+            {totalItems > 0 && (
+              <div className="space-y-1">
+                {lead.items.slice(0, 2).map((item: any, i: number) => (
+                  <div key={i} className="rounded-lg bg-gray-50 px-2 py-1.5 text-xs">
+                    <div className="flex justify-between">
+                      <span className="font-medium text-gray-700">{item.inquiryCategory?.name || "N/A"}</span>
+                      <span className="text-gray-500">Qty: {item.qty}</span>
+                    </div>
+                    <div className="flex justify-between text-gray-500 mt-0.5">
+                      <span>{item.modelSuggestion?.modelNo || "-"} - {typeof item.modelSuggestion?.color === "object" ? item.modelSuggestion?.color?.name : item.modelSuggestion?.color || "-"}</span>
+                      <span className="font-medium">₹{item.rate}</span>
+                    </div>
+                  </div>
+                ))}
+                {totalItems > 2 && (
+                  <p className="text-[10px] text-gray-400 text-center">+{totalItems - 2} more items</p>
+                )}
+              </div>
+            )}
+
+            {status === "Follow Up" && lead.followUps && lead.followUps.length > 0 && (
+              <span className="inline-block rounded-lg bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700">
+                Next: {new Date(lead.followUps[lead.followUps.length - 1].date).toLocaleString("en-IN", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true })}
+              </span>
+            )}
+
+            <div className="flex gap-1 pt-1">
+              {(status === "New Lead" || status === "Quotation Given") && onEditLead && (
+                <button onClick={() => onEditLead(lead._id)} className="flex-1 rounded-lg bg-purple-600 px-2 py-1 text-[10px] font-semibold text-white hover:bg-purple-700">
+                  Edit
+                </button>
+              )}
+              {status === "Follow Up" && (
+                <button onClick={() => onFollowUpClick(lead._id)} className="flex-1 rounded-lg bg-blue-600 px-2 py-1 text-[10px] font-semibold text-white hover:bg-blue-700">
+                  Follow Up
+                </button>
+              )}
+              {status === "Order Execution" && (
+                <button onClick={() => onOrderExecutionClick(lead)} className="flex-1 rounded-lg bg-green-600 px-2 py-1 text-[10px] font-semibold text-white hover:bg-green-700">
+                  Items
+                </button>
+              )}
+              {(status === "PI" || status === "Final Payment" || status === "Dispatch" || status === "Completed") && !isPaid && (
+                <button onClick={() => onMakePayment(lead)} className="flex-1 rounded-lg bg-green-600 px-2 py-1 text-[10px] font-semibold text-white hover:bg-green-700">
+                  {status === "PI" ? "Advance" : "Payment"}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── LARGE (default) mode ──
   return (
     <div
       draggable={status !== "Completed" && status !== "Lost"}

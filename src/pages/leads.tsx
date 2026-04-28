@@ -72,6 +72,7 @@ export default function LeadsPage() {
   const [dispatchDescriptionDialog, setDispatchDescriptionDialog] = useState<{ isOpen: boolean; leadId: string | null }>({ isOpen: false, leadId: null });
   const [completedConfirmDialog, setCompletedConfirmDialog] = useState<{ isOpen: boolean; leadId: string | null }>({ isOpen: false, leadId: null });
   const [paymentDialog, setPaymentDialog] = useState<{ isOpen: boolean; lead: Lead | null; pendingStatus?: LeadStatus }>({ isOpen: false, lead: null });
+  const [cardSize, setCardSize] = useState<"small" | "large">("small");
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -554,43 +555,68 @@ export default function LeadsPage() {
   return (
     <>
       {/* HEADER */}
-      <div className="mb-6">
-        <div className="mb-4">
-          <h1 className="text-2xl font-bold text-gray-900">
-            {view === "kanban" ? "Kanban Board" : "Leads"}
-          </h1>
-        </div>
-
-        <div className="flex gap-2">
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
           <button
             onClick={() => {
               setView("table");
               router.push("/leads", undefined, { shallow: true });
             }}
-            className={`rounded-lg px-4 py-2 text-sm font-medium ${view === "table"
-                ? "bg-blue-600 text-white"
-                : "border border-gray-200 text-gray-700 hover:bg-gray-50"
-              }`}
+            className={`rounded-md px-4 py-1.5 text-sm font-medium transition-all ${
+              view === "table"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
           >
-            Table View
+            Table
           </button>
           <button
             onClick={() => {
               setView("kanban");
               router.push("/leads?kanban=true", undefined, { shallow: true });
             }}
-            className={`rounded-lg px-4 py-2 text-sm font-medium ${view === "kanban"
-                ? "bg-blue-600 text-white"
-                : "border border-gray-200 text-gray-700 hover:bg-gray-50"
-              }`}
+            className={`rounded-md px-4 py-1.5 text-sm font-medium transition-all ${
+              view === "kanban"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
           >
-            Kanban View
+            Kanban
           </button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {view === "kanban" && (
+            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setCardSize("small")}
+                title="Small cards"
+                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
+                  cardSize === "small"
+                    ? "bg-white text-blue-600 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                Small
+              </button>
+              <button
+                onClick={() => setCardSize("large")}
+                title="Large cards"
+                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
+                  cardSize === "large"
+                    ? "bg-white text-blue-600 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                Large
+              </button>
+            </div>
+          )}
           {view === "table" && (
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="ml-auto rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm outline-none"
+              className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm outline-none"
             >
               <option value="">All Status</option>
               {allowedStatuses.map((status) => (
@@ -627,7 +653,7 @@ export default function LeadsPage() {
 
       {/* KANBAN */}
       {view === "kanban" && (
-        <div className="flex gap-4 overflow-x-auto pb-4 h-[calc(100vh-230px)]">
+        <div className="flex gap-4 overflow-x-auto pb-4 h-[calc(100vh-200px)]">
           {allowedStatuses.map((status) => (
             <KanbanColumn
               key={status}
@@ -648,6 +674,7 @@ export default function LeadsPage() {
               loading={kanbanLoading[status]}
               hasMore={kanbanHasMore[status]}
               allowedStatuses={allowedStatuses}
+              cardSize={cardSize}
             />
           ))}
         </div>
@@ -724,6 +751,7 @@ function KanbanColumn({
   loading,
   hasMore,
   allowedStatuses,
+  cardSize,
 }: {
   status: LeadStatus;
   leads: Lead[];
@@ -742,28 +770,28 @@ function KanbanColumn({
   loading: boolean;
   hasMore: boolean;
   allowedStatuses: LeadStatus[];
+  cardSize: "small" | "large";
 }) {
   return (
     <div
-      className={`w-80 flex-shrink-0 rounded-2xl h-full flex flex-col ${KANBAN_COLORS[status]}`}
+      className={`w-72 flex-shrink-0 rounded-2xl h-full flex flex-col ${KANBAN_COLORS[status]}`}
       onDragOver={onDragOver}
       onDrop={(e) => onDrop(e, status)}
     >
-      <div className="p-4 flex items-center justify-between flex-shrink-0">
-        <span className="text-base font-bold text-white">
-          {status}
-        </span>
-        <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-gray-700 shadow-sm">
+      <div className="p-3 flex items-center justify-between flex-shrink-0">
+        <span className="text-sm font-bold text-white">{status}</span>
+        <span className="rounded-full bg-white px-2.5 py-0.5 text-xs font-bold text-gray-700 shadow-sm">
           {totalCount}
         </span>
       </div>
 
-      <div className="flex-1 space-y-3 overflow-y-auto px-4 pb-4 pt-2 bg-gray-100 rounded-b-2xl" onScroll={onScroll}>
+      <div className="flex-1 space-y-2 overflow-y-auto px-3 pb-3 pt-1 bg-gray-100 rounded-b-2xl" onScroll={onScroll}>
         {leads.map((lead) => (
           <KanbanCard
             key={lead._id}
             lead={lead}
             status={status}
+            compact={cardSize === "small"}
             onDragStart={onDragStart}
             onViewLead={onViewLead}
             onFollowUpClick={onFollowUpClick}
@@ -774,9 +802,7 @@ function KanbanColumn({
           />
         ))}
         {loading && hasMore && (
-          <div className="py-4 text-center text-xs text-gray-500">
-            Loading...
-          </div>
+          <div className="py-3 text-center text-xs text-gray-500">Loading...</div>
         )}
       </div>
     </div>
