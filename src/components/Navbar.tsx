@@ -18,6 +18,7 @@ import {
   Users,
   Package,
   ChevronDown,
+  MessageCircle
 } from "lucide-react";
 
 function getLeadTitle(pathname: string, leadName?: string) {
@@ -66,7 +67,7 @@ export default function Navbar() {
           const name = res.data.data?.accountMaster?.companyName;
           if (name) setLeadName(name);
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [router.pathname, router.query.id]);
 
@@ -97,11 +98,10 @@ export default function Navbar() {
   ) => (
     <Link
       href={href}
-      className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
-        isActive(href)
+      className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${isActive(href)
           ? `${activeClass} shadow-sm`
           : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-      }`}
+        }`}
     >
       <Icon
         className={`h-4 w-4 ${isActive(href) ? iconActive : iconInactive}`}
@@ -129,115 +129,112 @@ export default function Navbar() {
         {/* Nav tabs - truly centered */}
         {tokenData && (
           <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1 overflow-visible">
-          {tokenData.canAccessDashboard &&
-            navLink("/", "Dashboard", Home, "bg-blue-50 text-blue-700", "text-blue-600", "text-blue-400")}
+            {tokenData.canAccessDashboard &&
+              navLink("/", "Dashboard", Home, "bg-blue-50 text-blue-700", "text-blue-600", "text-blue-400")}
 
-          {tokenData.canAccessAccountMaster &&
-            navLink("/account-master", "Account Master", CalendarClock, "bg-green-50 text-green-700", "text-green-600", "text-green-400")}
+            {tokenData.canAccessAccountMaster &&
+              navLink("/account-master", "Account Master", CalendarClock, "bg-green-50 text-green-700", "text-green-600", "text-green-400")}
 
-          {tokenData.canAccessLeads && (
-            <Link
-              href="/leads?kanban=true"
-              className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
-                pathname.startsWith("/leads") || pathname.startsWith("/lead-details")
-                  ? "bg-purple-50 text-purple-700 shadow-sm"
-                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-              }`}
-            >
-              <User2 className={`h-4 w-4 ${
-                pathname.startsWith("/leads") || pathname.startsWith("/lead-details") ? "text-purple-600" : "text-purple-400"
-              }`} />
-              Leads
-            </Link>
-          )}
-
-          {tokenData.canAccessProduction &&
-            navLink("/production", "Production", Factory, "bg-indigo-50 text-indigo-700", "text-indigo-600", "text-indigo-400")}
-
-          {tokenData.canAccessReports &&
-            navLink("/reports", "Reports", FileText, "bg-teal-50 text-teal-700", "text-teal-600", "text-teal-400")}
-
-          {tokenData.canAccessSettings && (
-            <div className="relative" onClick={(e) => e.stopPropagation()}>
-              <button
-                onClick={() => setSettingsOpen((v) => !v)}
-                className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
-                  isSettingsActive
-                    ? "bg-orange-50 text-orange-700 shadow-sm"
+            {tokenData.canAccessLeads && (
+              <Link
+                href="/leads?kanban=true"
+                className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${pathname.startsWith("/leads") || pathname.startsWith("/lead-details")
+                    ? "bg-purple-50 text-purple-700 shadow-sm"
                     : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                }`}
+                  }`}
               >
-                <Settings
-                  className={`h-4 w-4 ${isSettingsActive ? "text-orange-600" : "text-orange-400"}`}
-                />
-                Settings
-                <ChevronDown
-                  className={`h-3.5 w-3.5 transition-transform ${settingsOpen ? "rotate-180" : ""}`}
-                />
-              </button>
+                <User2 className={`h-4 w-4 ${pathname.startsWith("/leads") || pathname.startsWith("/lead-details") ? "text-purple-600" : "text-purple-400"
+                  }`} />
+                Leads
+              </Link>
+            )}
 
-              {settingsOpen && (
-                <div className="absolute top-full left-0 mt-1 w-56 rounded-xl bg-white border border-gray-200 shadow-xl z-[9999] p-2 space-y-1">
-                  {/* User & Role */}
-                  <p className="px-2 pt-1 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
-                    User &amp; Role
-                  </p>
-                  <Link
-                    href="/settings/staff"
-                    onClick={() => setSettingsOpen(false)}
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition ${
-                      isActive("/settings/staff")
-                        ? "bg-cyan-50 text-cyan-700 font-semibold"
-                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            {tokenData.canAccessLeads &&
+              navLink("/public-leads", "Public Leads", MessageCircle, "bg-pink-50 text-pink-700", "text-pink-600", "text-pink-400")}
+
+            {tokenData.canAccessProduction &&
+              navLink("/production", "Production", Factory, "bg-indigo-50 text-indigo-700", "text-indigo-600", "text-indigo-400")}
+
+            {tokenData.canAccessReports &&
+              navLink("/reports", "Reports", FileText, "bg-teal-50 text-teal-700", "text-teal-600", "text-teal-400")}
+
+            {tokenData.canAccessSettings && (
+              <div className="relative" onClick={(e) => e.stopPropagation()}>
+                <button
+                  onClick={() => setSettingsOpen((v) => !v)}
+                  className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${isSettingsActive
+                      ? "bg-orange-50 text-orange-700 shadow-sm"
+                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                     }`}
-                  >
-                    <Users className="h-4 w-4" /> User
-                  </Link>
-                  <Link
-                    href="/settings/role"
-                    onClick={() => setSettingsOpen(false)}
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition ${
-                      isActive("/settings/role")
-                        ? "bg-cyan-50 text-cyan-700 font-semibold"
-                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                    }`}
-                  >
-                    <Users className="h-4 w-4" /> Role
-                  </Link>
+                >
+                  <Settings
+                    className={`h-4 w-4 ${isSettingsActive ? "text-orange-600" : "text-orange-400"}`}
+                  />
+                  Settings
+                  <ChevronDown
+                    className={`h-3.5 w-3.5 transition-transform ${settingsOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
 
-                  <div className="border-t border-gray-100 my-1" />
-
-                  {/* Master Data */}
-                  <p className="px-2 pt-1 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
-                    Master Data
-                  </p>
-                  {[
-                    { href: "/settings/customization-type", label: "Customization Type" },
-                    { href: "/settings/inquiry-category", label: "Inquiry Category" },
-                    { href: "/settings/model-suggestion", label: "Model Suggestion" },
-                    { href: "/settings/color", label: "Color" },
-                    { href: "/settings/client-type", label: "Client Type" },
-                    { href: "/settings/source-from", label: "Source From" },
-                  ].map(({ href, label }) => (
+                {settingsOpen && (
+                  <div className="absolute top-full left-0 mt-1 w-56 rounded-xl bg-white border border-gray-200 shadow-xl z-[9999] p-2 space-y-1">
+                    {/* User & Role */}
+                    <p className="px-2 pt-1 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                      User &amp; Role
+                    </p>
                     <Link
-                      key={href}
-                      href={href}
+                      href="/settings/staff"
                       onClick={() => setSettingsOpen(false)}
-                      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition ${
-                        isActive(href)
-                          ? "bg-purple-50 text-purple-700 font-semibold"
+                      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition ${isActive("/settings/staff")
+                          ? "bg-cyan-50 text-cyan-700 font-semibold"
                           : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                      }`}
+                        }`}
                     >
-                      <Package className="h-4 w-4" /> {label}
+                      <Users className="h-4 w-4" /> User
                     </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+                    <Link
+                      href="/settings/role"
+                      onClick={() => setSettingsOpen(false)}
+                      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition ${isActive("/settings/role")
+                          ? "bg-cyan-50 text-cyan-700 font-semibold"
+                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                        }`}
+                    >
+                      <Users className="h-4 w-4" /> Role
+                    </Link>
 
-            
+                    <div className="border-t border-gray-100 my-1" />
+
+                    {/* Master Data */}
+                    <p className="px-2 pt-1 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                      Master Data
+                    </p>
+                    {[
+                      { href: "/settings/customization-type", label: "Customization Type" },
+                      { href: "/settings/inquiry-category", label: "Inquiry Category" },
+                      { href: "/settings/model-suggestion", label: "Model Suggestion" },
+                      { href: "/settings/color", label: "Color" },
+                      { href: "/settings/client-type", label: "Client Type" },
+                      { href: "/settings/source-from", label: "Source From" },
+                    ].map(({ href, label }) => (
+                      <Link
+                        key={href}
+                        href={href}
+                        onClick={() => setSettingsOpen(false)}
+                        className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition ${isActive(href)
+                            ? "bg-purple-50 text-purple-700 font-semibold"
+                            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                          }`}
+                      >
+                        <Package className="h-4 w-4" /> {label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+
           </div>
         )}
 

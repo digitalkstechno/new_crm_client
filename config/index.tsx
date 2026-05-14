@@ -2,6 +2,7 @@ let API = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export const baseUrl = {
     ACCOUNTMASTER: `${API}accountmaster`,
+     PUBLIC_LEAD: `${API}accountmaster/public-lead`,
 
     // STAFF
     STAFF: `${API}staff`,
