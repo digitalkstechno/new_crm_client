@@ -98,7 +98,13 @@ export default function PublicLeadPage() {
                     <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
                     <polyline points="14 2 14 8 20 8" />
                   </svg>
-                 {typeof file === "string" ? file : file.name}
+                  <span>
+                    {typeof file === "string"
+                      ? file.match(/\.(jpeg|jpg|png|gif|webp)$/i)
+                        ? "View Image"
+                        : "View File"
+                      : file.name}
+                  </span>
                 </button>
               ))}
             </div>
