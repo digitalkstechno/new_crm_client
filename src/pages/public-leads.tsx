@@ -4,6 +4,8 @@ import { useMemo, useState, useEffect } from "react";
 import { api } from "@/utils/axiosInstance";
 import toast from "react-hot-toast";
 import { baseUrl } from "../../config";
+import Dialog from "@/components/Dialog";
+import { Eye, FileText } from "lucide-react";
 
 type PublicLead = {
     _id: string;
@@ -24,6 +26,8 @@ export default function PublicLeadPage() {
     const [totalPages, setTotalPages] = useState(1);
     const [totalRecords, setTotalRecords] = useState(0);
     const [search, setSearch] = useState("");
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedAttachments, setSelectedAttachments] = useState<(File | string)[]>([]);
 
     useEffect(() => {
         fetchPublicLeads(page === 1 && search === "");
@@ -69,45 +73,16 @@ export default function PublicLeadPage() {
                 render: (_: any, row: PublicLead) => {
                     if (!row.attachments?.length) return "-";
                     return (
-                        <div className="flex gap-2">
-                            {row.attachments.map((file: File | string, index: number) => (
-                                <button
-                                    key={index}
-                                    onClick={() => {
-                                        if (file instanceof File) {
-                                            window.open(URL.createObjectURL(file), "_blank");
-                                        } else {
-                                            const baseUrl =
-                                                process.env.NEXT_PUBLIC_IMAGE_BASE_URL ||
-                                                "http://localhost:5000";
-                                            window.open(
-                                                `${baseUrl}/uploads/publicLeads/${file}`,
-                                                "_blank",
-                                            );
-                                        }
-                                    }}
-                                    className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-100"
-                                >
-                                    <svg
-                                        className="h-4 w-4"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                    >
-                                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                                        <polyline points="14 2 14 8 20 8" />
-                                    </svg>
-                                    <span>
-                                        {typeof file === "string"
-                                            ? file.match(/\.(jpeg|jpg|png|gif|webp)$/i)
-                                                ? "View Image"
-                                                : "View File"
-                                            : file.name}
-                                    </span>
-                                </button>
-                            ))}
-                        </div>
+                        <button
+                            onClick={() => {
+                                setSelectedAttachments(row.attachments || []);
+                                setIsModalOpen(true);
+                            }}
+                            className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-100"
+                        >
+                            <Eye className="h-4 w-4" />
+                            <span>View ({row.attachments.length})</span>
+                        </button>
                     );
                 },
             },
@@ -164,6 +139,52 @@ export default function PublicLeadPage() {
                     initialSearch={search}
                 />
             )}
+
+            <Dialog
+                open={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title="Lead Documents"
+                description="View all uploaded documents for this lead"
+            >
+                <div className="flex flex-col gap-3">
+                    {selectedAttachments.map((file, index) => {
+                        const fileName = typeof file === "string" ? file : file.name;
+                        const isImage = typeof file === "string" && file.match(/\.(jpeg|jpg|png|gif|webp)$/i);
+
+                        return (
+                            <div key={index} className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 p-4 transition hover:bg-white hover:shadow-md">
+                                <div className="flex items-center gap-3 overflow-hidden">
+                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                                        <FileText className="h-5 w-5" />
+                                    </div>
+                                    <div className="overflow-hidden">
+                                        <p className="truncate text-sm font-medium text-gray-900" title={fileName}>
+                                            {fileName}
+                                        </p>
+                                        <p className="text-xs text-gray-500">
+                                            {isImage ? "Image File" : "Document"}
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        if (file instanceof File) {
+                                            window.open(URL.createObjectURL(file), "_blank");
+                                        } else {
+                                            const baseUrlStr = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || "http://localhost:5000";
+                                            window.open(`${baseUrlStr}/uploads/publicLeads/${file}`, "_blank");
+                                        }
+                                    }}
+                                    className="ml-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-blue-600 shadow-sm transition hover:bg-blue-600 hover:text-white"
+                                    title="View"
+                                >
+                                    <Eye className="h-4 w-4" />
+                                </button>
+                            </div>
+                        );
+                    })}
+                </div>
+            </Dialog>
         </>
     );
 }
