@@ -6,7 +6,7 @@ type DialogProps = {
   title?: string;
   description?: string;
   onClose: () => void;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   footer?: React.ReactNode;
 };
 
@@ -52,7 +52,9 @@ export default function Dialog({ open, title, description, onClose, children, fo
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="max-h-[70vh] overflow-y-auto px-6 py-5">{children}</div>
+        {children ? (
+          <div className="max-h-[70vh] overflow-y-auto px-6 py-5">{children}</div>
+        ) : null}
         {footer ? <div className="border-t border-gray-100 px-6 py-4">{footer}</div> : null}
       </div>
     </div>

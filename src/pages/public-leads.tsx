@@ -5,7 +5,7 @@ import { api } from "@/utils/axiosInstance";
 import toast from "react-hot-toast";
 import { baseUrl } from "../../config";
 import Dialog from "@/components/Dialog";
-import { Eye, FileText } from "lucide-react";
+import { Eye, FileText, Download, Trash2 } from "lucide-react";
 
 type PublicLead = {
     _id: string;
@@ -28,6 +28,40 @@ export default function PublicLeadPage() {
     const [search, setSearch] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedAttachments, setSelectedAttachments] = useState<(File | string)[]>([]);
+    const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
+    const [exporting, setExporting] = useState(false);
+
+    const exportToExcel = async () => {
+        setExporting(true);
+        try {
+            const response = await api.get(`${baseUrl.PUBLIC_LEAD}/export`, {
+                responseType: 'blob'
+            });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'PublicLeads_Export.xlsx');
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            toast.success('Public Leads exported successfully!');
+        } catch (error) {
+            toast.error('Failed to export public leads');
+        } finally {
+            setExporting(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!deleteDialog.id) return;
+        try {
+            await api.delete(`${baseUrl.PUBLIC_LEAD}/${deleteDialog.id}`);
+            setLeads((prev) => prev.filter((a) => a._id !== deleteDialog.id));
+            toast.success("Lead deleted successfully!");
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || "Failed to delete lead");
+        }
+    };
 
     useEffect(() => {
         fetchPublicLeads(page === 1 && search === "");
@@ -113,6 +147,13 @@ export default function PublicLeadPage() {
                                 </svg>
                             </button>
                         )}
+                        <button
+                            onClick={() => setDeleteDialog({ open: true, id: row._id })}
+                            className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-3 py-3 text-sm font-medium text-red-600 transition hover:bg-red-100"
+                            title="Delete Lead"
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </button>
                     </div>
                 ),
             },
@@ -127,6 +168,16 @@ export default function PublicLeadPage() {
             ) : (
                 <DataTable
                     title="Public Leads"
+                    actions={
+                        <button
+                            onClick={exportToExcel}
+                            disabled={exporting}
+                            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-all disabled:opacity-50"
+                        >
+                            <Download className="h-4 w-4 text-green-600" />
+                            <span>{exporting ? "Exporting..." : "Export Excel"}</span>
+                        </button>
+                    }
                     data={leads}
                     pageSize={10}
                     searchPlaceholder="Search name, email, mobile..."
@@ -185,6 +236,32 @@ export default function PublicLeadPage() {
                     })}
                 </div>
             </Dialog>
+
+            <Dialog
+                open={deleteDialog.open}
+                onClose={() => setDeleteDialog({ open: false, id: null })}
+                title="Delete Public Lead"
+                description="Are you sure you want to delete this public lead? This action cannot be undone."
+                footer={
+                    <div className="flex justify-end gap-3">
+                        <button
+                            onClick={() => setDeleteDialog({ open: false, id: null })}
+                            className="rounded-lg border px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-50"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={() => {
+                                handleDelete();
+                                setDeleteDialog({ open: false, id: null });
+                            }}
+                            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+                        >
+                            Delete
+                        </button>
+                    </div>
+                }
+            />
         </>
     );
 }
