@@ -498,15 +498,13 @@ export default function LeadsPage() {
             <Eye className="h-3 w-3" />
             View
           </button>
-          {(row.leadStatus === "New Lead" || row.leadStatus === "Quotation Given") && (
-            <button
-              onClick={() => router.push(`/convert-to-lead?leadId=${row._id}`)}
-              className="inline-flex items-center gap-1 rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-purple-700"
-            >
-              <Edit className="h-3 w-3" />
-              Edit
-            </button>
-          )}
+          <button
+            onClick={() => router.push(`/convert-to-lead?leadId=${row._id}`)}
+            className="inline-flex items-center gap-1 rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-purple-700"
+          >
+            <Edit className="h-3 w-3" />
+            Edit
+          </button>
           {row.leadStatus === "Follow Up" && (
             <button
               onClick={() => handleFollowUpClick(row._id)}
@@ -562,11 +560,10 @@ export default function LeadsPage() {
               setView("table");
               router.push("/leads", undefined, { shallow: true });
             }}
-            className={`rounded-md px-4 py-1.5 text-sm font-medium transition-all ${
-              view === "table"
+            className={`rounded-md px-4 py-1.5 text-sm font-medium transition-all ${view === "table"
                 ? "bg-white text-blue-600 shadow-sm"
                 : "text-gray-500 hover:text-gray-700"
-            }`}
+              }`}
           >
             Table
           </button>
@@ -575,11 +572,10 @@ export default function LeadsPage() {
               setView("kanban");
               router.push("/leads?kanban=true", undefined, { shallow: true });
             }}
-            className={`rounded-md px-4 py-1.5 text-sm font-medium transition-all ${
-              view === "kanban"
+            className={`rounded-md px-4 py-1.5 text-sm font-medium transition-all ${view === "kanban"
                 ? "bg-white text-blue-600 shadow-sm"
                 : "text-gray-500 hover:text-gray-700"
-            }`}
+              }`}
           >
             Kanban
           </button>
@@ -591,22 +587,20 @@ export default function LeadsPage() {
               <button
                 onClick={() => setCardSize("small")}
                 title="Small cards"
-                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
-                  cardSize === "small"
+                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all ${cardSize === "small"
                     ? "bg-white text-blue-600 shadow-sm"
                     : "text-gray-500 hover:text-gray-700"
-                }`}
+                  }`}
               >
                 Small
               </button>
               <button
                 onClick={() => setCardSize("large")}
                 title="Large cards"
-                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
-                  cardSize === "large"
+                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all ${cardSize === "large"
                     ? "bg-white text-blue-600 shadow-sm"
                     : "text-gray-500 hover:text-gray-700"
-                }`}
+                  }`}
               >
                 Large
               </button>
