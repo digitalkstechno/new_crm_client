@@ -17,7 +17,7 @@ export default function FollowUpDialog({ isOpen, onClose, onSubmit }: FollowUpDi
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (date && description) {
+    if (date) {
       onSubmit(date, description);
       setDate("");
       setDescription("");
