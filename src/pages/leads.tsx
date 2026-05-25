@@ -59,6 +59,12 @@ export default function LeadsPage() {
   const [totalRecords, setTotalRecords] = useState(0);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [isOemFilter, setIsOemFilter] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("isOemFilter") === "true";
+    }
+    return false;
+  });
   const [allowedStatuses, setAllowedStatuses] = useState<LeadStatus[]>([]);
   const [clientTypes, setClientTypes] = useState<any[]>([]);
   const [kanbanPages, setKanbanPages] = useState<Record<LeadStatus, number>>({} as any);
@@ -73,6 +79,10 @@ export default function LeadsPage() {
   const [completedConfirmDialog, setCompletedConfirmDialog] = useState<{ isOpen: boolean; leadId: string | null }>({ isOpen: false, leadId: null });
   const [paymentDialog, setPaymentDialog] = useState<{ isOpen: boolean; lead: Lead | null; pendingStatus?: LeadStatus }>({ isOpen: false, lead: null });
   const [cardSize, setCardSize] = useState<"small" | "large">("small");
+
+  useEffect(() => {
+    localStorage.setItem("isOemFilter", String(isOemFilter));
+  }, [isOemFilter]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -140,8 +150,8 @@ export default function LeadsPage() {
     setLoading(true);
     try {
       const url = statusFilter
-        ? `${baseUrl.LEAD}/status/${encodeURIComponent(statusFilter)}?page=${page}&limit=20&search=${search}`
-        : `${baseUrl.LEAD}?page=${page}&limit=20&search=${search}`;
+        ? `${baseUrl.LEAD}/status/${encodeURIComponent(statusFilter)}?page=${page}&limit=20&search=${search}&isOem=${isOemFilter}`
+        : `${baseUrl.LEAD}?page=${page}&limit=20&search=${search}&isOem=${isOemFilter}`;
       const response = await api.get(url);
 
       setLeads(response.data.data || []);
@@ -158,7 +168,7 @@ export default function LeadsPage() {
     if (kanbanLoading[status]) return;
     setKanbanLoading(prev => ({ ...prev, [status]: true }));
     try {
-      const response = await api.get(`${baseUrl.LEAD}/status/${encodeURIComponent(status)}?page=${pageNum}&limit=20`);
+      const response = await api.get(`${baseUrl.LEAD}/status/${encodeURIComponent(status)}?page=${pageNum}&limit=20&isOem=${isOemFilter}`);
       const newLeads = response.data.data || [];
 
       setKanbanLeads(prev => ({
@@ -207,7 +217,7 @@ export default function LeadsPage() {
       allowedStatuses.forEach(status => fetchKanbanLeadsByStatus(status, 1));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view, page, search, statusFilter, allowedStatuses.length]);
+  }, [view, page, search, statusFilter, allowedStatuses.length, isOemFilter]);
 
   const handleKanbanScroll = (status: LeadStatus) => (e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
@@ -618,6 +628,16 @@ export default function LeadsPage() {
               ))}
             </select>
           )}
+          <button
+            onClick={() => setIsOemFilter(!isOemFilter)}
+            className={`rounded-md px-3 py-1.5 text-sm font-medium transition-all border ${
+              isOemFilter
+                ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                : "bg-white text-gray-500 hover:bg-gray-50 border-gray-200"
+            }`}
+          >
+            O.E.M
+          </button>
         </div>
       </div>
 
