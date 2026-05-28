@@ -4,7 +4,10 @@ import { useRouter } from "next/router";
 import { api } from "@/utils/axiosInstance";
 import { baseUrl } from "../../config";
 import toast from "react-hot-toast";
-import { validatePositiveNumber, sanitizeNumberInput } from "@/utils/validation";
+import {
+  validatePositiveNumber,
+  sanitizeNumberInput,
+} from "@/utils/validation";
 
 type InquiryCategory = {
   _id: string;
@@ -20,6 +23,7 @@ type ModelSuggestion = {
   };
   rate: string;
   gst: number;
+  image?: string;
 };
 
 type ProductRow = {
@@ -54,11 +58,13 @@ export default function ConvertToLeadPage() {
   const [accountData, setAccountData] = useState<any>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentLeadStatus, setCurrentLeadStatus] = useState<string>("");
-  const [openDropdowns, setOpenDropdowns] = useState<{ [key: string]: boolean }>({});
+  const [openDropdowns, setOpenDropdowns] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   const getTodayDate = () => {
     const today = new Date();
-    return today.toISOString().split('T')[0];
+    return today.toISOString().split("T")[0];
   };
 
   const [leadDate, setLeadDate] = useState(getTodayDate());
@@ -68,9 +74,15 @@ export default function ConvertToLeadPage() {
   const [budgetFrom, setBudgetFrom] = useState("");
   const [budgetTo, setBudgetTo] = useState("");
   const [confirmationRemark, setConfirmationRemark] = useState("");
-  const [inquiryCategories, setInquiryCategories] = useState<InquiryCategory[]>([]);
-  const [customizationTypes, setCustomizationTypes] = useState<InquiryCategory[]>([]);
-  const [allModelSuggestions, setAllModelSuggestions] = useState<{ [key: string]: ModelSuggestion[] }>({});
+  const [inquiryCategories, setInquiryCategories] = useState<InquiryCategory[]>(
+    [],
+  );
+  const [customizationTypes, setCustomizationTypes] = useState<
+    InquiryCategory[]
+  >([]);
+  const [allModelSuggestions, setAllModelSuggestions] = useState<{
+    [key: string]: ModelSuggestion[];
+  }>({});
   const [errors, setErrors] = useState<string[]>([]);
   const [products, setProducts] = useState<ProductRow[]>([
     {
@@ -85,7 +97,6 @@ export default function ConvertToLeadPage() {
       rate: 0,
       gst: 0,
       total: 0,
-      
     },
   ]);
 
@@ -95,13 +106,13 @@ export default function ConvertToLeadPage() {
     if (leadId) {
       setIsEditMode(true);
       fetchLeadData();
-    } else if (accountId && accountId !== 'undefined') {
+    } else if (accountId && accountId !== "undefined") {
       fetchAccountData();
     }
   }, [accountId, leadId]);
 
   const fetchAccountData = async () => {
-    if (!accountId || accountId === 'undefined') return;
+    if (!accountId || accountId === "undefined") return;
     try {
       const response = await api.get(`${baseUrl.ACCOUNTMASTER}/${accountId}`);
       setAccountData(response.data.data);
@@ -118,24 +129,32 @@ export default function ConvertToLeadPage() {
 
       setAccountData(lead.accountMaster);
       setCurrentLeadStatus(lead.leadStatus);
-      setLeadDate(lead.leadDate.split('T')[0]);
+      setLeadDate(lead.leadDate.split("T")[0]);
       setClientType(lead.clientType || "");
-      setDeliveryDate(lead.deliveryDate ? lead.deliveryDate.split('T')[0] : "");
+      setDeliveryDate(lead.deliveryDate ? lead.deliveryDate.split("T")[0] : "");
       setShippingCharges(lead.shippingCharges || "");
       setBudgetFrom(lead.budget?.from || "");
       setBudgetTo(lead.budget?.to || "");
       setConfirmationRemark(lead.confirmationRemark || "");
 
       // Fetch models for all categories first
-      const categoryIds = [...new Set(lead.items.map((item: any) => item.inquiryCategory._id))];
-      await Promise.all(categoryIds.map(categoryId => fetchModelsByCategory(categoryId, '')));
+      const categoryIds = [
+        ...new Set(lead.items.map((item: any) => item.inquiryCategory._id)),
+      ];
+      await Promise.all(
+        categoryIds.map((categoryId) => fetchModelsByCategory(categoryId, "")),
+      );
 
       const loadedProducts = lead.items.map((item: any) => {
         return {
           id: item._id,
           inquiryCategoryId: item.inquiryCategory._id,
           modelSuggestionId: item.modelSuggestion?._id || "",
-          customizationTypeIds: Array.isArray(item.customizationType) ? item.customizationType.map((c: any) => c._id) : (item.customizationType?._id ? [item.customizationType._id] : []),
+          customizationTypeIds: Array.isArray(item.customizationType)
+            ? item.customizationType.map((c: any) => c._id)
+            : item.customizationType?._id
+              ? [item.customizationType._id]
+              : [],
           customizationDescription: item.customizationDescription || "",
           personalization: item.personalization?.isPersonalized ? "Yes" : "No",
           location: item.personalization?.location || "",
@@ -170,13 +189,19 @@ export default function ConvertToLeadPage() {
     }
   };
 
-  const fetchModelsByCategory = async (categoryId: string, productId: string) => {
+  const fetchModelsByCategory = async (
+    categoryId: string,
+    productId: string,
+  ) => {
     try {
       if (allModelSuggestions[categoryId]) {
         return;
       }
       const response = await api.get(baseUrl.MODEL_BY_CATEGORY(categoryId));
-      setAllModelSuggestions(prev => ({ ...prev, [categoryId]: response.data.data || [] }));
+      setAllModelSuggestions((prev) => ({
+        ...prev,
+        [categoryId]: response.data.data || [],
+      }));
       return response.data.data || [];
     } catch (error) {
       toast.error("Failed to fetch models");
@@ -211,7 +236,7 @@ export default function ConvertToLeadPage() {
 
         if (field === "modelSuggestionId" && value) {
           const models = allModelSuggestions[p.inquiryCategoryId] || [];
-          const selectedModel = models.find(m => m._id === value);
+          const selectedModel = models.find((m) => m._id === value);
           if (selectedModel) {
             updated.rate = Number(selectedModel.rate);
             updated.gst = Number(selectedModel.gst || 0);
@@ -223,7 +248,7 @@ export default function ConvertToLeadPage() {
           updated.total = calculateTotal(updated);
         }
         return updated;
-      })
+      }),
     );
   };
 
@@ -232,7 +257,7 @@ export default function ConvertToLeadPage() {
       prev.map((p) => ({
         ...p,
         total: calculateTotal(p),
-      }))
+      })),
     );
   }, []);
 
@@ -264,7 +289,8 @@ export default function ConvertToLeadPage() {
   const handleConvertLead = async () => {
     const validationErrors: string[] = [];
 
-    if (!isEditMode && (!accountId || accountId === 'undefined')) validationErrors.push("Account ID is required");
+    if (!isEditMode && (!accountId || accountId === "undefined"))
+      validationErrors.push("Account ID is required");
     if (!leadDate) validationErrors.push("Lead Date is required");
     // if (!clientType) validationErrors.push("Client Type is required");
 
@@ -276,18 +302,35 @@ export default function ConvertToLeadPage() {
       validationErrors.push("Budget To must be a valid positive number");
     }
 
-    if (budgetFrom && budgetTo && parseFloat(budgetFrom) > parseFloat(budgetTo)) {
+    if (
+      budgetFrom &&
+      budgetTo &&
+      parseFloat(budgetFrom) > parseFloat(budgetTo)
+    ) {
       validationErrors.push("Budget From cannot be greater than Budget To");
     }
 
     products.forEach((p, index) => {
-      if (!p.inquiryCategoryId) validationErrors.push(`Product ${index + 1}: Inquiry Category is required`);
+      if (!p.inquiryCategoryId)
+        validationErrors.push(
+          `Product ${index + 1}: Inquiry Category is required`,
+        );
       // if (!p.modelSuggestionId) validationErrors.push(`Product ${index + 1}: Model Suggestion is required`);
       // if (p.customizationTypeIds.length === 0) validationErrors.push(`Product ${index + 1}: At least one Customization Type is required`);
       // if (p.personalization === "Yes" && !p.description) validationErrors.push(`Product ${index + 1}: Description is required`);
-      if (p.qty !== undefined && p.qty !== null && !validatePositiveNumber(p.qty)) validationErrors.push(`Product ${index + 1}: Quantity must be a positive number`);
+      if (
+        p.qty !== undefined &&
+        p.qty !== null &&
+        !validatePositiveNumber(p.qty)
+      )
+        validationErrors.push(
+          `Product ${index + 1}: Quantity must be a positive number`,
+        );
       // if (p.rate !== undefined && p.rate !== null && !validatePositiveNumber(p.rate)) validationErrors.push(`Product ${index + 1}: Rate must be a positive number`);
-      if (p.gst < 0 || p.gst > 100) validationErrors.push(`Product ${index + 1}: GST must be between 0 and 100`);
+      if (p.gst < 0 || p.gst > 100)
+        validationErrors.push(
+          `Product ${index + 1}: GST must be between 0 and 100`,
+        );
     });
 
     if (validationErrors.length > 0) {
@@ -299,7 +342,7 @@ export default function ConvertToLeadPage() {
     setErrors([]);
 
     try {
-      const items = products.map(p => ({
+      const items = products.map((p) => ({
         inquiryCategory: p.inquiryCategoryId,
         modelSuggestion: p.modelSuggestionId,
         qty: p.qty.toString(),
@@ -329,7 +372,14 @@ export default function ConvertToLeadPage() {
         accountMaster: isEditMode ? accountData._id : accountId,
         items,
         totalAmount: totalAmount.toString(),
-        leadStatus: isEditMode && (currentLeadStatus === "New Lead" || currentLeadStatus === "Quotation Given") ? currentLeadStatus : (isEditMode ? "Order Confirmation" : "New Lead"),
+        leadStatus:
+          isEditMode &&
+          (currentLeadStatus === "New Lead" ||
+            currentLeadStatus === "Quotation Given")
+            ? currentLeadStatus
+            : isEditMode
+              ? "Order Confirmation"
+              : "New Lead",
         confirmationRemark: isEditMode ? confirmationRemark : undefined,
       };
 
@@ -361,7 +411,9 @@ export default function ConvertToLeadPage() {
         {/* Validation Errors */}
         {errors.length > 0 && (
           <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4">
-            <h3 className="mb-2 text-sm font-semibold text-red-800">Please fix the following errors:</h3>
+            <h3 className="mb-2 text-sm font-semibold text-red-800">
+              Please fix the following errors:
+            </h3>
             <ul className="list-inside list-disc space-y-1 text-xs text-red-700">
               {errors.map((error, index) => (
                 <li key={index}>{error}</li>
@@ -373,7 +425,9 @@ export default function ConvertToLeadPage() {
         {/* Lead Date, Client Type, Delivery Date, Shipping, Budget */}
         <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-700">Lead Date</label>
+            <label className="mb-1 block text-xs font-medium text-gray-700">
+              Lead Date
+            </label>
             <input
               type="date"
               value={leadDate}
@@ -382,7 +436,9 @@ export default function ConvertToLeadPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-700">Lead Type</label>
+            <label className="mb-1 block text-xs font-medium text-gray-700">
+              Lead Type
+            </label>
             <select
               value={clientType}
               onChange={(e) => setClientType(e.target.value)}
@@ -394,7 +450,9 @@ export default function ConvertToLeadPage() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-700">Delivery Date</label>
+            <label className="mb-1 block text-xs font-medium text-gray-700">
+              Delivery Date
+            </label>
             <input
               type="date"
               value={deliveryDate}
@@ -403,31 +461,41 @@ export default function ConvertToLeadPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-700">Shipping Charges (₹)</label>
+            <label className="mb-1 block text-xs font-medium text-gray-700">
+              Shipping Charges (₹)
+            </label>
             <input
               type="number"
               min="0"
               step="0.01"
               value={shippingCharges}
-              onChange={(e) => setShippingCharges(sanitizeNumberInput(e.target.value))}
+              onChange={(e) =>
+                setShippingCharges(sanitizeNumberInput(e.target.value))
+              }
               className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none focus:border-gray-300 focus:bg-white"
               placeholder="0"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-700">Budget From (₹)</label>
+            <label className="mb-1 block text-xs font-medium text-gray-700">
+              Budget From (₹)
+            </label>
             <input
               type="number"
               min="0"
               step="0.01"
               value={budgetFrom}
-              onChange={(e) => setBudgetFrom(sanitizeNumberInput(e.target.value))}
+              onChange={(e) =>
+                setBudgetFrom(sanitizeNumberInput(e.target.value))
+              }
               className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none focus:border-gray-300 focus:bg-white"
               placeholder="0"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-700">Budget To (₹)</label>
+            <label className="mb-1 block text-xs font-medium text-gray-700">
+              Budget To (₹)
+            </label>
             <input
               type="number"
               min="0"
@@ -443,7 +511,9 @@ export default function ConvertToLeadPage() {
         {/* Confirmation Remark - Only in Edit Mode */}
         {isEditMode && (
           <div className="mb-6">
-            <label className="mb-1 block text-xs font-medium text-gray-700">Confirmation Remark</label>
+            <label className="mb-1 block text-xs font-medium text-gray-700">
+              Confirmation Remark
+            </label>
             <textarea
               value={confirmationRemark}
               onChange={(e) => setConfirmationRemark(e.target.value)}
@@ -469,9 +539,14 @@ export default function ConvertToLeadPage() {
 
           <div className="max-h-[400px] space-y-3 overflow-x-hidden rounded-xl border border-gray-200 bg-gray-50 p-3">
             {products.map((product, index) => (
-              <div key={product.id} className="rounded-xl border border-gray-200 bg-white p-4 overflow-visible">
+              <div
+                key={product.id}
+                className="rounded-xl border border-gray-200 bg-white p-4 overflow-visible"
+              >
                 <div className="mb-3 flex items-center justify-between">
-                  <span className="text-xs font-semibold text-gray-600">Product {index + 1}</span>
+                  <span className="text-xs font-semibold text-gray-600">
+                    Product {index + 1}
+                  </span>
                   <button
                     onClick={() => removeProduct(product.id)}
                     disabled={products.length === 1}
@@ -483,20 +558,30 @@ export default function ConvertToLeadPage() {
 
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 overflow-visible">
                   <div>
-                    <label className="mb-1 block text-xs text-gray-600">Inquiry Category</label>
+                    <label className="mb-1 block text-xs text-gray-600">
+                      Inquiry Category
+                    </label>
                     <select
                       value={product.inquiryCategoryId}
-                      onChange={(e) => updateProduct(product.id, "inquiryCategoryId", e.target.value)}
+                      onChange={(e) =>
+                        updateProduct(
+                          product.id,
+                          "inquiryCategoryId",
+                          e.target.value,
+                        )
+                      }
                       className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm outline-none"
                     >
                       <option value="">Select</option>
                       {inquiryCategories.map((cat) => (
-                        <option key={cat._id} value={cat._id}>{cat.name}</option>
+                        <option key={cat._id} value={cat._id}>
+                          {cat.name}
+                        </option>
                       ))}
                     </select>
                   </div>
 
-                  <div>
+                  {/* <div>
                     <label className="mb-1 block text-xs text-gray-600">Model Suggestion</label>
                     <select
                       value={product.modelSuggestionId}
@@ -509,13 +594,187 @@ export default function ConvertToLeadPage() {
                         <option key={model._id} value={model._id}>{model.modelNo} - {model.color?.name || model.color}</option>
                       ))}
                     </select>
+                  </div> */}
+
+                  <div className="relative">
+                    <label className="mb-1 block text-xs text-gray-600">
+                      Model Suggestion
+                    </label>
+                    {(() => {
+                      const models =
+                        allModelSuggestions[product.inquiryCategoryId] || [];
+                      const selectedModel = models.find(
+                        (m) => m._id === product.modelSuggestionId,
+                      );
+                      const searchKey = `model-search-${product.id}`;
+                      const [modelSearch, setModelSearch] = [
+                        (openDropdowns[searchKey] !== undefined
+                          ? openDropdowns[searchKey]
+                          : "") as unknown as string,
+                        (val: string) =>
+                          setOpenDropdowns((prev) => ({
+                            ...prev,
+                            [searchKey]: val as any,
+                          })),
+                      ];
+                      const filtered = models.filter((m) =>
+                        `${m.modelNo} ${m.color?.name || m.color}`
+                          .toLowerCase()
+                          .includes(
+                            (typeof openDropdowns[searchKey] === "string"
+                              ? (openDropdowns[searchKey] as unknown as string)
+                              : ""
+                            ).toLowerCase(),
+                          ),
+                      );
+                      const isOpen =
+                        openDropdowns[`${product.id}-model-open`] === true;
+
+                      return (
+                        <>
+                          <div
+                            onClick={() => {
+                              if (!product.inquiryCategoryId) return;
+                              setOpenDropdowns((prev) => ({
+                                ...prev,
+                                [`${product.id}-model-open`]: !isOpen,
+                              }));
+                            }}
+                            className={`w-full cursor-pointer rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm min-h-[34px] flex items-center justify-between ${!product.inquiryCategoryId ? "opacity-50 cursor-not-allowed" : ""}`}
+                          >
+                            <span
+                              className={
+                                selectedModel
+                                  ? "text-gray-900"
+                                  : "text-gray-400"
+                              }
+                            >
+                              {selectedModel
+                                ? `${selectedModel.modelNo} - ${selectedModel.color?.name || selectedModel.color}`
+                                : "Select"}
+                            </span>
+                            <svg
+                              className="h-4 w-4 text-gray-400"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 9l-7 7-7-7"
+                              />
+                            </svg>
+                          </div>
+
+                          {isOpen && (
+                            <div className="absolute z-[9999] mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg">
+                              <div className="p-2 border-b border-gray-100">
+                                <input
+                                  type="text"
+                                  autoFocus
+                                  placeholder="Search model..."
+                                  value={
+                                    typeof openDropdowns[searchKey] === "string"
+                                      ? (openDropdowns[
+                                          searchKey
+                                        ] as unknown as string)
+                                      : ""
+                                  }
+                                  onChange={(e) =>
+                                    setOpenDropdowns((prev) => ({
+                                      ...prev,
+                                      [searchKey]: e.target.value as any,
+                                    }))
+                                  }
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-sm outline-none focus:border-indigo-400"
+                                />
+                              </div>
+                              <div className="max-h-48 overflow-y-auto">
+                                {filtered.length === 0 ? (
+                                  <div className="px-3 py-2 text-xs text-gray-400">
+                                    No models found
+                                  </div>
+                                ) : (
+                                  filtered.map((model) => (
+                                    // <div
+                                    //   key={model._id}
+                                    //   onClick={() => {
+                                    //     updateProduct(
+                                    //       product.id,
+                                    //       "modelSuggestionId",
+                                    //       model._id,
+                                    //     );
+                                    //     setOpenDropdowns((prev) => ({
+                                    //       ...prev,
+                                    //       [`${product.id}-model-open`]: false,
+                                    //       [searchKey]: "" as any,
+                                    //     }));
+                                    //   }}
+                                    //   className={`px-3 py-2 text-sm cursor-pointer hover:bg-indigo-50 ${product.modelSuggestionId === model._id ? "bg-indigo-100 font-medium text-indigo-700" : "text-gray-700"}`}
+                                    // >
+                                    //   <img
+                                    //     src="https://placehold.co/32x32"
+                                    //     alt="test"
+                                    //     className="h-8 w-8 rounded object-cover flex-shrink-0 border border-gray-200 ml-auto"
+                                    //   />
+                                    //   {model.modelNo} -{" "}
+                                    //   {model.color?.name || model.color}
+                                    // </div>
+                                    <div
+                                      key={model._id}
+                                      onClick={() => {
+                                        updateProduct(
+                                          product.id,
+                                          "modelSuggestionId",
+                                          model._id,
+                                        );
+                                        setOpenDropdowns((prev) => ({
+                                          ...prev,
+                                          [`${product.id}-model-open`]: false,
+                                          [searchKey]: "" as any,
+                                        }));
+                                      }}
+                                      className={`px-3 py-2 text-sm cursor-pointer hover:bg-indigo-50 flex items-center gap-2 ${product.modelSuggestionId === model._id ? "bg-indigo-100 font-medium text-indigo-700" : "text-gray-700"}`}
+                                    >
+                                      <span className="flex-1">
+                                        {model.modelNo} -{" "}
+                                        {model.color?.name || model.color}
+                                      </span>
+                                      {model.image ? (
+                                        <img
+                                          src={`${process.env.NEXT_PUBLIC_IMAGE_BASE_URL?.replace("/v1/api", "")}${model.image}`}
+                                          alt={model.modelNo}
+                                          className="h-8 w-8 rounded object-cover flex-shrink-0 border border-gray-200"
+                                        />
+                                      ) : (
+                                        <div className="h-8 w-8 rounded border border-gray-200 bg-gray-100 flex-shrink-0" />
+                                      )}
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
 
                   <div className="relative">
-                    <label className="mb-1 block text-xs text-gray-600">Customization Type</label>
+                    <label className="mb-1 block text-xs text-gray-600">
+                      Customization Type
+                    </label>
                     <div
                       id={`dropdown-${product.id}`}
-                      onClick={() => setOpenDropdowns(prev => ({ ...prev, [product.id]: !prev[product.id] }))}
+                      onClick={() =>
+                        setOpenDropdowns((prev) => ({
+                          ...prev,
+                          [product.id]: !prev[product.id],
+                        }))
+                      }
                       className="w-full cursor-pointer rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm outline-none min-h-[34px] flex items-center"
                     >
                       {product.customizationTypeIds.length === 0 ? (
@@ -527,10 +786,11 @@ export default function ConvertToLeadPage() {
                       )}
                     </div>
                     {openDropdowns[product.id] && (
-                      <div className="fixed z-[9999] mt-1 w-64 rounded-lg border border-gray-200 bg-white shadow-lg flex flex-col"
+                      <div
+                        className="fixed z-[9999] mt-1 w-64 rounded-lg border border-gray-200 bg-white shadow-lg flex flex-col"
                         style={{
                           top: `${document.getElementById(`dropdown-${product.id}`)?.getBoundingClientRect().bottom}px`,
-                          left: `${document.getElementById(`dropdown-${product.id}`)?.getBoundingClientRect().left}px`
+                          left: `${document.getElementById(`dropdown-${product.id}`)?.getBoundingClientRect().left}px`,
                         }}
                       >
                         <div className="max-h-48 overflow-y-auto">
@@ -542,21 +802,39 @@ export default function ConvertToLeadPage() {
                             >
                               <input
                                 type="checkbox"
-                                checked={product.customizationTypeIds.includes(type._id)}
+                                checked={product.customizationTypeIds.includes(
+                                  type._id,
+                                )}
                                 onChange={(e) => {
                                   const newIds = e.target.checked
-                                    ? [...product.customizationTypeIds, type._id]
-                                    : product.customizationTypeIds.filter(id => id !== type._id);
-                                  updateProduct(product.id, "customizationTypeIds", newIds);
+                                    ? [
+                                        ...product.customizationTypeIds,
+                                        type._id,
+                                      ]
+                                    : product.customizationTypeIds.filter(
+                                        (id) => id !== type._id,
+                                      );
+                                  updateProduct(
+                                    product.id,
+                                    "customizationTypeIds",
+                                    newIds,
+                                  );
                                 }}
                                 className="h-4 w-4 rounded border-gray-300 text-slate-900"
                               />
-                              <span className="text-sm text-gray-700">{type.name}</span>
+                              <span className="text-sm text-gray-700">
+                                {type.name}
+                              </span>
                             </label>
                           ))}
                         </div>
                         <button
-                          onClick={() => setOpenDropdowns(prev => ({ ...prev, [product.id]: false }))}
+                          onClick={() =>
+                            setOpenDropdowns((prev) => ({
+                              ...prev,
+                              [product.id]: false,
+                            }))
+                          }
                           className="sticky bottom-0 w-full bg-indigo-600 text-white py-2 text-sm font-medium rounded-b-lg hover:bg-indigo-700"
                         >
                           Done
@@ -566,21 +844,37 @@ export default function ConvertToLeadPage() {
                   </div>
 
                   <div className="sm:col-span-2 lg:col-span-3">
-                    <label className="mb-1 block text-xs text-gray-600">Customization Description</label>
+                    <label className="mb-1 block text-xs text-gray-600">
+                      Customization Description
+                    </label>
                     <input
                       type="text"
                       value={product.customizationDescription}
-                      onChange={(e) => updateProduct(product.id, "customizationDescription", e.target.value)}
+                      onChange={(e) =>
+                        updateProduct(
+                          product.id,
+                          "customizationDescription",
+                          e.target.value,
+                        )
+                      }
                       className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm outline-none"
                       placeholder="Enter customization details..."
                     />
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs text-gray-600">Personalization</label>
+                    <label className="mb-1 block text-xs text-gray-600">
+                      Personalization
+                    </label>
                     <select
                       value={product.personalization}
-                      onChange={(e) => updateProduct(product.id, "personalization", e.target.value)}
+                      onChange={(e) =>
+                        updateProduct(
+                          product.id,
+                          "personalization",
+                          e.target.value,
+                        )
+                      }
                       className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm outline-none"
                     >
                       <option value="No">No</option>
@@ -591,21 +885,37 @@ export default function ConvertToLeadPage() {
                   {product.personalization === "Yes" && (
                     <>
                       <div>
-                        <label className="mb-1 block text-xs text-gray-600">Location</label>
+                        <label className="mb-1 block text-xs text-gray-600">
+                          Location
+                        </label>
                         <input
                           type="text"
                           value={product.location || ""}
-                          onChange={(e) => updateProduct(product.id, "location", e.target.value)}
+                          onChange={(e) =>
+                            updateProduct(
+                              product.id,
+                              "location",
+                              e.target.value,
+                            )
+                          }
                           className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm outline-none"
                         />
                       </div>
 
                       <div className="sm:col-span-2 lg:col-span-1">
-                        <label className="mb-1 block text-xs text-gray-600">Description</label>
+                        <label className="mb-1 block text-xs text-gray-600">
+                          Description
+                        </label>
                         <input
                           type="text"
                           value={product.description}
-                          onChange={(e) => updateProduct(product.id, "description", e.target.value)}
+                          onChange={(e) =>
+                            updateProduct(
+                              product.id,
+                              "description",
+                              e.target.value,
+                            )
+                          }
                           className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm outline-none"
                         />
                       </div>
@@ -613,14 +923,20 @@ export default function ConvertToLeadPage() {
                   )}
 
                   <div>
-                    <label className="mb-1 block text-xs text-gray-600">Qty</label>
+                    <label className="mb-1 block text-xs text-gray-600">
+                      Qty
+                    </label>
                     <input
                       type="number"
                       min="1"
                       step="1"
                       value={product.qty}
                       onChange={(e) => {
-                        const value = e.target.value === '' ? 1 : parseInt(sanitizeNumberInput(e.target.value)) || 1;
+                        const value =
+                          e.target.value === ""
+                            ? 1
+                            : parseInt(sanitizeNumberInput(e.target.value)) ||
+                              1;
                         updateProduct(product.id, "qty", value);
                       }}
                       onFocus={(e) => e.target.select()}
@@ -629,20 +945,30 @@ export default function ConvertToLeadPage() {
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs text-gray-600">Rate (₹)</label>
+                    <label className="mb-1 block text-xs text-gray-600">
+                      Rate (₹)
+                    </label>
                     <input
                       type="number"
                       min="0"
                       step="0.01"
                       value={product.rate}
-                      onChange={(e) => updateProduct(product.id, "rate", Number(sanitizeNumberInput(e.target.value)))}
+                      onChange={(e) =>
+                        updateProduct(
+                          product.id,
+                          "rate",
+                          Number(sanitizeNumberInput(e.target.value)),
+                        )
+                      }
                       onFocus={(e) => e.target.select()}
                       className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs text-gray-600">GST %</label>
+                    <label className="mb-1 block text-xs text-gray-600">
+                      GST %
+                    </label>
                     <input
                       type="number"
                       min="0"
@@ -650,8 +976,16 @@ export default function ConvertToLeadPage() {
                       step="0.01"
                       value={product.gst}
                       onChange={(e) => {
-                        const value = e.target.value === '' ? 0 : parseFloat(sanitizeNumberInput(e.target.value)) || 0;
-                        updateProduct(product.id, "gst", Math.min(100, Math.max(0, value)));
+                        const value =
+                          e.target.value === ""
+                            ? 0
+                            : parseFloat(sanitizeNumberInput(e.target.value)) ||
+                              0;
+                        updateProduct(
+                          product.id,
+                          "gst",
+                          Math.min(100, Math.max(0, value)),
+                        );
                       }}
                       onFocus={(e) => e.target.select()}
                       className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm outline-none"
@@ -659,7 +993,9 @@ export default function ConvertToLeadPage() {
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs text-gray-600">Total</label>
+                    <label className="mb-1 block text-xs text-gray-600">
+                      Total
+                    </label>
                     <div className="flex h-[34px] items-center rounded-lg border border-gray-300 bg-gray-100 px-2 text-sm font-semibold text-gray-900">
                       ₹{product.total.toFixed(2)}
                     </div>
@@ -687,7 +1023,9 @@ export default function ConvertToLeadPage() {
             </div>
             <div className="border-t border-gray-300 pt-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-gray-700">Grand Total:</span>
+                <span className="text-sm font-semibold text-gray-700">
+                  Grand Total:
+                </span>
                 <span className="text-lg font-bold text-green-600">
                   ₹{calculateGrandTotal().toFixed(2)}
                 </span>
@@ -702,7 +1040,13 @@ export default function ConvertToLeadPage() {
             onClick={handleConvertLead}
             className="rounded-lg bg-indigo-600 px-6 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
           >
-            {isEditMode && (currentLeadStatus === "New Lead" || currentLeadStatus === "Quotation Given") ? "Update Lead" : (isEditMode ? "Save & Move to Order Confirmation" : "Convert Lead")}
+            {isEditMode &&
+            (currentLeadStatus === "New Lead" ||
+              currentLeadStatus === "Quotation Given")
+              ? "Update Lead"
+              : isEditMode
+                ? "Save & Move to Order Confirmation"
+                : "Convert Lead"}
           </button>
         </div>
       </div>
