@@ -27,6 +27,7 @@ type ModelSuggestionRow = {
   rate: string;
   gst: number;
   category: Category;
+  image?: string;
 };
 
 export default function ModelSuggestionPage() {
@@ -35,8 +36,14 @@ export default function ModelSuggestionPage() {
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [colors, setColors] = useState<Color[]>([]);
-  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
-  const [editMode, setEditMode] = useState<{ isEdit: boolean; id: string | null }>({ isEdit: false, id: null });
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    id: string | null;
+  }>({ open: false, id: null });
+  const [editMode, setEditMode] = useState<{
+    isEdit: boolean;
+    id: string | null;
+  }>({ isEdit: false, id: null });
   const [confirmDialog, setConfirmDialog] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -49,10 +56,27 @@ export default function ModelSuggestionPage() {
     rate: "",
     gst: "18",
     categoryId: "",
+    image: null as File | null,
   });
 
   const columns: Column<ModelSuggestionRow>[] = useMemo(
     () => [
+      {
+        key: "image",
+        label: "Image",
+        render: (value) =>
+          value ? (
+            <img
+              src={`${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}${value}`}
+              alt="model"
+              className="h-10 w-10 rounded-lg object-cover border border-gray-200"
+            />
+          ) : (
+            <div className="h-10 w-10 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
+              <span className="text-[10px] text-gray-400">No img</span>
+            </div>
+          ),
+      },
       { key: "modelNo", label: "Model No." },
       {
         key: "color",
@@ -95,7 +119,7 @@ export default function ModelSuggestionPage() {
         ),
       },
     ],
-    []
+    [],
   );
 
   const resetForm = () => {
@@ -105,6 +129,7 @@ export default function ModelSuggestionPage() {
       rate: "",
       gst: "18",
       categoryId: "",
+      image: null,
     });
     setEditMode({ isEdit: false, id: null });
   };
@@ -116,6 +141,7 @@ export default function ModelSuggestionPage() {
       rate: row.rate,
       gst: String(row.gst || 18),
       categoryId: row.category._id,
+      image: null,
     });
     setEditMode({ isEdit: true, id: row._id! });
     fetchCategories();
@@ -139,24 +165,34 @@ export default function ModelSuggestionPage() {
     if (!editMode.id) return;
 
     try {
-      const payload = {
-        modelNo: form.modelNo,
-        color: form.colorId,
-        rate: form.rate,
-        gst: Number(form.gst),
-        category: form.categoryId,
-      };
-      const res = await api.put(`${baseUrl.MODEL_SUGGESTION}/${editMode.id}`, payload);
-      
-      const selectedCategory = categories.find(c => c._id === form.categoryId);
-      const selectedColor = colors.find(c => c._id === form.colorId);
+      const formData = new FormData();
+      formData.append("modelNo", form.modelNo);
+      formData.append("color", form.colorId);
+      formData.append("rate", form.rate);
+      formData.append("gst", String(Number(form.gst)));
+      formData.append("category", form.categoryId);
+      if (form.image) formData.append("image", form.image);
+      const res = await api.put(
+        `${baseUrl.MODEL_SUGGESTION}/${editMode.id}`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      );
+
+      const selectedCategory = categories.find(
+        (c) => c._id === form.categoryId,
+      );
+      const selectedColor = colors.find((c) => c._id === form.colorId);
       const updatedModel = {
         ...res.data.data,
         category: selectedCategory || res.data.data.category,
-        color: selectedColor || res.data.data.color
+        color: selectedColor || res.data.data.color,
       };
-      
-      setModels((prev) => prev.map((m) => (m._id === editMode.id ? updatedModel : m)));
+
+      setModels((prev) =>
+        prev.map((m) => (m._id === editMode.id ? updatedModel : m)),
+      );
       toast.success("Model updated successfully!");
       setOpen(false);
       resetForm();
@@ -186,7 +222,9 @@ export default function ModelSuggestionPage() {
   const fetchModels = async (showLoader = true) => {
     if (showLoader) setLoading(true);
     try {
-      const res = await api.get(`${baseUrl.MODEL_SUGGESTION}?page=${page}&limit=10&search=${search}`);
+      const res = await api.get(
+        `${baseUrl.MODEL_SUGGESTION}?page=${page}&limit=10&search=${search}`,
+      );
       setModels(res.data.data);
       setTotalPages(res.data.pagination?.totalPages || 1);
       setTotalRecords(res.data.pagination?.totalRecords || 0);
@@ -213,23 +251,27 @@ export default function ModelSuggestionPage() {
       await handleUpdate();
     } else {
       try {
-        const payload = {
-          modelNo: form.modelNo,
-          color: form.colorId,
-          rate: form.rate,
-          gst: Number(form.gst),
-          category: form.categoryId,
-        };
-        const res = await api.post(baseUrl.MODEL_SUGGESTION, payload);
-        
-        const selectedCategory = categories.find(c => c._id === form.categoryId);
-        const selectedColor = colors.find(c => c._id === form.colorId);
+        const formData = new FormData();
+        formData.append("modelNo", form.modelNo);
+        formData.append("color", form.colorId);
+        formData.append("rate", form.rate);
+        formData.append("gst", String(Number(form.gst)));
+        formData.append("category", form.categoryId);
+        if (form.image) formData.append("image", form.image);
+        const res = await api.post(baseUrl.MODEL_SUGGESTION, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        const selectedCategory = categories.find(
+          (c) => c._id === form.categoryId,
+        );
+        const selectedColor = colors.find((c) => c._id === form.colorId);
         const newModel = {
           ...res.data.data,
           category: selectedCategory || res.data.data.category,
-          color: selectedColor || res.data.data.color
+          color: selectedColor || res.data.data.color,
         };
-        
+
         setModels((prev) => [newModel, ...prev]);
         toast.success("Model suggestion added successfully!");
         setOpen(false);
@@ -281,8 +323,14 @@ export default function ModelSuggestionPage() {
           setOpen(false);
           resetForm();
         }}
-        title={editMode.isEdit ? "Edit Model Suggestion" : "Add Model Suggestion"}
-        description={editMode.isEdit ? "Update model suggestion." : "Create a new model suggestion."}
+        title={
+          editMode.isEdit ? "Edit Model Suggestion" : "Add Model Suggestion"
+        }
+        description={
+          editMode.isEdit
+            ? "Update model suggestion."
+            : "Create a new model suggestion."
+        }
         footer={
           <div className="flex flex-wrap items-center justify-end gap-3">
             <button
@@ -305,16 +353,11 @@ export default function ModelSuggestionPage() {
           </div>
         }
       >
-        <form
-          id="model-form"
-          onSubmit={handleSubmit}
-          className="space-y-4"
-        >
+        <form id="model-form" onSubmit={handleSubmit} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <label className="block text-sm text-gray-600">
               Model No
               <input
-                required
                 value={form.modelNo}
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, modelNo: e.target.value }))
@@ -327,7 +370,6 @@ export default function ModelSuggestionPage() {
             <label className="block text-sm text-gray-600">
               Color
               <select
-                required
                 value={form.colorId}
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, colorId: e.target.value }))
@@ -346,7 +388,6 @@ export default function ModelSuggestionPage() {
             <label className="block text-sm text-gray-600">
               Rate
               <input
-                required
                 value={form.rate}
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, rate: e.target.value }))
@@ -359,7 +400,6 @@ export default function ModelSuggestionPage() {
             <label className="block text-sm text-gray-600">
               GST %
               <input
-                required
                 type="number"
                 min="0"
                 max="100"
@@ -375,7 +415,6 @@ export default function ModelSuggestionPage() {
             <label className="block text-sm text-gray-600">
               Category
               <select
-                required
                 value={form.categoryId}
                 onChange={(e) =>
                   setForm((prev) => ({
@@ -392,6 +431,66 @@ export default function ModelSuggestionPage() {
                   </option>
                 ))}
               </select>
+            </label>
+
+            <label className="block text-sm text-gray-600 md:col-span-2">
+              Product Image
+              <div className="mt-2">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      image: e.target.files?.[0] || null,
+                    }))
+                  }
+                  className="hidden"
+                  id="model-image-upload"
+                />
+                <label
+                  htmlFor="model-image-upload"
+                  className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-center hover:border-gray-300 hover:bg-gray-100 transition"
+                >
+                  {form.image ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <img
+                        src={URL.createObjectURL(form.image)}
+                        alt="Preview"
+                        className="h-24 w-24 rounded-lg object-cover shadow"
+                      />
+                      <span className="text-xs text-gray-500">
+                        {form.image.name}
+                      </span>
+                      <span className="text-xs text-indigo-600 font-medium">
+                        Click to change
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2 text-gray-400">
+                      <svg
+                        className="h-8 w-8"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                      <span className="text-sm font-medium text-gray-500">
+                        Click to upload image
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        PNG, JPG, WEBP up to 5MB
+                      </span>
+                    </div>
+                  )}
+                </label>
+              </div>
             </label>
           </div>
         </form>
@@ -411,7 +510,11 @@ export default function ModelSuggestionPage() {
         onClose={() => setConfirmDialog(false)}
         onConfirm={confirmSubmit}
         title={editMode.isEdit ? "Update Model" : "Add Model"}
-        message={editMode.isEdit ? "Are you sure you want to update this model?" : "Are you sure you want to add this model?"}
+        message={
+          editMode.isEdit
+            ? "Are you sure you want to update this model?"
+            : "Are you sure you want to add this model?"
+        }
         confirmText={editMode.isEdit ? "Update" : "Add"}
       />
     </>

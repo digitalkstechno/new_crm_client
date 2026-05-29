@@ -13,7 +13,6 @@ export default function LostDescriptionDialog({ isOpen, onClose, onSubmit }: Los
   if (!isOpen) return null;
 
   const handleSubmit = () => {
-    if (!description.trim()) return;
     onSubmit(description);
     setDescription("");
   };
@@ -35,7 +34,7 @@ export default function LostDescriptionDialog({ isOpen, onClose, onSubmit }: Los
 
         <div className="mb-6">
           <label className="mb-2 block text-sm font-semibold text-gray-700">
-            Description <span className="text-red-500">*</span>
+            Description 
           </label>
           <textarea
             value={description}
@@ -55,7 +54,6 @@ export default function LostDescriptionDialog({ isOpen, onClose, onSubmit }: Los
           </button>
           <button
             onClick={handleSubmit}
-            disabled={!description.trim()}
             className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Mark as Lost
