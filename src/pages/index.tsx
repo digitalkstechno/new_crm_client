@@ -90,6 +90,7 @@ export default function Home() {
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
   const [topLimit, setTopLimit] = useState(5);
+  const [isOEM, setIsOEM] = useState(false);
 
   useEffect(() => {
     const checkAccess = async () => {
@@ -109,7 +110,7 @@ export default function Home() {
     };
 
     checkAccess();
-  }, [dateRange, customStartDate, customEndDate, topLimit]);
+  }, [dateRange, customStartDate, customEndDate, topLimit, isOEM]);
 
   const getDateRange = () => {
     const today = new Date();
@@ -151,6 +152,7 @@ export default function Home() {
         params.push(`startDate=${startDate.toISOString()}`);
         params.push(`endDate=${endDate.toISOString()}`);
       }
+      params.push(`isOem=${isOEM}`);
       params.push(`topLimit=${topLimit}`);
       if (params.length > 0) {
         url += `?${params.join("&")}`;
@@ -174,6 +176,7 @@ export default function Home() {
         params.push(`startDate=${startDate.toISOString()}`);
         params.push(`endDate=${endDate.toISOString()}`);
       }
+      params.push(`isOem=${isOEM}`);
       if (params.length > 0) {
         url += `?${params.join("&")}`;
       }
@@ -402,6 +405,16 @@ export default function Home() {
                 <Calendar className="h-4 w-4" />
                 Custom
               </button>
+              <button
+                onClick={() => setIsOEM(!isOEM)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  isOEM
+                    ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md"
+                    : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+                }`}
+              >
+                O.E.M
+              </button>
             </div>
           </div>
 
@@ -616,7 +629,6 @@ export default function Home() {
                         statusAmounts?.["Order Confirmation"]
                           ? statusAmounts["Order Confirmation"]
                           : null;
-                      console.log("statusAmounts:", stats?.statusAmounts)
                       return (
                         <div
                           key={status}
