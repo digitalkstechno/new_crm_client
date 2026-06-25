@@ -100,17 +100,17 @@ export default function OrderExecutionDialog({ isOpen, onClose, leadId, items: i
                       {index + 1}
                     </span>
                     <h3 className="text-base font-bold text-gray-900">
-                      {item.modelSuggestion.name}
+                      {item?.modelSuggestion?.name}
                     </h3>
                   </div>
                   <div className="ml-8 space-y-1">
                     <p className="text-sm text-gray-700">
-                      <span className="font-semibold">Category:</span> {item.inquiryCategory.name}
+                      <span className="font-semibold">Category:</span> {item?.inquiryCategory?.name}
                     </p>
                     <p className="text-sm text-gray-700">
-                      <span className="font-semibold">Customization:</span> {item.customizationType.name}
+                      <span className="font-semibold">Customization:</span> {item?.customizationType?.name}
                     </p>
-                    <p className="text-sm font-semibold text-gray-900">
+                    <p className="text-sm font-semibold text-gray-900"> 
                       Quantity: {item.qty}
                     </p>
                   </div>
