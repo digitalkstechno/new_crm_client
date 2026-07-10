@@ -373,12 +373,10 @@ export default function ConvertToLeadPage() {
         items,
         totalAmount: totalAmount.toString(),
         leadStatus:
-          isEditMode &&
-          (currentLeadStatus === "New Lead" ||
-            currentLeadStatus === "Quotation Given")
-            ? currentLeadStatus
+          isEditMode && router.query.action === "convert"
+            ? "Order Confirmation"
             : isEditMode
-              ? "Order Confirmation"
+              ? currentLeadStatus
               : "New Lead",
         confirmationRemark: isEditMode ? confirmationRemark : undefined,
       };

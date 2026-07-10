@@ -269,7 +269,7 @@ export default function LeadsPage() {
     } else if (toStatus === "Completed") {
       setCompletedConfirmDialog({ isOpen: true, leadId });
     } else if (fromStatus === "Follow Up" && toStatus === "Order Confirmation") {
-      router.push(`/convert-to-lead?leadId=${leadId}`);
+      router.push(`/convert-to-lead?leadId=${leadId}&action=convert`);
     } else if (toStatus === "PI") {
       await handleStatusChange(leadId, toStatus);
     } else if (toStatus === "Final Payment") {
