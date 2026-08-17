@@ -92,6 +92,11 @@ export default function PublicLeadPage() {
                 render: (value: any) => value || "-",
             },
             {
+                key: "typeofclient",
+                label: "Client Type",
+                render: (value: any) => value?.name || value || "-",
+            },
+            {
                 key: "email",
                 label: "Email",
                 render: (value: any) => value || "-",
