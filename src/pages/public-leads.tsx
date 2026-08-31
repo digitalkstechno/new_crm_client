@@ -30,11 +30,16 @@ export default function PublicLeadPage() {
     const [selectedAttachments, setSelectedAttachments] = useState<(File | string)[]>([]);
     const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
     const [exporting, setExporting] = useState(false);
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
 
     const exportToExcel = async () => {
         setExporting(true);
         try {
-            const response = await api.get(`${baseUrl.PUBLIC_LEAD}/export`, {
+            let exportUrl = `${baseUrl.PUBLIC_LEAD}/export?`;
+            if (startDate) exportUrl += `startDate=${startDate}&`;
+            if (endDate) exportUrl += `endDate=${endDate}`;
+            const response = await api.get(exportUrl, {
                 responseType: 'blob'
             });
             const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -65,15 +70,16 @@ export default function PublicLeadPage() {
 
     useEffect(() => {
         fetchPublicLeads(page === 1 && search === "");
-    }, [page, search]);
+    }, [page, search, startDate, endDate]);
 
 
     const fetchPublicLeads = async (showLoader = true) => {
         if (showLoader) setLoading(true);
         try {
-            const res = await api.get(
-                `${baseUrl.PUBLIC_LEAD}?page=${page}&limit=10&search=${search}`
-            );
+            let url = `${baseUrl.PUBLIC_LEAD}?page=${page}&limit=10&search=${search}`;
+            if (startDate) url += `&startDate=${startDate}`;
+            if (endDate) url += `&endDate=${endDate}`;
+            const res = await api.get(url);
             setLeads(res.data.data || []);
             setTotalPages(res.data.pagination?.totalPages || 1);
             setTotalRecords(res.data.pagination?.totalRecords || 0);
@@ -174,14 +180,31 @@ export default function PublicLeadPage() {
                 <DataTable
                     title="Public Leads"
                     actions={
-                        <button
-                            onClick={exportToExcel}
-                            disabled={exporting}
-                            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-all disabled:opacity-50"
-                        >
-                            <Download className="h-4 w-4 text-green-600" />
-                            <span>{exporting ? "Exporting..." : "Export Excel"}</span>
-                        </button>
+                        <div className="flex gap-3">
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="date"
+                                    value={startDate}
+                                    onChange={(e) => setStartDate(e.target.value)}
+                                    className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                                />
+                                <span className="text-gray-500">to</span>
+                                <input
+                                    type="date"
+                                    value={endDate}
+                                    onChange={(e) => setEndDate(e.target.value)}
+                                    className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                                />
+                            </div>
+                            <button
+                                onClick={exportToExcel}
+                                disabled={exporting}
+                                className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-all disabled:opacity-50"
+                            >
+                                <Download className="h-4 w-4 text-green-600" />
+                                <span>{exporting ? "Exporting..." : "Export Excel"}</span>
+                            </button>
+                        </div>
                     }
                     data={leads}
                     pageSize={10}
