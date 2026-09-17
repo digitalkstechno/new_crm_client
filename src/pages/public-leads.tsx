@@ -5,7 +5,7 @@ import { api } from "@/utils/axiosInstance";
 import toast from "react-hot-toast";
 import { baseUrl } from "../../config";
 import Dialog from "@/components/Dialog";
-import { Eye, FileText, Download, Trash2 } from "lucide-react";
+import { Eye, FileText, Download, Trash2, Edit } from "lucide-react";
 
 type PublicLead = {
     _id: string;
@@ -32,6 +32,9 @@ export default function PublicLeadPage() {
     const [exporting, setExporting] = useState(false);
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
+    const [editDialog, setEditDialog] = useState<{ open: boolean; lead: PublicLead | null }>({ open: false, lead: null });
+    const [editForm, setEditForm] = useState({ name: "", companyName: "", email: "", whatsappNumber: "", notes: "", typeofclient: "" });
+    const [clientTypes, setClientTypes] = useState<any[]>([]);
 
     const exportToExcel = async () => {
         setExporting(true);
@@ -67,6 +70,31 @@ export default function PublicLeadPage() {
             toast.error(err.response?.data?.message || "Failed to delete lead");
         }
     };
+
+    const handleEditSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editDialog.lead) return;
+        try {
+            await api.put(`${baseUrl.PUBLIC_LEAD}/${editDialog.lead._id}`, editForm);
+            toast.success("Lead updated successfully!");
+            setEditDialog({ open: false, lead: null });
+            fetchPublicLeads(false);
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || "Failed to update lead");
+        }
+    };
+
+    useEffect(() => {
+        const fetchClientTypes = async () => {
+            try {
+                const response = await api.get(baseUrl.CLIENTTYPE_DROPDOWN);
+                setClientTypes(response.data.data || []);
+            } catch (error) {
+                console.error("Failed to fetch client types");
+            }
+        };
+        fetchClientTypes();
+    }, []);
 
     useEffect(() => {
         fetchPublicLeads(page === 1 && search === "");
@@ -158,6 +186,23 @@ export default function PublicLeadPage() {
                                 </svg>
                             </button>
                         )}
+                        <button
+                            onClick={() => {
+                                setEditForm({
+                                    name: row.name || "",
+                                    companyName: row.companyName || "",
+                                    email: row.email || "",
+                                    whatsappNumber: row.whatsappNumber || "",
+                                    notes: row.notes || "",
+                                    typeofclient: row.typeofclient?._id || row.typeofclient || "",
+                                });
+                                setEditDialog({ open: true, lead: row });
+                            }}
+                            className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-3 py-3 text-sm font-medium text-blue-600 transition hover:bg-blue-100"
+                            title="Edit Lead"
+                        >
+                            <Edit className="h-4 w-4" />
+                        </button>
                         <button
                             onClick={() => setDeleteDialog({ open: true, id: row._id })}
                             className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-3 py-3 text-sm font-medium text-red-600 transition hover:bg-red-100"
@@ -290,6 +335,91 @@ export default function PublicLeadPage() {
                     </div>
                 }
             />
+
+            <Dialog
+                open={editDialog.open}
+                onClose={() => setEditDialog({ open: false, lead: null })}
+                title="Edit Public Lead"
+            >
+                <form onSubmit={handleEditSubmit} className="space-y-4">
+                    <div>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">Name</label>
+                        <input
+                            type="text"
+                            value={editForm.name}
+                            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                            className="w-full rounded-lg border border-gray-300 p-2 focus:border-indigo-500 focus:outline-none"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">Company Name</label>
+                        <input
+                            type="text"
+                            value={editForm.companyName}
+                            onChange={(e) => setEditForm({ ...editForm, companyName: e.target.value })}
+                            className="w-full rounded-lg border border-gray-300 p-2 focus:border-indigo-500 focus:outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">Client Type</label>
+                        <select
+                            value={editForm.typeofclient}
+                            onChange={(e) => setEditForm({ ...editForm, typeofclient: e.target.value })}
+                            className="w-full rounded-lg border border-gray-300 p-2 focus:border-indigo-500 focus:outline-none bg-white"
+                        >
+                            <option value="">Select Client Type</option>
+                            {clientTypes.map((type) => (
+                                <option key={type._id} value={type._id}>
+                                    {type.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
+                        <input
+                            type="email"
+                            value={editForm.email}
+                            onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                            className="w-full rounded-lg border border-gray-300 p-2 focus:border-indigo-500 focus:outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">WhatsApp Number</label>
+                        <input
+                            type="text"
+                            value={editForm.whatsappNumber}
+                            onChange={(e) => setEditForm({ ...editForm, whatsappNumber: e.target.value })}
+                            className="w-full rounded-lg border border-gray-300 p-2 focus:border-indigo-500 focus:outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">Notes</label>
+                        <textarea
+                            value={editForm.notes}
+                            onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                            className="w-full rounded-lg border border-gray-300 p-2 focus:border-indigo-500 focus:outline-none"
+                            rows={3}
+                        />
+                    </div>
+                    <div className="flex justify-end gap-3 mt-6">
+                        <button
+                            type="button"
+                            onClick={() => setEditDialog({ open: false, lead: null })}
+                            className="rounded-lg border px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                        >
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </Dialog>
         </>
     );
 }
