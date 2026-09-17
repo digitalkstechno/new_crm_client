@@ -349,7 +349,6 @@ export default function PublicLeadPage() {
                             value={editForm.name}
                             onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                             className="w-full rounded-lg border border-gray-300 p-2 focus:border-indigo-500 focus:outline-none"
-                            required
                         />
                     </div>
                     <div>
